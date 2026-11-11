@@ -1,1 +1,19 @@
+name: spaceapps
+channels:
+- conda-forge
+dependencies:
+- python=3.11
+- numpy
+- scipy
+- pandas
+- matplotlib
+- xarray
+- rasterio
+- rioxarray
+- geopandas
+- earthaccess
+- earthengine-api
+- jupyterlab
+- folium
+- streamlit
 
