@@ -16,4 +16,4 @@ dependencies:
 - jupyterlab
 - folium
 - streamlit
-
+- pytest
