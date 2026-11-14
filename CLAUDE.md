@@ -50,6 +50,7 @@ Full list and caveats: `docs/Moon_Analog_Criteria_and_Datasets.md`.
 | 14 Nov 2026 | Bowl filter: require a closed depression ≥ 50 m deep, ≥ 1 km wide, elongation (longest axis / equivalent diameter) ≤ 2 | bowl-less cells and valleys outranked real bowls (Mustang run) |
 | 14 Nov 2026 | Keep the 1 km minimum bowl width for all regions | resolution limit: < ~17 px at 60 m, walls smoothed |
 | 14 Nov 2026 | Light criteria interface (Earth `light.py`, Moon `lunar_light.py` by Mateo): c1 rim max lit / flat-land lit, c2 p99 floor shadow, c3 dark→sunny distance / r, c4 max Sun elevation; "lit" = Sun centre above the horizon; shared `flat_lit_fraction` | same definitions on both sides |
+| 14 Nov 2026 | Total score = "score (vs Moon)": weighted mean of target-scored criteria with weight > 0 only. Rank-scored criteria are shown as raw value + rank score and as a separate "rank score (within run)", never in the total, until a lunar target exists | rank scores depend on the run (1 cell → 0.5) and distorted the total |
 | 14 Nov 2026 | c5 sky-view factor display only (weight 0) | duplicates c7 for simple bowls and overlaps c2 (r −0.91 each over 6 bowl cells); c2 has the lunar comparison |
 
 ## Who does what
