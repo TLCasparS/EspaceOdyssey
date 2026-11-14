@@ -1,0 +1,444 @@
+{
+  "_readme": [
+    "Lunar mare cells for the Mare target (median over cells, tolerance = IQR, team decision 14 Nov).",
+    "Per mare the target uses the first 5 candidates in 'order' that pass the bowl filter.",
+    "Fixed once by src/mare_cells.py with the seed below; do not edit by hand."
+  ],
+  "created": "2026-11-14",
+  "seed": 20261114,
+  "cell_km": 15,
+  "margin_km": 10.0,
+  "per_mare": 5,
+  "candidates_per_mare": 15,
+  "outlines": "LROC global mare map (Nelson et al. 2014, LPSC 45 #2861), LROC_GLOBAL_MARE_180",
+  "lon_domain": "-180..180, planetocentric",
+  "named_site": {
+    "apollo_11": {
+      "lat": 0.67416,
+      "lon": 23.47314,
+      "source": "NASA NSSDC Apollo landing site coordinates (Wagner et al. 2017, Icarus 283, 92-103)"
+    }
+  },
+  "cells": [
+    {
+      "id": "tranquillitatis_01",
+      "mare": "Tranquillitatis",
+      "order": 1,
+      "lat": 2.91378,
+      "lon": 29.20104
+    },
+    {
+      "id": "tranquillitatis_02",
+      "mare": "Tranquillitatis",
+      "order": 2,
+      "lat": 5.07666,
+      "lon": 28.18279
+    },
+    {
+      "id": "tranquillitatis_03",
+      "mare": "Tranquillitatis",
+      "order": 3,
+      "lat": 14.15291,
+      "lon": 37.70261
+    },
+    {
+      "id": "tranquillitatis_04",
+      "mare": "Tranquillitatis",
+      "order": 4,
+      "lat": 5.48113,
+      "lon": 23.73582
+    },
+    {
+      "id": "tranquillitatis_05",
+      "mare": "Tranquillitatis",
+      "order": 5,
+      "lat": 6.86573,
+      "lon": 24.89405
+    },
+    {
+      "id": "tranquillitatis_06",
+      "mare": "Tranquillitatis",
+      "order": 6,
+      "lat": 12.53505,
+      "lon": 32.88694
+    },
+    {
+      "id": "tranquillitatis_07",
+      "mare": "Tranquillitatis",
+      "order": 7,
+      "lat": 7.33425,
+      "lon": 24.10359
+    },
+    {
+      "id": "tranquillitatis_08",
+      "mare": "Tranquillitatis",
+      "order": 8,
+      "lat": 7.87394,
+      "lon": 37.16508
+    },
+    {
+      "id": "tranquillitatis_09",
+      "mare": "Tranquillitatis",
+      "order": 9,
+      "lat": 17.546,
+      "lon": 27.09066
+    },
+    {
+      "id": "tranquillitatis_10",
+      "mare": "Tranquillitatis",
+      "order": 10,
+      "lat": 4.98421,
+      "lon": 24.30951
+    },
+    {
+      "id": "tranquillitatis_11",
+      "mare": "Tranquillitatis",
+      "order": 11,
+      "lat": 8.87688,
+      "lon": 33.38758
+    },
+    {
+      "id": "tranquillitatis_12",
+      "mare": "Tranquillitatis",
+      "order": 12,
+      "lat": 10.33232,
+      "lon": 34.47809
+    },
+    {
+      "id": "tranquillitatis_13",
+      "mare": "Tranquillitatis",
+      "order": 13,
+      "lat": 0.69507,
+      "lon": 23.21015
+    },
+    {
+      "id": "tranquillitatis_14",
+      "mare": "Tranquillitatis",
+      "order": 14,
+      "lat": 14.91958,
+      "lon": 30.7819
+    },
+    {
+      "id": "tranquillitatis_15",
+      "mare": "Tranquillitatis",
+      "order": 15,
+      "lat": 5.09783,
+      "lon": 25.00388
+    },
+    {
+      "id": "serenitatis_01",
+      "mare": "Serenitatis",
+      "order": 1,
+      "lat": 23.30874,
+      "lon": 19.43911
+    },
+    {
+      "id": "serenitatis_02",
+      "mare": "Serenitatis",
+      "order": 2,
+      "lat": 22.86338,
+      "lon": 21.29737
+    },
+    {
+      "id": "serenitatis_03",
+      "mare": "Serenitatis",
+      "order": 3,
+      "lat": 24.62871,
+      "lon": 23.77176
+    },
+    {
+      "id": "serenitatis_04",
+      "mare": "Serenitatis",
+      "order": 4,
+      "lat": 27.98163,
+      "lon": 17.47949
+    },
+    {
+      "id": "serenitatis_05",
+      "mare": "Serenitatis",
+      "order": 5,
+      "lat": 32.55038,
+      "lon": 21.8485
+    },
+    {
+      "id": "serenitatis_06",
+      "mare": "Serenitatis",
+      "order": 6,
+      "lat": 29.06125,
+      "lon": 25.14467
+    },
+    {
+      "id": "serenitatis_07",
+      "mare": "Serenitatis",
+      "order": 7,
+      "lat": 27.08544,
+      "lon": 13.57696
+    },
+    {
+      "id": "serenitatis_08",
+      "mare": "Serenitatis",
+      "order": 8,
+      "lat": 30.63172,
+      "lon": 25.0727
+    },
+    {
+      "id": "serenitatis_09",
+      "mare": "Serenitatis",
+      "order": 9,
+      "lat": 18.19475,
+      "lon": 17.72929
+    },
+    {
+      "id": "serenitatis_10",
+      "mare": "Serenitatis",
+      "order": 10,
+      "lat": 30.48887,
+      "lon": 20.85453
+    },
+    {
+      "id": "serenitatis_11",
+      "mare": "Serenitatis",
+      "order": 11,
+      "lat": 24.17798,
+      "lon": 10.84005
+    },
+    {
+      "id": "serenitatis_12",
+      "mare": "Serenitatis",
+      "order": 12,
+      "lat": 24.13162,
+      "lon": 27.46256
+    },
+    {
+      "id": "serenitatis_13",
+      "mare": "Serenitatis",
+      "order": 13,
+      "lat": 31.03878,
+      "lon": 16.80333
+    },
+    {
+      "id": "serenitatis_14",
+      "mare": "Serenitatis",
+      "order": 14,
+      "lat": 24.48026,
+      "lon": 15.43985
+    },
+    {
+      "id": "serenitatis_15",
+      "mare": "Serenitatis",
+      "order": 15,
+      "lat": 26.63741,
+      "lon": 18.49979
+    },
+    {
+      "id": "imbrium_01",
+      "mare": "Imbrium",
+      "order": 1,
+      "lat": 29.82639,
+      "lon": -28.91042
+    },
+    {
+      "id": "imbrium_02",
+      "mare": "Imbrium",
+      "order": 2,
+      "lat": 30.87675,
+      "lon": -30.85179
+    },
+    {
+      "id": "imbrium_03",
+      "mare": "Imbrium",
+      "order": 3,
+      "lat": 43.54026,
+      "lon": -30.02766
+    },
+    {
+      "id": "imbrium_04",
+      "mare": "Imbrium",
+      "order": 4,
+      "lat": 45.25545,
+      "lon": -10.19042
+    },
+    {
+      "id": "imbrium_05",
+      "mare": "Imbrium",
+      "order": 5,
+      "lat": 42.06271,
+      "lon": -26.43704
+    },
+    {
+      "id": "imbrium_06",
+      "mare": "Imbrium",
+      "order": 6,
+      "lat": 46.46644,
+      "lon": -18.73754
+    },
+    {
+      "id": "imbrium_07",
+      "mare": "Imbrium",
+      "order": 7,
+      "lat": 35.38087,
+      "lon": -22.85108
+    },
+    {
+      "id": "imbrium_08",
+      "mare": "Imbrium",
+      "order": 8,
+      "lat": 38.88126,
+      "lon": -35.45686
+    },
+    {
+      "id": "imbrium_09",
+      "mare": "Imbrium",
+      "order": 9,
+      "lat": 30.08593,
+      "lon": -13.26184
+    },
+    {
+      "id": "imbrium_10",
+      "mare": "Imbrium",
+      "order": 10,
+      "lat": 46.8547,
+      "lon": -21.16733
+    },
+    {
+      "id": "imbrium_11",
+      "mare": "Imbrium",
+      "order": 11,
+      "lat": 28.95261,
+      "lon": -28.87897
+    },
+    {
+      "id": "imbrium_12",
+      "mare": "Imbrium",
+      "order": 12,
+      "lat": 16.89248,
+      "lon": -14.19933
+    },
+    {
+      "id": "imbrium_13",
+      "mare": "Imbrium",
+      "order": 13,
+      "lat": 26.52862,
+      "lon": -28.35481
+    },
+    {
+      "id": "imbrium_14",
+      "mare": "Imbrium",
+      "order": 14,
+      "lat": 37.42536,
+      "lon": -29.60251
+    },
+    {
+      "id": "imbrium_15",
+      "mare": "Imbrium",
+      "order": 15,
+      "lat": 37.16649,
+      "lon": -34.28173
+    },
+    {
+      "id": "crisium_01",
+      "mare": "Crisium",
+      "order": 1,
+      "lat": 14.05103,
+      "lon": 63.32925
+    },
+    {
+      "id": "crisium_02",
+      "mare": "Crisium",
+      "order": 2,
+      "lat": 15.42118,
+      "lon": 58.21485
+    },
+    {
+      "id": "crisium_03",
+      "mare": "Crisium",
+      "order": 3,
+      "lat": 14.13345,
+      "lon": 60.30586
+    },
+    {
+      "id": "crisium_04",
+      "mare": "Crisium",
+      "order": 4,
+      "lat": 22.09702,
+      "lon": 57.61607
+    },
+    {
+      "id": "crisium_05",
+      "mare": "Crisium",
+      "order": 5,
+      "lat": 13.17469,
+      "lon": 61.7532
+    },
+    {
+      "id": "crisium_06",
+      "mare": "Crisium",
+      "order": 6,
+      "lat": 14.11489,
+      "lon": 56.53476
+    },
+    {
+      "id": "crisium_07",
+      "mare": "Crisium",
+      "order": 7,
+      "lat": 16.39084,
+      "lon": 59.96627
+    },
+    {
+      "id": "crisium_08",
+      "mare": "Crisium",
+      "order": 8,
+      "lat": 21.48865,
+      "lon": 60.15555
+    },
+    {
+      "id": "crisium_09",
+      "mare": "Crisium",
+      "order": 9,
+      "lat": 13.33457,
+      "lon": 53.92906
+    },
+    {
+      "id": "crisium_10",
+      "mare": "Crisium",
+      "order": 10,
+      "lat": 15.26125,
+      "lon": 61.216
+    },
+    {
+      "id": "crisium_11",
+      "mare": "Crisium",
+      "order": 11,
+      "lat": 17.99961,
+      "lon": 60.31415
+    },
+    {
+      "id": "crisium_12",
+      "mare": "Crisium",
+      "order": 12,
+      "lat": 18.78192,
+      "lon": 61.00445
+    },
+    {
+      "id": "crisium_13",
+      "mare": "Crisium",
+      "order": 13,
+      "lat": 12.87519,
+      "lon": 57.82618
+    },
+    {
+      "id": "crisium_14",
+      "mare": "Crisium",
+      "order": 14,
+      "lat": 22.06885,
+      "lon": 58.70654
+    },
+    {
+      "id": "crisium_15",
+      "mare": "Crisium",
+      "order": 15,
+      "lat": 20.71227,
+      "lon": 58.40919
+    }
+  ]
+}

@@ -53,6 +53,17 @@ def local_crs(lat: float, lon: float) -> str:
     return f"+proj=stere +lat_0={lat:.6f} +lon_0={lon:.6f} +k=1 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs"
 
 
+def shapefile_path(path: str) -> str:
+    """GDAL path for a shapefile, also inside a .zip/.ZIP archive (GDAL only sniffs lowercase .zip)."""
+    if path.lower().endswith(".zip"):
+        import zipfile
+        shp = [n for n in zipfile.ZipFile(path).namelist() if n.lower().endswith(".shp")]
+        if not shp:
+            raise SystemExit(f"no .shp inside {path}")
+        return f"/vsizip/{path}/{shp[0]}"
+    return path
+
+
 def mare_geometry(gdf, name: str):
     sel = gdf[gdf["MARE_NAME"].astype(str).str.contains(name, case=False, na=False)]
     if sel.empty:
@@ -97,7 +108,7 @@ def main():
         raise SystemExit(f"{OUT.relative_to(ROOT)} exists: the list is fixed once. Use --force only on purpose.")
 
     cell_km = load_config()["grid"]["cell_km"]
-    gdf = gpd.read_file(a.shapefile)
+    gdf = gpd.read_file(shapefile_path(a.shapefile))
     if gdf.crs is None:
         gdf = gdf.set_crs(MOON_LL)
     gdf = gdf.to_crs(MOON_LL)
