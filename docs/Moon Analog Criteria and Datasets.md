@@ -117,6 +117,17 @@ The Moon side gives the target profile each Earth site is compared with, and eve
 
 Reference numbers for the cave target: the [Mare Tranquillitatis pit](https://lroc.im-ldi.com/pits/3) has an inner opening 88–100 m wide and is about 105 m deep.
 
+## ⚠ Structural limit: large craters (first candidate for config-v2)
+
+**Craters wider than ~20 km do not close inside the Earth DEM window.** Each Earth cell is evaluated on its
+15 km cell plus a 5.5 km buffer on every side (~26 km in total, `polar.buffer_m`). A depression only counts
+if it closes inside that window. A crater of ~20 km or more reaches the window edge, the fill spills there,
+and the bowl comes out too shallow or is not found at all. The lunar target used a ±35 km window (70 km), so
+Shackleton (~21 km) closes completely. **Earth and Moon are not treated the same for large craters.**
+Affected: Haughton (~20–23 km) and any large impact structure. **Not changed in config-v1** (frozen). First
+candidate for config-v2, e.g. a window sized from the depression (≥ 1.5 × its diameter) or a separate
+large-crater pass.
+
 ## Minimal data stack and traps
 
 For a first working ranking, five downloads are enough; start them tonight because the lunar files are large.

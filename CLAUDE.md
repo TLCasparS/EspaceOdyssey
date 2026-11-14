@@ -33,6 +33,11 @@ Full list and caveats: `docs/Moon_Analog_Criteria_and_Datasets.md`.
 
 `data/` and `out/` are git-ignored.
 
+## ⚠ Known structural limit (config-v2 candidate)
+Craters wider than ~20 km don't close inside the Earth DEM window (15 km cell + 2 × 5.5 km buffer ≈ 26 km),
+while the Moon target used ±35 km. Large craters such as Haughton are cut off on Earth. Documented in the
+criteria doc; **not changed in config-v1**. First candidate for config-v2.
+
 ## Decisions made
 | Date | Decision | Why |
 |---|---|---|
