@@ -98,6 +98,7 @@ def test_night_run_world_A_B1_defer_B2_resume_score(patched):
 
     # resume: nothing left to do
     n2 = night_run.Night(tmp / "night", ROOT / "config" / "night_regions.yaml")
+    n2.s["auto_b2"] = False                                         # B2 is tested explicitly below
     n2.run(tracks=("A", "B1"), res=30, world_dir=tmp / "world")
     assert "N35W112" in n2.prog["tiles"] and n2.prog["tiles"]["N35W112"]["A"] == "done"
 

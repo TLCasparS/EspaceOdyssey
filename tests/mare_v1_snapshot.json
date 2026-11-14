@@ -1,0 +1,75 @@
+{
+ "criteria": {
+  "c10_flat_base": {
+   "direction": "target",
+   "target": 0.2379,
+   "tolerance": 0.5,
+   "weight": 1.0
+  },
+  "c12_drivable": {
+   "direction": "target",
+   "target": 0.9932,
+   "tolerance": 0.05,
+   "weight": 1.0
+  },
+  "c13_roughness": {
+   "direction": "target",
+   "target": 1.6885,
+   "tolerance": 1.0,
+   "weight": 1.0
+  },
+  "c9_relief": {
+   "direction": "target",
+   "target": 154.0281,
+   "tolerance": 163.1498,
+   "weight": 1.0
+  }
+ },
+ "lunar": {
+  "criteria": {
+   "c10_flat_base": {
+    "iqr": 0.0496,
+    "n_cells": 20,
+    "tolerance": 0.5,
+    "value": 0.2379,
+    "verified": true
+   },
+   "c12_drivable": {
+    "iqr": 0.0111,
+    "n_cells": 20,
+    "tolerance": 0.05,
+    "value": 0.9932,
+    "verified": true
+   },
+   "c13_roughness": {
+    "iqr": 0.444,
+    "n_cells": 20,
+    "tolerance": 1.0,
+    "value": 1.6885,
+    "verified": true
+   },
+   "c9_relief": {
+    "iqr": 163.1498,
+    "n_cells": 20,
+    "tolerance": 163.1498,
+    "value": 154.0281,
+    "verified": true
+   }
+  },
+  "n_cells": 20,
+  "seed": 20261114
+ },
+ "mare": {
+  "drivable_slope_deg": 15,
+  "max_base_slope_deg": 15,
+  "pad_m": 200,
+  "radius_km": 5,
+  "roughness_window_px": 3,
+  "tolerance_floor": {
+   "c10_flat_base": 0.5,
+   "c12_drivable": 0.05,
+   "c13_roughness": 1.0,
+   "c9_relief": 20
+  }
+ }
+}

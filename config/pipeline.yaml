@@ -130,7 +130,8 @@ mare:
   #   c9 20 m, c13 1.0 m: start values from DEM accuracy. SLDEM2015 vertical accuracy is 3-4 m (criteria doc);
   #     a 5 km max-min (c9) adds the error of two points plus 60 m resampling, so differences below ~20 m are
   #     not meaningful; c13 (std in 3x3 px at 60 m) is a fraction of that error, so ~1 m is the noise level.
-  #   c10 0.5 deg, c12 0.05: PLACEHOLDERS. Mateo decides after seeing the IQR of his lunar cells.
+  #   c10 0.5 deg, c12 0.05: used by Mateo's lunar target (commit e4b0563, 20 cells): the lunar IQR (c10 0.05 deg,
+  #     c12 0.011) is below these floors, so the floors set the tolerance. Frozen with mare-v1.
   tolerance_floor: {c9_relief: 20, c10_flat_base: 0.5, c12_drivable: 0.05, c13_roughness: 1.0}
   criteria:                   # counting for Mare; weights (team start values) all equal
     c9_relief:     {weight: 1.0, direction: target}   # m, max - min within 5 km of the base pad

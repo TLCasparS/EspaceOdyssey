@@ -92,7 +92,12 @@ def test_config_loader_uses_verified_mare_targets(tmp_path):
     from pipeline.config import TARGETS_PATH
     targets = json.loads(Path(TARGETS_PATH).read_text(encoding="utf-8"))
     assert set(targets["mare"]["criteria"]) == set(MARE_CRITERIA) == set(CFG["mare"]["criteria"])
-    assert all(CFG["mare"]["criteria"][c]["target"] is None for c in MARE_CRITERIA)        # nothing verified yet
+    # the loader passes a value through only when verified (independent of what the file holds today)
+    for c in MARE_CRITERIA:
+        targets["mare"]["criteria"][c]["verified"] = False
+    p0 = tmp_path / "unverified.json"
+    p0.write_text(json.dumps(targets), encoding="utf-8")
+    assert all(load_config(targets_path=p0)["mare"]["criteria"][c]["target"] is None for c in MARE_CRITERIA)
     targets["mare"]["criteria"]["c10_flat_base"].update(value=0.8, tolerance=0.1, verified=True, source="test")
     p = tmp_path / "t.json"
     p.write_text(json.dumps(targets), encoding="utf-8")
