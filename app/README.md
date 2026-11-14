@@ -27,6 +27,22 @@ Set at the top of `app.js` (`DATA`):
 `scores.csv` follows the team format: `SITE,LAT,LON` and one 0–1 column per criterion.
 An empty cell means "no data": the app leaves it out of the score and says so on the card.
 
+The app knows all 29 criteria from "Moon Analog Criteria and Datasets" (list `CRITERIA` in
+`app.js`, five groups: Light, Terrain, Environment, Material & subsurface, Practical). The
+original eight columns keep their names; the other 21 column names are a **proposal** to agree
+with the scoring roles (for example `GRAZING_SUN`, `COLD`, `BASALT`, `CAVE`, `ACCESS`). A
+criterion whose column is missing from `scores.csv` simply shows as "no data yet" in the filters.
+
+`targets.json` has one entry per base type (`polar`, `cave`, `mare`) and lists only the
+criteria that matter for that base. Practical criteria have no lunar value: they never change
+the similarity score, they only filter.
+
+## Filters
+
+- **Base type** switches the lunar target (Polar, Lava tube, Mare).
+- **Filter by** opens a group; pick criteria to keep only sites that match the Moon on them
+  by at least the minimum match (default 70 %). Practical criteria filter on their own score.
+
 To switch to real data, point `DATA.scores` and `DATA.targets` at `../outputs/...` and set
 `isFake: false`.
 

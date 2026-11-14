@@ -1,14 +1,24 @@
 {
-  "_note": "FAKE lunar target values for building the app. The Moon-targets role replaces this with outputs/targets.json.",
+  "_note": "FAKE lunar target values for building the app. Only criteria that matter for each base type are listed. Practical criteria have no lunar target (scored apart). The Moon-targets role replaces this with outputs/targets.json.",
   "polar": {
-    "label": "Lunar south pole: Shackleton rim + floor",
-    "SLOPE_BASE": 0.85,
-    "STEEP_WALLS": 0.8,
-    "RELIEF": 0.8,
-    "ROUGHNESS": 0.6,
-    "BOWL_SHAPE": 0.9,
-    "SUNNY_RIDGE": 0.95,
-    "DARK_FLOOR": 0.95,
-    "BARE": 1.0
+    "label": "Polar base · Shackleton rim + floor",
+    "SUNNY_RIDGE": 0.95, "DARK_FLOOR": 0.95, "LIGHT_NEAR_DARK": 0.9, "GRAZING_SUN": 1.0, "SKY_VIEW": 0.8, "CLEAR_SKIES": 1.0,
+    "BOWL_SHAPE": 0.95, "CRATER_SIZE": 1.0, "RELIEF": 0.85, "SLOPE_BASE": 0.85, "STEEP_WALLS": 0.85, "DRIVABLE": 0.6, "ROUGHNESS": 0.55, "ASPECT": 0.9,
+    "COLD": 1.0, "DRY": 1.0, "GROUND_ICE": 1.0, "BARE": 1.0, "FINE_SURFACE": 0.9, "NIGHT_DARK": 1.0,
+    "HIGHLAND_ROCK": 1.0, "IMPACT_CRATER": 1.0
+  },
+  "cave": {
+    "label": "Lava-tube base · Marius Hills / Mare Tranquillitatis pit",
+    "SKY_VIEW": 0.9, "CLEAR_SKIES": 1.0,
+    "RELIEF": 0.4, "SLOPE_BASE": 0.7, "DRIVABLE": 0.6, "ROUGHNESS": 0.6,
+    "DRY": 1.0, "BARE": 1.0, "FINE_SURFACE": 0.8, "NIGHT_DARK": 1.0,
+    "BASALT": 1.0, "IMPACT_CRATER": 0.3, "CAVE": 1.0
+  },
+  "mare": {
+    "label": "Mare surface base · flat basalt plains",
+    "CLEAR_SKIES": 1.0,
+    "RELIEF": 0.2, "SLOPE_BASE": 0.95, "DRIVABLE": 0.9, "ROUGHNESS": 0.35,
+    "DAY_NIGHT_SWING": 1.0, "DRY": 1.0, "BARE": 1.0, "FINE_SURFACE": 0.9, "NIGHT_DARK": 1.0,
+    "BASALT": 1.0, "IMPACT_CRATER": 0.6
   }
 }

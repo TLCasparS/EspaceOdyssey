@@ -4,41 +4,58 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Earth Twins of the Moon · Espace Odyssey</title>
-  <meta name="description" content="Ranking places on Earth as analogs for a lunar south pole base. NASA Space Apps 2026, team Espace Odyssey.">
+  <meta name="description" content="Ranking places on Earth as analogs for lunar base locations. NASA Space Apps 2026, team Espace Odyssey.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Fira+Sans+Extra+Condensed:wght@600;700&display=swap">
   <link rel="stylesheet" href="style.css">
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <svg aria-hidden="true" width="30" height="30" viewBox="0 0 30 30"><circle cx="11" cy="15" r="8" fill="none" stroke="#6CB4EE" stroke-width="2"></circle><circle cx="19" cy="15" r="8" fill="none" stroke="#E8E3D3" stroke-width="2"></circle></svg>
-      <div>
-        <h1>Earth Twins of the Moon</h1>
-        <p class="subtitle">Where on Earth can we rehearse a lunar south pole base?</p>
-      </div>
+      <h1>Earth Twins of the Moon</h1>
+      <p class="subtitle">Where on Earth can we rehearse a lunar base?</p>
     </div>
     <div class="topbar-right">
-      <label class="target-select">
-        <span>Lunar target</span>
-        <select id="targetSelect"></select>
-      </label>
       <span id="dataBadge" class="badge badge-warn" hidden>Fake data</span>
+      <img class="logo" src="assets/space-apps-logo.png" alt="NASA Space Apps Challenge" width="172" height="80">
     </div>
   </header>
+
+  <section class="filters" aria-label="Filters">
+    <div class="filter-row">
+      <div class="filter-group">
+        <span class="filter-label">Base type</span>
+        <div class="seg seg-lg" role="group" aria-label="Lunar base type" id="baseSeg"></div>
+      </div>
+      <div class="filter-group grow">
+        <span class="filter-label">Filter by</span>
+        <div class="tabs" role="tablist" aria-label="Criteria groups" id="groupTabs"></div>
+      </div>
+    </div>
+    <div class="filter-row sub" id="subRow" hidden>
+      <p class="sub-hint" id="subHint"></p>
+      <div class="chips" id="criterionChips"></div>
+    </div>
+    <div class="filter-row active" id="activeRow" hidden>
+      <span class="filter-label">Showing sites that match on</span>
+      <div class="chips" id="activeChips"></div>
+      <label class="threshold">Min. match <input type="range" id="threshold" min="40" max="95" step="5" value="70"> <output id="thresholdOut">70%</output></label>
+      <button type="button" class="link-btn" id="clearFilters">Clear all</button>
+    </div>
+  </section>
 
   <main class="layout">
     <aside class="panel list-panel" aria-label="Ranked sites">
       <div class="panel-head">
         <h2>Ranked sites</h2>
-        <div class="seg" role="group" aria-label="Filter sites">
+        <div class="seg" role="group" aria-label="Filter sites by type">
           <button type="button" data-filter="all" aria-pressed="true">All</button>
           <button type="button" data-filter="candidate" aria-pressed="false">New</button>
           <button type="button" data-filter="known" aria-pressed="false">Known</button>
         </div>
       </div>
-      <p class="hint">Similarity to the lunar target, across all criteria with data.</p>
+      <p class="hint" id="listHint"></p>
       <ol id="siteList" class="site-list"></ol>
     </aside>
 
@@ -50,10 +67,6 @@
         <span class="legend-scale"><span>low</span><span>high</span></span>
         <span class="legend-note" id="heatNote"></span>
       </div>
-      <div class="globe-tools">
-        <label class="toggle"><input type="checkbox" id="heatToggle" checked> Heatmap</label>
-        <label class="toggle"><input type="checkbox" id="spinToggle" checked> Rotate</label>
-      </div>
       <p id="globeError" class="globe-error" hidden>The 3D globe needs WebGL, which this browser has turned off. The list and cards still work.</p>
     </section>
 
@@ -63,8 +76,8 @@
   </main>
 
   <footer class="footer">
-    <span>NASA Space Apps 2026 · Team Espace Odyssey</span>
-    <span>Earth: Copernicus DEM, ESA WorldCover · Moon: LOLA, LROC · <span id="footNote"></span></span>
+    <span>NASA Space Apps Challenge 2026 · Team Espace Odyssey</span>
+    <span>Earth: Copernicus DEM, ESA WorldCover, MODIS · Moon: LOLA, LROC, Diviner · <span id="footNote"></span></span>
   </footer>
 
   <script src="app.js"></script>

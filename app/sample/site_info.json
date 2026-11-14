@@ -1,5 +1,5 @@
 {
-  "_note": "Sofia's research file: what each site is, where the analogy breaks down, how it helps exploration. Draft text; [brackets] = still to research. Coordinates in scores.csv are approximate (not yet checked on a map).",
+  "_note": "Sofia's research file: what each site is, where the analogy breaks down, how it helps exploration. Draft text; [brackets] = still to research or check. Coordinates in scores.csv are approximate (not yet checked on a map). Gorafe and Kali Gandaki are parked per the criteria doc.",
   "Haughton Crater": {
     "type": "known",
     "place": "Devon Island, Nunavut, Canada",
@@ -12,6 +12,34 @@
     "place": "Antofagasta Region, Chile",
     "why": "One of the driest places on Earth, with very high UV.",
     "breaks": "Warm and near the tropics: no polar lighting and no long shadows.",
+    "helps": "[to research]"
+  },
+  "Meteor Crater": {
+    "type": "known",
+    "place": "Arizona, USA",
+    "why": "About 1.2 km wide impact crater; Apollo astronauts trained in geology here.",
+    "breaks": "Hot desert at mid-latitude: no polar light, far smaller than Shackleton.",
+    "helps": "[to research]"
+  },
+  "Craters of the Moon": {
+    "type": "known",
+    "place": "Idaho, USA",
+    "why": "Young basalt lava field with lava tubes; Apollo astronauts trained here in 1969.",
+    "breaks": "[to research]",
+    "helps": "[to research]"
+  },
+  "Lava Beds": {
+    "type": "known",
+    "place": "Lava Beds National Monument, California, USA",
+    "why": "Hundreds of lava-tube caves in basalt [check: NASA cave-robotics research there].",
+    "breaks": "[to research]",
+    "helps": "[to research]"
+  },
+  "Lanzarote lava tubes": {
+    "type": "known",
+    "place": "Canary Islands, Spain",
+    "why": "Lava tubes and volcanic plains; ESA trains astronauts in planetary geology on the island.",
+    "breaks": "[to research]",
     "helps": "[to research]"
   },
   "Rjukan valley": {
@@ -35,24 +63,10 @@
     "breaks": "[to research]",
     "helps": "[to research]"
   },
-  "Kali Gandaki gorge (Lete)": {
-    "type": "candidate",
-    "place": "Mustang District, Nepal",
-    "why": "Deep gorge between Dhaulagiri and Annapurna.",
-    "breaks": "[to research]",
-    "helps": "[to research]"
-  },
   "Kagbeni (Upper Mustang)": {
     "type": "candidate",
     "place": "Mustang District, Nepal",
     "why": "Dry, high valley in the Himalayan rain shadow (team photos).",
-    "breaks": "[to research]",
-    "helps": "[to research]"
-  },
-  "Gorafe badlands": {
-    "type": "candidate",
-    "place": "Granada, Andalusia, Spain",
-    "why": "Bare, eroded badlands (team photos).",
     "breaks": "[to research]",
     "helps": "[to research]"
   }
