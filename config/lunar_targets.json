@@ -8,71 +8,144 @@
   ],
   "polar": {
     "label": "Shackleton rim + floor (lunar south pole)",
-    "status": "TODO: compute all raw values from LOLA 5 m site DEMs (NASA PGDA), resampled to 60 m with src/dem/grid.reproject_dem, criteria from src/pipeline/polar.py",
+    "status": "computed 2026-11-14 by src/compute_lunar_target.py with the Earth pipeline code (pipeline.polar._Cell.place) on the 60 m grid",
     "grid": {
       "res_m": 60,
-      "crs": "lunar south polar stereographic (as the LOLA site DEMs)"
+      "crs": "lunar south polar stereographic (sphere R = 1737.4 km)",
+      "resampling": "bilinear"
     },
-    "window": "TODO: one ~15 km square (= one Earth cell) around the planned base area, read with the same 5.5 km buffer (config polar.buffer_m); the best qualifying depression in it is the target place",
+    "window": "15 km square centred on the crater low point, found from the data (largest depth x width depression within 15 km of the pole)",
     "criteria": {
+      "c1_sunny_ridge": {
+        "label": "1 Sunny ridge",
+        "unit": "lit fraction / flat-land lit fraction",
+        "definition": "max lit fraction in the rim zone (outside the bowl, <= 1 km from its edge) / flat-land lit fraction; lit = Sun centre above the horizon",
+        "value": null,
+        "source": null,
+        "verified": false,
+        "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+      },
+      "c2_dark_floor": {
+        "label": "2 Dark floor",
+        "unit": "share",
+        "definition": "p99 over the floor zone of the terrain shadow fraction 1 - lit / flat_lit",
+        "value": null,
+        "source": null,
+        "verified": false,
+        "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+      },
+      "c3_light_dark": {
+        "label": "3 Light next to dark",
+        "unit": "distance / r",
+        "definition": "distance from the darkest floor pixel to the sunniest rim pixel, divided by the bowl radius r",
+        "value": null,
+        "source": null,
+        "verified": false,
+        "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+      },
+      "c4_grazing_sun": {
+        "label": "4 Grazing sun",
+        "unit": "deg",
+        "definition": "max Sun elevation over the year (latitude only)",
+        "value": null,
+        "source": null,
+        "verified": false,
+        "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+      },
+      "c5_sky_view": {
+        "label": "5 Sky-view factor",
+        "unit": "share of sky hemisphere",
+        "definition": "median over the floor zone (bowl pixels < 10 deg connected to the low point) of 1 - mean_az sin(max(horizon, 0)); horizons out to 2 x bowl radius",
+        "value": 0.6306,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+        "verified": true,
+        "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
+        "zone": "floor zone (6103 px: bowl pixels < 10 deg connected to the low point); horizons out to 19.02 km (= 2 x r); nearest window edge 25.0 km from the low point (covers the full look-out distance)",
+        "stat": "median of 1 - mean_az sin(max(horizon, 0)), 72 azimuths, Moon radius, no refraction",
+        "date": "2026-11-14"
+      },
       "c7_bowl": {
         "label": "7 Bowl shape",
         "unit": "depth/width",
         "definition": "candidate places = closed depressions >= 50 m deep and >= 1000 m wide whose low point is in the window (searched with a 5 km margin); value = spill depth / equivalent diameter of the chosen place",
-        "value": null,
-        "source": null,
-        "verified": false
+        "value": 0.1973,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+        "verified": true,
+        "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
+        "zone": "whole crater = filled closed depression (cyan outline)",
+        "stat": "spill depth / equivalent diameter",
+        "date": "2026-11-14"
       },
       "c9_relief": {
-        "label": "9 Relief ~5 km",
+        "label": "9 Rim-to-floor depth",
         "unit": "m",
-        "definition": "max - min elevation in a 5 km square centred on the chosen depression's low point",
-        "value": null,
-        "source": null,
-        "verified": false
+        "definition": "median over 1-deg azimuth sectors of the highest elevation within rim_search_rel x bowl radius of the low point, minus the low point; no bowl -> 0",
+        "value": 4077.2251,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+        "verified": true,
+        "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
+        "zone": "whole bowl: rim crest within 1.3 x bowl radius of the floor low point",
+        "stat": "median over 1-deg azimuth sectors of the highest elevation, minus the low point (size-dependent: large tolerance)",
+        "date": "2026-11-14"
       },
       "c10_flat_base": {
         "label": "10 Flat base spot",
         "unit": "deg",
-        "definition": "mean slope of the flattest ~200 m pad (3x3 px at 60 m) whose centre is within 5 km of the low point",
-        "value": null,
-        "source": null,
-        "verified": false
+        "definition": "mean slope of the flattest ~200 m pad (3x3 px at 60 m) outside the bowl whose centre is at most max_base_to_bowl_km outside the bowl edge",
+        "value": 0.664,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+        "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
+        "verified": true,
+        "zone": "rim: outside the bowl, pad centre at most 1 km outside the bowl edge",
+        "stat": "minimum over 3x3 px (180 m) pads of the mean slope",
+        "date": "2026-11-14"
       },
       "c11_walls": {
         "label": "11 Steep walls",
         "unit": "deg",
-        "definition": "mean slope in a 500-3000 m ring around the low point",
-        "value": null,
-        "source": null,
-        "verified": false
+        "definition": "mean slope in a ring of wall_ring_rel x r around the low point, r = equivalent radius of the filled depression (inner walls only)",
+        "value": 27.2221,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+        "verified": true,
+        "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
+        "zone": "inner wall: ring 4.76-9.51 km around the low point (= 0.5-1.0 x bowl radius, r = equivalent radius of the filled depression)",
+        "stat": "mean slope",
+        "date": "2026-11-14"
       },
       "c13_roughness": {
         "label": "13 Roughness",
         "unit": "m",
-        "definition": "median std of elevation in 3x3 px windows over the window",
-        "value": null,
-        "source": null,
-        "verified": false
+        "definition": "median std of elevation in 3x3 px windows over the bowl + rim ring (bowl plus everything within rim_search_rel x r of the low point)",
+        "value": 24.5428,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+        "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
+        "verified": true,
+        "zone": "bowl + rim ring: the bowl plus everything within 1.3 x bowl radius of the low point (same zone as on Earth)",
+        "stat": "median of the 3x3 px elevation std",
+        "date": "2026-11-14"
       },
       "c14_aspect": {
         "label": "14 Pole-facing slopes",
         "unit": "share",
-        "definition": "share of steep pixels (> 20 deg) within 3 km of the low point facing the nearer pole (+-45 deg)",
-        "value": null,
-        "source": null,
-        "verified": false,
-        "note": "unsure: Shackleton contains the pole, so 'facing the pole' may be ill-defined there; check before use"
+        "definition": "share of steep pixels (> 20 deg) within the wall ring's outer radius facing the nearer pole (+-45 deg)",
+        "value": 0.3979,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+        "verified": true,
+        "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
+        "zone": "within 9.51 km (ring outer radius) of the low point",
+        "stat": "share of pixels steeper than 20 deg whose downslope direction is within +-45 deg of the pole direction. DISPLAY ONLY (weight 0, 14 Nov): Shackleton sits practically on the pole, so 'toward the pole' is a different direction for each part of the wall; not comparable with Earth",
+        "date": "2026-11-14"
       }
     },
     "not_yet_in_earth_pipeline": {
       "sunny_ridge": {
         "unit": "fraction of time lit",
         "zone": "rim",
-        "value": 0.85,
-        "source": "LROC illumination map (as stated in the draft)",
+        "value": null,
+        "source": null,
         "verified": false,
-        "pipeline": "light criteria 1-5 via src/shadowsim, not wired into run_pipeline yet"
+        "pipeline": "light criteria 1-5 via src/shadowsim, not wired into run_pipeline yet",
+        "note": "0.85 was an illustrative placeholder from a chat format example, not a measurement (removed 14 Nov 2026 after Mateo's review). Rim lit fraction will come from a lunar illumination map (light criteria, Mateo)."
       },
       "dark_floor": {
         "unit": "TODO",
@@ -92,30 +165,115 @@
     },
     "draft_reference": {
       "relief_rim_floor": {
-        "value": 4100,
+        "value": 4077,
         "unit": "m",
-        "zone": "rim+floor",
-        "source": "LOLA Shackleton DEM (as stated in the draft)",
-        "verified": false,
-        "why_unused": "crater rim-to-floor depth, not c9 (5 km window at the low point); recompute c9 from LOLA"
+        "zone": "rim crest per 1-deg azimuth to the lowest floor point",
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (+-35 km window) via src/compute_lunar_target.py (20 m -> 60 m): median over 1-deg azimuth sectors of the highest elevation within 1.3 x bowl radius (rim crest, median 1207 m), minus the floor low point (-2870 m)",
+        "verified": true,
+        "note": "Same quantity as criterion c9 since 14 Nov (display only, weight 0). Replaces a 4100 m placeholder from a chat example. Mateo's src/moon_dem.py gives 3987 m from the same file: rim median 1115 m on a ring around a crater centre fitted to the rim crest, 30 m grid, minus floor min -2872 m. The ~90 m difference comes from the rim definition (per-azimuth highest point vs median on a fixed ring, which also samples lower parts of the rim) and the grid (60 vs 30 m). Spill depth (lowest rim saddle to floor) is 3753 m. With the +-25 km window the same method gave 4073 m (60 m grid shifted by ~20 m)."
       },
       "bare_ground": {
         "why_unused": "land cover is a hard filter in the Earth pipeline (config filter), not a scored criterion"
       },
       "draft_scores": {
         "values": {
-          "slope_base": 0.8,
-          "steep_walls": 0.9,
-          "relief": 1.0,
-          "roughness": 0.4,
-          "bowl_shape": 0.9,
-          "sunny_ridge": 0.9,
-          "dark_floor": 1.0,
-          "bare_ground": 1.0,
-          "cold": 1.0
+          "slope_base": null,
+          "steep_walls": null,
+          "relief": null,
+          "roughness": null,
+          "bowl_shape": null,
+          "sunny_ridge": null,
+          "dark_floor": null,
+          "bare_ground": null,
+          "cold": null
         },
-        "why_unused": "0-1 scores for the target itself have no source and no meaning in the scoring: Earth cells are scored against the lunar raw values"
+        "why_unused": "0-1 scores for the target itself from a chat example, no source; set to null 14 Nov 2026. Earth cells are scored against the lunar raw values, not against target scores."
       }
+    },
+    "place": {
+      "_note": "display values, not scored (scale decision 14 Nov: size-dependent)",
+      "low_point_xy_m": [
+        9970,
+        -5470
+      ],
+      "low_point_lat_lon": [
+        -89.625,
+        118.8
+      ],
+      "low_elev_m": -2869.9,
+      "spill_depth_m": 3753.2,
+      "equiv_diameter_m": 19023.0,
+      "elongation": 1.03,
+      "rim_crest_median_elev_m": 1207.0,
+      "rim_crest_diameter_m": 20910.0,
+      "rim_to_floor_depth_m": 4077.0,
+      "floor_equiv_diameter_m": 5240.0,
+      "inner_wall_mean_slope_deg": 29.0,
+      "wall_ring_km": [
+        4.76,
+        9.51
+      ],
+      "c11_ring_covered": 1.0,
+      "base_xy_m": [
+        8950,
+        -16870
+      ],
+      "base_elev_m": 1030.9,
+      "base_to_bowl_km": 0.55,
+      "base_to_low_km": 11.45,
+      "zones_how": "floor = bowl pixels < 10 deg connected to the low point; inner wall = bowl pixels between floor and rim crest; rim crest = highest point within 1.3 x bowl radius per 1 deg azimuth"
+    },
+    "cross_check": {
+      "_note": "Independent computation by Mateo on branch moon-targets (src/moon_targets.py, src/moon_dem.py), merged 14 Nov 2026. Same source file (LDEM_80S_20MPP_ADJ.TIF) but the OLD pipeline definitions (c9 5 km window, c11 fixed 0.5-3 km ring, c10 within 5 km of the low point), cell centred on IAU coordinates of Shackleton. Not used for scoring; kept to compare.",
+      "moon_targets_py": {
+        "c7_bowl": {
+          "value": 0.1972,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_targets.py (Mateo, old definitions, 14 Nov 2026)"
+        },
+        "c9_relief": {
+          "value": 1400.6382,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_targets.py (Mateo, old definitions, 14 Nov 2026)"
+        },
+        "c10_flat_base": {
+          "value": 0.6284,
+          "note": "TODO: with max_base_to_low_km = 5 the pad is searched within 5 km of the low point, i.e. on Shackleton's floor/lower wall (permanently dark), not on the rim where NASA's base sites are (~10 km out). Kept as is for v1; revisit the search radius.",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_targets.py (Mateo, old definitions, 14 Nov 2026)"
+        },
+        "c11_walls": {
+          "value": 14.7109,
+          "note": "TODO: the wall ring (polar.wall_ring_m = 500-3000 m from the low point) covers Shackleton's floor and the foot of its walls; the steep inner walls run ~3-10 km out, so this value understates them. Kept as is for v1; revisit a ring scaled to the depression size.",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_targets.py (Mateo, old definitions, 14 Nov 2026)"
+        },
+        "c13_roughness": {
+          "value": 28.6108,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_targets.py (Mateo, old definitions, 14 Nov 2026)"
+        },
+        "c14_aspect": {
+          "value": null,
+          "note": "Shackleton's rim touches the lunar south pole and the Sun circles the whole horizon there, so 'facing the pole' does not mean 'less sun' as it does on Earth. Computed value kept in the note for reference only. Computed: 0.415.",
+          "source": null
+        }
+      },
+      "moon_targets_py_status": "computed by src/moon_targets.py; verified=false until a person checks each value against the quicklook and the definition",
+      "moon_targets_py_computed": {
+        "n_depressions_in_cell": 1,
+        "spill_depth_m": 3752.5,
+        "depression_width_m": 19031.0,
+        "low_elev_m": -2868.2,
+        "base_to_low_km": 2.66,
+        "base_elev_m": -2813.1,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_targets.py (Mateo, old definitions, 14 Nov 2026)"
+      },
+      "moon_dem_py_rim_to_floor": {
+        "value": 3987,
+        "unit": "m",
+        "zone": "median rim to floor minimum",
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_dem.py (30 m crop): rim median 1115 m, floor min -2872 m (data/results/moon_dem_summary.json)",
+        "verified": false,
+        "why_unused": "crater rim-to-floor depth, not c9 (5 km window at the low point); recompute c9 from LOLA",
+        "note": "replaces a 4100 m placeholder from a chat format example. Spill depth (lowest rim saddle to floor) is 3752.5 m, see polar.computed.spill_depth_m."
+      },
+      "agreement": "c7 0.1972 identical; spill depth 3752.5 vs 3752.9 m; equivalent diameter 19031 vs 19030 m; rim diameter 20.9 km both. Rim-to-floor differs: 3987 m (moon_dem.py, 30 m, rim median on a ring around a fitted centre) vs 4073 m (compute_lunar_target.py, 60 m, highest point per 1-deg azimuth within 1.3 x r). Unresolved; both are LOLA-based."
     }
   }
 }

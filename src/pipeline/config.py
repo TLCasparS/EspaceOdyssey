@@ -25,4 +25,6 @@ def load_config(path: str | Path | None = None, targets_path: str | Path | None 
             t = lunar[name]
             # only values someone computed from the named source and marked verified are used
             ccfg["target"] = t["value"] if t.get("verified") and t.get("value") is not None else None
+            if ccfg["target"] is not None and not ccfg.get("tolerance"):
+                raise ValueError(f"{name}: verified lunar target but no tolerance in pipeline.yaml")
     return cfg

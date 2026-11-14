@@ -2,7 +2,7 @@
 
 Per criterion (config `polar.criteria.<name>`):
     scale [a, b]           "linear": direct, independent of other cells
-    target set             "target": similarity to the lunar value  (TODO: not implemented yet)
+    target set             "target": exp(-((raw - target) / tolerance)^2), checked first
     direction higher/lower "rank":   percentile rank among the surviving cells of this run;
                                      only comparable WITHIN one run
     direction target, no target -> None ("no data"), e.g. roughness until LOLA values exist
@@ -13,14 +13,14 @@ from __future__ import annotations
 
 import numpy as np
 
-NO_TARGET_NOTE = "rank scores are only comparable within one run (lunar targets still TODO)"
+
 
 
 def method(ccfg: dict) -> str:
+    if ccfg.get("target") is not None:                # verified lunar value wins over scale / rank
+        return "target"
     if ccfg.get("scale") is not None:
         return "linear"
-    if ccfg.get("target") is not None:
-        return "target"
     if ccfg.get("direction") in ("higher", "lower"):
         return "rank"
     return "none"
@@ -37,8 +37,21 @@ def score_direct(raw, ccfg: dict):
         s = 1 - s if ccfg["direction"] == "lower" else s
         return float(np.clip(s, 0.0, 1.0))
     if m == "target":
-        raise NotImplementedError("target-based scoring: define the similarity rule once lunar targets exist")
+        # team choice 14 Nov 2026: Gaussian similarity, tolerance per criterion (pipeline.yaml);
+        # 1 at the lunar value, 0.37 at one tolerance away, 0.02 at two
+        return float(np.exp(-((raw - ccfg["target"]) / ccfg["tolerance"]) ** 2))
     return None
+
+
+def scoring_note(criteria: dict) -> str:
+    """One line for the outputs: which scoring the criteria of this run use."""
+    ms = {name: method(c) for name, c in criteria.items()}
+    parts = ["target = similarity to the lunar value, exp(-((earth - moon) / tolerance)^2), comparable across runs"
+             if "target" in ms.values() else None,
+             "rank = percentile among the candidate places of THIS run only" if "rank" in ms.values() else None,
+             "linear = fixed scale" if "linear" in ms.values() else None,
+             "none = no score yet (null = no data, not 0)" if "none" in ms.values() else None]
+    return "; ".join(x for x in parts if x) + ". Methods: " + ", ".join(f"{k} {v}" for k, v in ms.items())
 
 
 def percentile_ranks(values: list[float]) -> list[float]:
