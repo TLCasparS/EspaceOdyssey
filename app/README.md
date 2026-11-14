@@ -52,5 +52,8 @@ replaced by a grid of real suitability scores (lat, lng, weight) from the pipeli
 ## Libraries
 
 - globe.gl 2.32.0 (3D globe and heatmap), loaded from unpkg.
-- Earth texture from the three-globe example images (NASA Blue Marble).
+- Earth image: NASA Blue Marble Next Generation, July 2004, topography + bathymetry
+  (NASA Earth Observatory, public domain), resized to 4096×2048 in
+  `assets/blue-marble-2004-07-4096.jpg`. Source:
+  https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/
 - Radar chart: plain SVG in `app.js`, no library.

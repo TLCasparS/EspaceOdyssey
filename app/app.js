@@ -396,8 +396,9 @@ function initGlobe() {
   document.getElementById('heatNote').textContent = DATA.isFake ? 'Fake pattern, for design only' : '';
 
   const g = Globe()(el)
-    .globeImageUrl('https://unpkg.com/three-globe@2.31.0/example/img/earth-blue-marble.jpg')
-    .bumpImageUrl('https://unpkg.com/three-globe@2.31.0/example/img/earth-topology.png')
+    // NASA Blue Marble Next Generation, July 2004, topography + bathymetry (NASA Earth Observatory),
+    // resized from 5400x2700 to 4096x2048. Relief shading is already in the image.
+    .globeImageUrl('assets/blue-marble-2004-07-4096.jpg')
     .backgroundColor('#03051A')
     .atmosphereColor('#6CB4EE')
     .atmosphereAltitude(0.15)
@@ -486,7 +487,10 @@ function refresh() {
     return;
   }
   document.getElementById('dataBadge').hidden = !DATA.isFake;
-  document.getElementById('footNote').textContent = DATA.isFake ? 'Showing sample files with fake values' : 'Showing pipeline outputs';
+  // Name only the data the app really shows. Planned sources: Copernicus DEM, ESA WorldCover, MODIS, LOLA, LROC, Diviner.
+  document.getElementById('footNote').textContent = DATA.isFake
+    ? 'Scores and heatmap are sample values, not results yet'
+    : 'Scores from our pipeline: Copernicus DEM, ESA WorldCover, MODIS (Earth); LOLA, LROC, Diviner (Moon)';
   wireFilters();
   initGlobe();
   state.selected = ranked()[0]?.SITE ?? null;
