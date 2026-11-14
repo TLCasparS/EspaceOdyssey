@@ -91,12 +91,38 @@ def load_crop(path: str, half_width_m: float, res_m: float):
     return dem, transform, crs, (cx, cy)
 
 
+def fit_centre(dem, xs, ys, cx0, cy0, half_width_m, search_m=3000.0, step_m=250.0):
+    """Centre that makes the rim crest sharpest.
+
+    For each candidate centre within +/- search_m of the catalogue position,
+    average the elevation in 200 m rings; the ring average peaks highest when
+    the rings line up with the crest. The lowest floor point is not used: it
+    can sit km away from the centre (it did for Shackleton).
+    """
+    sub = (slice(None, None, 3), slice(None, None, 3))   # 3x thinner grid, fast enough
+    z, x, y = dem[sub], xs[sub], ys[sub]
+    ok = np.isfinite(z)
+    z, x, y = z[ok], x[ok], y[ok]
+    rmax = 0.95 * half_width_m
+    best = (-np.inf, cx0, cy0)
+    for dx in np.arange(-search_m, search_m + 1, step_m):
+        for dy in np.arange(-search_m, search_m + 1, step_m):
+            r = np.hypot(x - (cx0 + dx), y - (cy0 + dy))
+            m = r < rmax
+            b = (r[m] // 200).astype(int)
+            cnt = np.bincount(b)
+            prof = np.bincount(b, weights=z[m]) / np.maximum(cnt, 1)
+            prof = prof[cnt > 20]
+            if prof.size and prof.max() > best[0]:
+                best = (prof.max(), cx0 + dx, cy0 + dy)
+    return best[1], best[2]
+
+
 def zone_crater(dem, transform, centre_xy, half_width_m, rim_band_m=1000.0):
     """Find the rim radius and floor from the DEM, and say what the tile covers.
 
-    - centre: the catalogue position; moved to the lowest point within 5 km only
-      when the data covers that whole 5 km disc (otherwise the "lowest point" is
-      just the tile edge on a crater wall)
+    - centre: the catalogue position, refined by fit_centre only when the data
+      covers the whole 5 km disc around it (a partial tile would bias the fit)
     - rim radius: the radius where the mean elevation of each ring peaks, using
       only rings that the data covers well enough
     - rim zone: a ring of +/- rim_band_m around that radius (covered part only)
@@ -119,9 +145,7 @@ def zone_crater(dem, transform, centre_xy, half_width_m, rim_band_m=1000.0):
     disc5_cov = coverage(r0 < 5000, np.pi * 5000 ** 2)
     centre_refined = disc5_cov >= 0.9
     if centre_refined:
-        cand = np.where((r0 < 5000) & valid, dem, np.inf)
-        i, j = np.unravel_index(np.argmin(cand), dem.shape)
-        cx, cy = xs[i, j], ys[i, j]
+        cx, cy = fit_centre(dem, xs, ys, cx, cy, half_width_m)
 
     r = np.hypot(xs - cx, ys - cy)
     step = max(res, 100.0)
