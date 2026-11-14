@@ -149,6 +149,13 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<':
 const pct = v => (v == null ? '–' : Math.round(v * 100) + '%');
 const fmtCoord = (lat, lng) => `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(2)}°${lng >= 0 ? 'E' : 'W'}`;
 const research = s => esc(s).replace(/\[([^\]]+)\]/g, '<span class="todo">[$1]</span>');
+// Source links under a research box; only http(s) links, opened in a new tab.
+const sourcesHTML = list => {
+  const ok = (list ?? []).filter(x => /^https?:\/\//.test(x?.url ?? ''));
+  if (!ok.length) return '';
+  return `<p class="sources-title">Sources</p><ul class="sources">${ok.map(x =>
+    `<li><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label || x.url)}</a></li>`).join('')}</ul>`;
+};
 const baseLabel = () => BASES.find(b => b.id === state.base)?.label ?? state.base;
 
 /* ---------- Filter bar ---------- */
@@ -300,6 +307,7 @@ function renderCard() {
   const s = ranked().find(r => r.SITE === state.selected);
   if (!s) { el.innerHTML = '<p class="hint">Pick a site from the list or the globe.</p>'; return; }
   const info = state.info[s.SITE] ?? {};
+  const isNew = info.type === 'candidate';
   const byClosest = [...s.diffs].sort((a, b) => a.diff - b.diff);
   const strengths = byClosest.slice(0, 3);
   const gaps = byClosest.slice().reverse().filter(d => d.diff >= 0.15).slice(0, 3);
@@ -348,8 +356,9 @@ function renderCard() {
     </div>
 
     <div class="note-box">
-      <h3>How it helps exploration</h3>
-      <p>${info.helps ? research(info.helps) : '<span class="todo">[to research]</span>'}</p>
+      <h3>${isNew ? 'What we could test here' : 'How it has helped exploration'}</h3>
+      <p>${info.helps ? research(info.helps) : `<span class="todo">${isNew ? '[to write once ranked: what we could test here]' : '[to research]'}</span>`}</p>
+      ${sourcesHTML(info.sources)}
     </div>
 
     <div class="note-box">

@@ -1,73 +1,133 @@
 {
-  "_note": "Sofia's research file: what each site is, where the analogy breaks down, how it helps exploration. Draft text; [brackets] = still to research or check. Coordinates in scores.csv are approximate (not yet checked on a map). Gorafe and Kali Gandaki are parked per the criteria doc.",
+  "_note": "Sofia's research file: what each site is, where the analogy breaks down, and how it helps exploration. Known sites: 'helps' = what has been tested there, with source links in 'sources'. New candidates: 'helps' = what we could test there (write it once the pipeline ranks them; only the ~5 shown in the demo). [brackets] = still to research or check. Coordinates in scores.csv are approximate. Gorafe and Kali Gandaki are parked per the criteria doc.",
   "Haughton Crater": {
     "type": "known",
     "place": "Devon Island, Nunavut, Canada",
     "why": "About 20 km impact crater in a cold polar desert; long-running NASA analog site.",
     "breaks": "24-hour sun during the summer field season, so no lasting shadow while crews are there.",
-    "helps": "[to research: what has been tested there]"
+    "helps": "Haughton-Mars Project (since 1997, NASA-supported, run by the Mars Institute): field tests of rovers, including a pressurized rover with suit ports, robotic drills, cameras and spectrometers, spacesuit gear such as a smart glove, and long traverses planned like Moon and Mars expeditions.",
+    "sources": [
+      {
+        "label": "NASA: Haughton-Mars Project",
+        "url": "https://www.nasa.gov/mission/haughton-mars-project-hmp"
+      },
+      {
+        "label": "Mars Institute: HMP",
+        "url": "https://marsinstitute.no/hmp"
+      },
+      {
+        "label": "Aerospace Testing International: Testing for Mars in the High Arctic",
+        "url": "https://www.aerospacetestinginternational.com/features/testing-for-mars-in-the-high-arctic.html"
+      }
+    ]
   },
   "Atacama (Yungay area)": {
     "type": "known",
     "place": "Antofagasta Region, Chile",
     "why": "One of the driest places on Earth, with very high UV.",
     "breaks": "Warm and near the tropics: no polar lighting and no long shadows.",
-    "helps": "[to research]"
+    "helps": "NASA's ARADS project (from 2016) drove the KREX-2 prototype rover near Yungay, drilled up to 2 m and tested life-detection instruments (SOLID, Wet Chemistry Lab) to rehearse a search for life on Mars.",
+    "sources": [
+      {
+        "label": "NASA Astrobiology: life detection drill in the Atacama (2017)",
+        "url": "https://astrobiology.nasa.gov/news/nasa-tests-life-detection-drill-in-the-atacama-desert/"
+      },
+      {
+        "label": "Space.com: NASA tests life-detecting rover tech in Chile",
+        "url": "https://www.space.com/36106-nasa-tests-life-detecting-mars-rover-tech.html"
+      }
+    ]
   },
   "Meteor Crater": {
     "type": "known",
     "place": "Arizona, USA",
     "why": "About 1.2 km wide impact crater; Apollo astronauts trained in geology here.",
     "breaks": "Hot desert at mid-latitude: no polar light, far smaller than Shackleton.",
-    "helps": "[to research]"
+    "helps": "Apollo astronauts did geology field training here from 1963, taught by USGS scientists such as Gene Shoemaker. The crater is still used to train astronauts for missions to the lunar south pole.",
+    "sources": [
+      {
+        "label": "USGS: In the footsteps of the Apollo astronauts (field guide)",
+        "url": "https://www.usgs.gov/publications/walk-footsteps-apollo-astronauts-a-field-guide-northern-arizona-astronaut-training"
+      },
+      {
+        "label": "NASA ALSJ: Astronaut geology training",
+        "url": "https://www.nasa.gov/wp-content/uploads/static/history/alsj/AstronautGeologyTraining.pdf"
+      },
+      {
+        "label": "Phys.org: Training future explorers of the Moon (2018)",
+        "url": "https://phys.org/news/2018-10-future-explorers-moon.html"
+      }
+    ]
   },
   "Craters of the Moon": {
     "type": "known",
     "place": "Idaho, USA",
     "why": "Young basalt lava field with lava tubes; Apollo astronauts trained here in 1969.",
-    "breaks": "[to research]",
-    "helps": "[to research]"
+    "breaks": "Young, fresh lava with plants, air and weather. Lunar basalt is buried under fine dust (regolith) built up over billions of years of impacts.",
+    "helps": "On 22 August 1969, Apollo 14 crew Alan Shepard and Edgar Mitchell, with Joe Engle and Eugene Cernan, learned volcanic geology here to pick the most valuable rock samples on the Moon. NASA scientists still do research here.",
+    "sources": [
+      {
+        "label": "National Park Service: Space exploration research and astronaut training",
+        "url": "https://www.nps.gov/crmo/learn/historyculture/space-exploration-research-and-astronaut-training.htm"
+      }
+    ]
   },
   "Lava Beds": {
     "type": "known",
     "place": "Lava Beds National Monument, California, USA",
-    "why": "Hundreds of lava-tube caves in basalt [check: NASA cave-robotics research there].",
-    "breaks": "[to research]",
-    "helps": "[to research]"
+    "why": "Hundreds of lava-tube caves in basalt.",
+    "breaks": "Earth caves have air, moisture, ice and microbes, and they are much smaller than the lava tubes thought to exist on the Moon.",
+    "helps": "NASA Ames's BRAILLE project (2019) drove the CaveR rover in Valentine Cave to map the cave with a laser scanner and look for signs of microbial life on the walls, showing that a remotely operated rover can explore a lava tube.",
+    "sources": [
+      {
+        "label": "NASA Astrobiology: Using a cave rover, NASA learns to search for life underground (2019)",
+        "url": "https://astrobiology.nasa.gov/news/using-a-cave-rover-nasa-learns-to-search-for-life-underground/"
+      }
+    ]
   },
   "Lanzarote lava tubes": {
     "type": "known",
     "place": "Canary Islands, Spain",
     "why": "Lava tubes and volcanic plains; ESA trains astronauts in planetary geology on the island.",
-    "breaks": "[to research]",
-    "helps": "[to research]"
+    "breaks": "Mild ocean climate with air and weather, and a tourist island with roads and towns, so it is far easier to reach than a lunar cave.",
+    "helps": "ESA's PANGAEA course trains astronauts from ESA, NASA and JAXA in planetary geology here, including work inside the Corona lava tube, one of the largest volcanic caves on Earth.",
+    "sources": [
+      {
+        "label": "ESA: Turning astronauts into planetary explorers (2023)",
+        "url": "https://www.esa.int/ESA_Multimedia/Images/2023/02/Turning_astronauts_into_planetary_explorers"
+      },
+      {
+        "label": "Phys.org: 'Like the Moon': astronauts flock to Spanish isle to train (2022)",
+        "url": "https://phys.org/news/2022-11-moon-astronauts-flock-spanish-isle.html"
+      }
+    ]
   },
   "Rjukan valley": {
     "type": "candidate",
     "place": "Vestfold og Telemark, Norway",
     "why": "Deep east-west valley; the town gets no direct sun for about six months a year.",
     "breaks": "Green, wet and inhabited: nothing like bare lunar ground.",
-    "helps": "[to research: the town's sun mirrors as a model for lighting dark craters]"
+    "helps": "[to write once ranked: the town's sun mirrors as a model for lighting dark craters]"
   },
   "Viganella": {
     "type": "candidate",
     "place": "Piedmont, Italy",
     "why": "Alpine village without direct sun from November to February.",
     "breaks": "[to research]",
-    "helps": "[to research]"
+    "helps": "[to write once ranked: what we could test here]"
   },
   "Seydisfjordur fjord": {
     "type": "candidate",
     "place": "East Iceland",
     "why": "Narrow fjord with little sun even in summer.",
     "breaks": "[to research]",
-    "helps": "[to research]"
+    "helps": "[to write once ranked: what we could test here]"
   },
   "Kagbeni (Upper Mustang)": {
     "type": "candidate",
     "place": "Mustang District, Nepal",
     "why": "Dry, high valley in the Himalayan rain shadow (team photos).",
     "breaks": "[to research]",
-    "helps": "[to research]"
+    "helps": "[to write once ranked: what we could test here]"
   }
 }
