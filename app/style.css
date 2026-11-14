@@ -177,3 +177,5 @@ a { color: var(--earth); }
   .team-mark { align-items: flex-start; }
   .team-name { font-size: 26px; }
 }
+
+.site-meta .not-scored { color: var(--muted); font-style: italic; }

@@ -17,6 +17,7 @@ const DATA = USE_SAMPLE ? {
   heatmap: '../outputs/heatmap.json',// [{lat, lng, weight}]
   cells: '../outputs/cells.json',    // every searched cell, with status (ranked / no_bowl / filtered)
   info: 'sample/site_info.json',     // Sofia's research notes per site (export_app.py reads it too)
+  coords: 'sample/scores.csv',       // only SITE,LAT,LON: puts sites the pipeline hasn't scored yet on the map
   isFake: false,
 };
 
@@ -103,19 +104,28 @@ const getJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); r
 const optional = (url, fallback) => (url ? getJSON(url).catch(() => fallback) : Promise.resolve(fallback));
 
 async function loadAll() {
-  const [csv, targets, info, rawCsv, heat, cells] = await Promise.all([
+  const [csv, targets, info, rawCsv, heat, cells, coordsCsv] = await Promise.all([
     getText(DATA.scores),
     getJSON(DATA.targets),
     optional(DATA.info, {}),
     DATA.raw ? getText(DATA.raw).catch(() => '') : Promise.resolve(''),
     optional(DATA.heatmap, null),
     optional(DATA.cells, []),
+    DATA.coords ? getText(DATA.coords).catch(() => '') : Promise.resolve(''),
   ]);
   const { head, rows } = parseCSV(csv);
   const rawRows = rawCsv ? parseCSV(rawCsv).rows : [];
   const rawFor = r => rawRows.find(x => (r.RUN && x.RUN === r.RUN && x.CELL === r.CELL) || x.SITE === r.SITE) ?? {};
   state.columns = new Set(head);
   state.sites = rows.map(r => ({ ...r, lat: r.LAT, lng: r.LON, raw: rawFor(r) }));
+  // Sites in site_info.json that the pipeline hasn't scored yet (it has only run on a few areas so far):
+  // kept on the map and in the list as "not scored yet", with their research notes. Only their
+  // coordinates are read from the sample file, never its fake values.
+  if (coordsCsv) {
+    const have = new Set(state.sites.map(x => x.SITE));
+    parseCSV(coordsCsv).rows.filter(r => info[r.SITE] && !have.has(r.SITE) && r.LAT != null && r.LON != null)
+      .forEach(r => state.sites.push({ SITE: r.SITE, LAT: r.LAT, LON: r.LON, lat: r.LAT, lng: r.LON, raw: {}, unscored: true }));
+  }
   state.targets = Object.fromEntries(Object.entries(targets).filter(([k]) => !k.startsWith('_')));
   state.info = info;
   state.heat = Array.isArray(heat) ? heat : null;
@@ -192,9 +202,13 @@ function ranked() {
   return state.sites
     .map(s => ({ ...s, ...scoreSite(s), type: typeOf(s) }))
     .sort((a, b) => (b.sim ?? -1) - (a.sim ?? -1))
-    .map((s, i) => ({ ...s, rank: i + 1, passes: passesFilters(s) }));
+    .map((s, i) => ({ ...s, rank: s.sim == null ? null : i + 1, passes: passesFilters(s) }));
 }
 const visibleSites = () => ranked().filter(s => s.passes);
+// The areas the pipeline has searched, from RUN names: "meteor_crater" → "Meteor crater".
+const pipelineAreas = () => [...new Set(state.sites.map(s => s.RUN).filter(Boolean))]
+  .map(r => r.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase())).join(', ') || 'none yet';
+const scoredCount = () => state.sites.filter(s => scoreSite(s).sim != null).length;
 
 // "23.9° vs 27.2°": raw values with a short unit taken from earth_unit (e.g. "deg (inner wall slope)").
 function fmtVal(v, unit) {
@@ -299,19 +313,20 @@ function wireFilters() {
 function renderList() {
   const list = document.getElementById('siteList');
   const rows = visibleSites().filter(s => state.typeFilter === 'all' || s.type === state.typeFilter);
-  const total = state.sites.length, shown = visibleSites().length;
+  const total = state.sites.length, shown = visibleSites().length, unscored = total - scoredCount();
   document.getElementById('listHint').textContent = state.active.size
     ? `${shown} of ${total} sites pass the filters. Ranked by similarity to a ${baseLabel().toLowerCase()} base.`
-    : `Ranked by similarity to a ${baseLabel().toLowerCase()} base on the ${similarityCriteria().length} criteria that count.`;
+    : `Ranked by similarity to a ${baseLabel().toLowerCase()} base on the ${similarityCriteria().length} criteria that count.`
+      + (unscored ? ` ${unscored} sites the pipeline hasn't scored yet are listed after them.` : '');
   list.innerHTML = rows.length ? rows.map(s => `
     <li>
       <button type="button" class="site-btn" data-site="${esc(s.SITE)}" aria-current="${s.SITE === state.selected}">
-        <span class="rank ${s.type === 'known' ? 'known' : 'new'}">${s.rank}</span>
+        <span class="rank ${s.type === 'known' ? 'known' : 'new'}">${s.rank ?? '–'}</span>
         <span>
           <span class="site-name">${esc(nameOf(s))}</span>
           <span class="site-meta">
-            <span class="bar"><span style="width:${Math.round((s.sim ?? 0) * 100)}%"></span></span>
-            <span class="pct">${pct(s.sim)}</span>
+            ${s.sim == null ? '<span class="not-scored">Not scored yet</span>' : `<span class="bar"><span style="width:${Math.round(s.sim * 100)}%"></span></span>
+            <span class="pct">${pct(s.sim)}</span>`}
             <span>${s.type === 'known' ? 'Known' : 'New'}</span>
           </span>
         </span>
@@ -402,6 +417,7 @@ function renderCard() {
   if (!s) { el.innerHTML = '<p class="hint">Pick a site from the list or the globe.</p>'; return; }
   const info = state.info[s.SITE] ?? {};
   const isNew = info.type !== 'known';
+  const unscored = s.sim == null;
   // Chips: criteria with a value, closest to the Moon first. ≥ 50 % = close, below = what it lacks.
   const scored = s.details.filter(d => d.counts && d.sim != null).sort((a, b) => b.sim - a.sim);
   const shownOnly = s.details.filter(d => !d.counts && d.sim != null);
@@ -438,7 +454,7 @@ function renderCard() {
       </div>
       <div class="score">
         <strong>${pct(s.sim)}</strong>
-        <span>similar to the Moon (${esc(baseLabel().toLowerCase())} base)<br>rank ${s.RANK ?? s.rank} of ${state.sites.length}</span>
+        <span>${unscored ? 'not scored yet' : `similar to the Moon (${esc(baseLabel().toLowerCase())} base)<br>rank ${s.RANK ?? s.rank} of ${scoredCount()}`}</span>
       </div>
     </div>
 
@@ -446,7 +462,10 @@ function renderCard() {
 
     <div class="card-body">
     <div class="card-col card-col-a">
-    <div class="radar-box">
+    ${unscored ? `<div class="radar-box">
+      <h3>Not scored yet</h3>
+      <p class="nodata">Our pipeline has only run on a few areas so far (${esc(pipelineAreas())}), so this site has no score or fingerprint yet. It stays on the map with our research notes; it gets a score once the pipeline runs on its area.</p>
+    </div>` : `<div class="radar-box">
       <h3>Fingerprint · ${esc(groupName)}</h3>
       ${radarSVG(s, axes)}
       <div class="radar-legend">
@@ -455,7 +474,7 @@ function renderCard() {
       </div>
       <p class="nodata">Each axis is how close the site is to the Moon: the centre is nothing alike, the outer ring is the same as the Moon.${displayOnly.length ? ` Hollow dots (${esc(displayOnly.join(', '))}) are shown but not counted in the score.` : ''}</p>
       ${missingNote.length ? `<p class="nodata">${esc(missingNote.join(' '))} Left out of the score, not counted as zero.</p>` : ''}
-    </div>
+    </div>`}
 
     ${practical.length ? `<div class="note-box prac-box">
       <h3>Practical</h3>
@@ -469,7 +488,7 @@ function renderCard() {
     </div>
 
     <div class="card-col card-col-b">
-    <div>
+    ${unscored ? '' : `<div>
       <h3>Closest to the Moon on</h3>
       <div class="chips">${strengths.length ? strengths.map(d => `<span class="chip good" title="${esc(d.hint)} · ${pct(d.sim)} match"><b>${esc(d.label)}</b> ${esc(vsText(d))}</span>`).join('') : '<span class="chip">Nothing above 50 % yet</span>'}</div>
     </div>
@@ -483,7 +502,7 @@ function renderCard() {
       <h3>Also compared, not in the score</h3>
       <div class="chips">${shownOnly.map(d => `<span class="chip" title="${esc(d.hint)} · ${pct(d.sim)} match"><b>${esc(d.label)}</b> ${esc(vsText(d))}</span>`).join('')}</div>
     </div>` : ''}
-    ${isPipeline() ? '<p class="nodata">Earth value vs Moon value. Hover a chip for its match.</p>' : ''}
+    ${isPipeline() ? '<p class="nodata">Earth value vs Moon value. Hover a chip for its match.</p>' : ''}`}
 
     <div class="note-box">
       <h3>Where the analogy breaks down</h3>
@@ -530,8 +549,8 @@ function initGlobe() {
   if (!hasWebGL() || typeof Globe !== 'function') { document.getElementById('globeError').hidden = false; return; }
   // Pipeline: one point per ranked crater, weight = SCORE_TOTAL. Sample: a fake pattern, for design only.
   const heat = DATA.isFake ? fakeHeatPoints() : (state.heat ?? []);
-  document.getElementById('heatNote').textContent = DATA.isFake ? 'Fake pattern, for design only'
-    : heat.length ? `${heat.length} craters scored so far` : 'No heatmap data yet';
+  heatPoints = heat;
+  setHeatNote();
 
   const g = Globe()(el)
     // NASA Blue Marble Next Generation, July 2004, topography + bathymetry (NASA Earth Observatory),
@@ -545,24 +564,24 @@ function initGlobe() {
     .heatmapPointLat('lat')
     .heatmapPointLng('lng')
     .heatmapPointWeight('weight')
-    .heatmapBandwidth(2.4)
+    .heatmapBandwidth(DATA.isFake ? 2.4 : 0.9)   // real data: one point per crater, so smaller blobs
     .heatmapColorSaturation(2.2)
-    .heatmapBaseAltitude(0.005)
-    .heatmapTopAltitude(0.06)
+    .heatmapBaseAltitude(0.005 * labelScale)
+    .heatmapTopAltitude(0.06 * labelScale)
     .labelLat('lat')
     .labelLng('lng')
-    .labelText(d => nameOf(d))
-    .labelSize(d => (d.SITE === state.selected ? 1.8 : 1.1))
-    .labelDotRadius(d => (d.SITE === state.selected ? 0.8 : 0.5))
+    .labelText(d => labelTextOf(d))
+    .labelSize(d => (d.SITE === state.selected ? 1.6 : 1.0) * labelScale)
+    .labelDotRadius(d => (d.SITE === state.selected ? 0.7 : 0.45) * labelScale)
     .labelColor(d => (d.SITE === state.selected ? '#FFFFFF' : (typeOf(d) === 'known' ? COLORS.known : COLORS.newSite)))
-    .labelAltitude(0.07)
+    .labelAltitude(() => 0.07 * labelScale)
     .labelResolution(2)
     .onLabelClick(d => select(d.SITE, true))
     .ringColor(() => t => `rgba(255,255,255,${1 - t})`)
-    .ringMaxRadius(4)
+    .ringMaxRadius(() => 4 * labelScale)
     .ringPropagationSpeed(2)
     .ringRepeatPeriod(1200)
-    .ringAltitude(0.07);
+    .ringAltitude(() => 0.07 * labelScale);
 
   // Always rotating; pauses briefly while someone drags or after flying to a site.
   const controls = g.controls();
@@ -570,12 +589,58 @@ function initGlobe() {
   controls.autoRotateSpeed = 0.35;
   controls.addEventListener('start', () => pauseRotation(0));
   controls.addEventListener('end', () => pauseRotation(4000));
+  controls.addEventListener('change', onGlobeZoom);
   g.pointOfView({ lat: 35, lng: 10, altitude: 2.3 });
 
   const fit = () => g.width(el.clientWidth).height(el.clientHeight);
   new ResizeObserver(fit).observe(el);
   fit();
   state.globe = g;
+}
+
+// Globe labels are sized in degrees on the globe, so zoomed in they grow huge and nearby craters
+// (El Elegante and Pinacate NW are 25 km apart) pile up. Scale them with the camera height, and
+// where labels would still overlap show only the best-ranked one, with "+1" for the hidden ones.
+let labelScale = 1, labelHidden = new Map(), heatPoints = [], heatShown = true;
+const HEAT_MIN_SCALE = 0.25;   // closer than this the blobs only cover the ground, so the heatmap hides
+function setHeatNote() {
+  document.getElementById('heatNote').textContent = !heatShown ? 'Zoom out to see the heatmap'
+    : DATA.isFake ? 'Fake pattern, for design only'
+    : heatPoints.length ? `${heatPoints.length} craters scored so far` : 'No heatmap data yet';
+}   // SITE → '' (hidden) or ' +n' (leader of a group)
+const labelTextOf = d => (labelHidden.has(d.SITE) ? (labelHidden.get(d.SITE) === '' ? '' : nameOf(d) + labelHidden.get(d.SITE)) : nameOf(d));
+
+function declutterLabels(sites) {
+  labelHidden = new Map();
+  const order = [...sites].sort((a, b) => (b.SITE === state.selected) - (a.SITE === state.selected) || (a.rank ?? 1e9) - (b.rank ?? 1e9));
+  const kept = [];
+  const minGap = 3 * labelScale;     // degrees; about three label heights
+  for (const s of order) {
+    const near = kept.find(k => {
+      const dLat = k.lat - s.lat, dLng = (k.lng - s.lng) * Math.cos(s.lat * Math.PI / 180);
+      return Math.hypot(dLat, dLng) < minGap;
+    });
+    if (!near) { kept.push(s); continue; }
+    labelHidden.set(s.SITE, '');
+    near.extra = (near.extra ?? 0) + 1;
+  }
+  kept.forEach(k => { if (k.extra) labelHidden.set(k.SITE, ` +${k.extra}`); delete k.extra; });
+}
+
+function onGlobeZoom() {
+  const g = state.globe; if (!g) return;
+  // Shrinks a bit slower than the camera height, so zoomed-in labels stay readable.
+  const scale = Math.min(1.2, Math.max(0.03, (g.pointOfView().altitude / 2.3) ** 0.75));
+  if (Math.abs(scale - labelScale) / labelScale < 0.15) return;   // redraw only on a real zoom change
+  labelScale = scale;
+  // Heatmap and labels float above the globe; zoomed in, bring them down so they sit on the ground.
+  g.heatmapBaseAltitude(0.005 * scale).heatmapTopAltitude(0.06 * scale);
+  if (heatShown !== scale >= HEAT_MIN_SCALE) {
+    heatShown = scale >= HEAT_MIN_SCALE;
+    g.heatmapsData(heatShown ? [{ points: heatPoints }] : []);
+    setHeatNote();
+  }
+  updateGlobe(false);
 }
 
 function pauseRotation(ms) {
@@ -590,11 +655,13 @@ function updateGlobe(fly) {
   if (!g) return;
   const shown = visibleSites();
   const s = shown.find(x => x.SITE === state.selected);
-  g.labelsData(shown);
+  declutterLabels(shown);
+  g.labelsData(shown.map(x => ({ ...x })));   // new objects so globe.gl redraws sizes and texts
   g.ringsData(s ? [{ lat: s.lat, lng: s.lng }] : []);
   if (s && fly) {
     pauseRotation(6000);
     g.pointOfView({ lat: s.lat, lng: s.lng, altitude: 1.4 }, 1200);
+    setTimeout(onGlobeZoom, 1300);   // a programmed move doesn't fire the controls' 'change'
   }
 }
 
