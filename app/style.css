@@ -206,3 +206,9 @@ a { color: var(--earth); }
 .tag-tuning { display: inline-block; padding: 1px 7px; border-radius: 999px; border: 1px dashed var(--signal-soft); color: var(--signal-soft); font-size: 11px; font-weight: 600; letter-spacing: .02em; }
 .tuning-note { margin: 0 0 14px; padding: 8px 12px; border-radius: 10px; background: rgba(60,200,180,.08); color: var(--muted); font-size: 13px; line-height: 1.5; }
 .tuning-note .tag-tuning { margin-right: 6px; }
+
+/* "On the ground" box: impact-crater fact under the bars */
+.impact-line { margin: 10px 0 0; font-size: 13.5px; color: var(--text); }
+.impact-line > span:first-child { display: inline-block; min-width: 110px; color: var(--muted); }
+.impact-line a { color: var(--signal-soft); }
+.region-btn .muted { color: var(--muted); font-weight: 400; }

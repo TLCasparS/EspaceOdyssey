@@ -41,6 +41,12 @@ How the scores are read:
 - Light criteria (Sunny ridge, Dark floor, Light next to dark) carry a `limitation` in `targets.json`: the
   card shows a short footnote (Moon = Sun disc, Earth = Sun centre). Grazing sun carries a `fact`: no place
   on Earth can match it, so it is shown but never counted.
+- Columns with a `display_kind` in `targets.json` are **not** a similarity to the Moon: Drivable, Bare ground,
+  Snow & ice ("more is better" shares) and Impact crater (1/0, name from `raw_values.csv`). They sit in the
+  card's "On the ground" box, never on the radar. Crater size is raw only: the card header shows width and
+  rim-to-floor depth (`CRATER_DIAMETER_EQUIV_M`, `CRATER_RIM_TO_FLOOR_M`).
+- Validation results (frozen config-v1, `docs/VALIDATION_config-v1.md`) go into `site_info.json` as a
+  `validation` entry, e.g. Haughton: "not found" (eroded, no closed bowl).
 - An empty cell means "no value", never zero. The card says which of three reasons: no data yet,
   waiting for a lunar value (the light criteria), or not computed yet.
 - Sites are keyed by `SITE`. A crater that matches a known site keeps that name (e.g. Meteor Crater);
