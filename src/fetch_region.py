@@ -28,11 +28,10 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from dem.fetch import open_tile, tiles_for_bbox, with_retries  # noqa: E402  (sets unsigned S3 access)
+from dem.landcover import CLASSES as WORLDCOVER_CLASSES, worldcover_tiles  # noqa: E402,F401  (one class table)
 
 PC_DEM_COLLECTION = {30: "cop-dem-glo-30", 90: "cop-dem-glo-90"}
 PC_STAC = "https://planetarycomputer.microsoft.com/api/stac/v1"
-WC_AWS_URL = ("https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/"
-              "ESA_WorldCover_10m_2021_v200_{tile}_Map.tif")
 
 # Fail fast on stalled HTTP reads instead of hanging (GDAL reads env vars at open time).
 os.environ.setdefault("GDAL_HTTP_TIMEOUT", "30")
@@ -40,14 +39,6 @@ os.environ.setdefault("GDAL_HTTP_MAX_RETRY", "3")
 os.environ.setdefault("GDAL_HTTP_RETRY_DELAY", "1")
 os.environ.setdefault("GDAL_DISABLE_READDIR_ON_OPEN", "EMPTY_DIR")
 os.environ.setdefault("CPL_VSIL_CURL_ALLOWED_EXTENSIONS", ".tif")
-
-# ESA WorldCover v200 class codes
-WORLDCOVER_CLASSES = {
-    10: "tree_cover", 20: "shrubland", 30: "grassland", 40: "cropland", 50: "built_up",
-    60: "bare_sparse", 70: "snow_ice", 80: "water", 90: "herbaceous_wetland",
-    95: "mangroves", 100: "moss_lichen",
-}
-
 
 @dataclass
 class Region:
@@ -102,14 +93,7 @@ def _urls_planetary_computer(bbox, dem_res: int = 30) -> tuple[list[str], list[s
 
 def _urls_aws(bbox, dem_res: int = 30) -> tuple[list[str], list[str]]:
     west, south, east, north = bbox
-    dem = tiles_for_bbox(west, south, east, north, res=dem_res)
-    wc = []
-    # WorldCover tiles are 3x3 deg, named by their south-west corner.
-    for la in range(math.floor(south / 3) * 3, math.floor((north - 1e-9) / 3) * 3 + 1, 3):
-        for lo in range(math.floor(west / 3) * 3, math.floor((east - 1e-9) / 3) * 3 + 1, 3):
-            tile = f"{'N' if la >= 0 else 'S'}{abs(la):02d}{'E' if lo >= 0 else 'W'}{abs(lo):03d}"
-            wc.append(WC_AWS_URL.format(tile=tile))
-    return dem, wc
+    return tiles_for_bbox(west, south, east, north, res=dem_res), worldcover_tiles(west, south, east, north)
 
 
 def _read(bbox, url_fn, dem_res):

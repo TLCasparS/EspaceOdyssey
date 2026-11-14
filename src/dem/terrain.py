@@ -1,15 +1,22 @@
 """
 Terrain metrics that can be compared between Earth DEMs and lunar DEMs (e.g. LOLA).
 
-All functions take a 2-D elevation array (NaN = no data) plus the pixel size in metres.
-Copernicus DEM is in geographic degrees, so use pixel_size_m() to convert first.
+Two sets of functions:
+- Degree-grid functions (pixel_size_m, slope_deg, roughness, local_relief, summarize): quick look
+  only, used by src/analyze_bbox.py. They work on the native lon/lat grid with an approximate
+  metre conversion and fill NaN with the nearest value.
+- Metric-grid functions (compute_terrain on a dem.grid.MetricGrid): use these for the pipeline.
+tri() is shared by both.
 """
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 
 import numpy as np
 from scipy import ndimage
+
+from .grid import MetricGrid
 
 
 def pixel_size_m(transform, center_lat: float) -> tuple[float, float]:
@@ -107,3 +114,91 @@ def summarize(elev: np.ndarray, dx: float, dy: float, relief_window_m: float = 1
         **{name: stats(arr) for name, arr in layers.items()},
     }
     return summary, layers
+
+
+# --- Metric-grid metrics (use these for the pipeline) -------------------------------------
+# Moved from src/terrain.py. Work on a dem.grid.MetricGrid (square metric pixels).
+# Cells within half a window of the grid edge or of missing data are NaN, so no metric is
+# computed from a truncated window. Fetch a buffer around the area of interest.
+
+@dataclass
+class Terrain:
+    slope_deg: np.ndarray
+    aspect_deg: np.ndarray
+    relief_m: np.ndarray
+    roughness_m: np.ndarray
+    tri_m: np.ndarray
+    relief_window_m: float
+    roughness_window_px: int
+
+
+def _horn_gradients(z: np.ndarray, res_m: float) -> tuple[np.ndarray, np.ndarray]:
+    """dz/d(east) and dz/d(north) in grid axes; NaN where the 3x3 window is incomplete."""
+    p = np.pad(z.astype(np.float64), 1, constant_values=np.nan)
+    a, b, c = p[:-2, :-2], p[:-2, 1:-1], p[:-2, 2:]   # row above (north)
+    d, f = p[1:-1, :-2], p[1:-1, 2:]
+    g, h, i = p[2:, :-2], p[2:, 1:-1], p[2:, 2:]      # row below (south)
+    dzdx = ((c + 2 * f + i) - (a + 2 * d + g)) / (8 * res_m)
+    dzdn = ((a + 2 * b + c) - (g + 2 * h + i)) / (8 * res_m)
+    return dzdx, dzdn
+
+
+def _grid_north_azimuth(mg: MetricGrid) -> np.ndarray:
+    """Per pixel: azimuth of true north measured clockwise from grid north (degrees).
+
+    Uses the grid CRS's own lon/lat CRS, so it works for Earth and for lunar CRSs.
+    """
+    from pyproj import CRS, Transformer
+
+    rows, cols = mg.dem.shape
+    # Convergence varies slowly; compute on a coarse lattice and interpolate.
+    step = max(1, min(rows, cols) // 20)
+    rr = np.arange(0, rows + step, step).clip(max=rows - 1)
+    cc = np.arange(0, cols + step, step).clip(max=cols - 1)
+    C, R = np.meshgrid(cc + 0.5, rr + 0.5)
+    x, y = mg.transform * (C, R)
+    crs = CRS.from_user_input(mg.crs)
+    to_ll = Transformer.from_crs(crs, crs.geodetic_crs, always_xy=True)
+    to_xy = Transformer.from_crs(crs.geodetic_crs, crs, always_xy=True)
+    lon, lat = to_ll.transform(x, y)
+    x2, y2 = to_xy.transform(lon, lat + 0.001)
+    coarse = np.degrees(np.arctan2(x2 - x, y2 - y))
+    zoom = (rows / coarse.shape[0], cols / coarse.shape[1])
+    full = ndimage.zoom(coarse, zoom, order=1)
+    return full[:rows, :cols]
+
+
+def _window_valid(nan_mask: np.ndarray, size: int) -> np.ndarray:
+    """True where a size x size window lies fully inside the grid and has no NaN."""
+    bad = ndimage.maximum_filter(nan_mask.astype(np.uint8), size=size, mode="constant", cval=1)
+    return bad == 0
+
+
+def compute_terrain(mg: MetricGrid, relief_window_m: float = 5000.0,
+                    roughness_window_px: int = 3, flat_slope_deg: float = 0.5) -> Terrain:
+    z = mg.dem.astype(np.float64)
+    nan = np.isnan(z)
+
+    dzdx, dzdn = _horn_gradients(z, mg.res_m)
+    slope = np.degrees(np.arctan(np.hypot(dzdx, dzdn)))
+    # Downslope direction (-dzdx, -dzdn) as an azimuth from grid north, then to true north.
+    aspect_grid = np.degrees(np.arctan2(-dzdx, -dzdn))
+    aspect = (aspect_grid - _grid_north_azimuth(mg)) % 360.0
+    aspect[~(slope >= flat_slope_deg)] = np.nan   # flat or NaN: aspect is meaningless
+
+    n = int(round(relief_window_m / mg.res_m)) | 1    # odd window size in pixels
+    zmax = ndimage.maximum_filter(np.where(nan, -np.inf, z), size=n, mode="nearest")
+    zmin = ndimage.minimum_filter(np.where(nan, np.inf, z), size=n, mode="nearest")
+    relief = np.where(_window_valid(nan, n), zmax - zmin, np.nan)
+
+    k = roughness_window_px
+    zc = np.where(nan, 0.0, z - np.nanmean(z))       # centre to limit float cancellation
+    mean = ndimage.uniform_filter(zc, size=k, mode="nearest")
+    mean_sq = ndimage.uniform_filter(zc * zc, size=k, mode="nearest")
+    rough = np.sqrt(np.clip(mean_sq - mean * mean, 0, None))
+    rough = np.where(_window_valid(nan, k), rough, np.nan)
+
+    tri_m = np.where(_window_valid(nan, 3), tri(mg.dem), np.nan)
+
+    f32 = lambda a: a.astype(np.float32)
+    return Terrain(f32(slope), f32(aspect), f32(relief), f32(rough), f32(tri_m), n * mg.res_m, k)

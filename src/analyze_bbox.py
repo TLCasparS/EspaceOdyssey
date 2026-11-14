@@ -3,9 +3,9 @@
 Fetch Copernicus DEM for a bounding box and compute terrain metrics.
 
 Examples (run from the repo root):
-    python scripts/analyze_bbox.py --bbox 83.6 28.7 84.0 29.1 --name mustang
-    python scripts/analyze_bbox.py --bbox -3.05 37.40 -2.85 37.55 --name gorafe
-    python scripts/analyze_bbox.py --bbox 83 28 85 30 --res 90 --name mustang_wide --no-tifs
+    python src/analyze_bbox.py --bbox 83.6 28.7 84.0 29.1 --name mustang
+    python src/analyze_bbox.py --bbox -3.05 37.40 -2.85 37.55 --name gorafe
+    python src/analyze_bbox.py --bbox 83 28 85 30 --res 90 --name mustang_wide --no-tifs
 
 Outputs in out/<name>/ :
     summary.json              stats for elevation, slope, roughness, relief, TRI
@@ -16,7 +16,7 @@ import json
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # src/
 
 from dem.fetch import read_bbox, save_tif  # noqa: E402
 from dem.terrain import pixel_size_m, summarize  # noqa: E402
