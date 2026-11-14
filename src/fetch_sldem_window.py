@@ -14,7 +14,8 @@ Units: SLDEM2015 tiles may store km; the mosaic stores m. Heights are converted 
 values themselves (mare plains lie ~1-3 km below 1737.4 km): 99th percentile of |h| < 30 -> km,
 > 100 -> m, anything else -> error. The file's own scale/offset is applied first.
 
-    python src/fetch_sldem_window.py --cells config/mare_cells.json          # all candidate cells
+    python src/fetch_sldem_window.py --cells config/mare_cells.json --first 5   # the cells used (+ Apollo 11)
+    python src/fetch_sldem_window.py --cells config/mare_cells.json          # all candidates (spares too)
     python src/fetch_sldem_window.py --lat 0.67416 --lon 23.47314 --name apollo_11
     python src/fetch_sldem_window.py --cells config/mare_cells.json --tiles-dir data/moon/sldem_tiles
 """
@@ -134,12 +135,15 @@ def main():
     ap.add_argument("--name")
     ap.add_argument("--tiles-dir", help="folder with downloaded SLDEM2015 512 ppd tiles")
     ap.add_argument("--half-km", type=float, help="default: grid.cell_km / 2 + polar.buffer_m")
+    ap.add_argument("--first", type=int, help="only candidates with order <= N (+ the named site); "
+                    "fetch spares later only if compute_mare_target.py skips cells")
     a = ap.parse_args()
     cfg = load_config()
     half = a.half_km or cfg["grid"]["cell_km"] / 2 + cfg["polar"]["buffer_m"] / 1000
     if a.cells:
         spec = json.loads(Path(a.cells).read_text(encoding="utf-8"))
-        cells = list(spec["cells"]) + [{"id": k, **v} for k, v in spec.get("named_site", {}).items()]
+        cand = [c for c in spec["cells"] if a.first is None or c["order"] <= a.first]
+        cells = cand + [{"id": k, **v} for k, v in spec.get("named_site", {}).items()]
     elif a.lat is not None and a.lon is not None:
         cells = [{"id": a.name or f"cell_{a.lat:.3f}_{a.lon:.3f}", "lat": a.lat, "lon": a.lon}]
     else:
