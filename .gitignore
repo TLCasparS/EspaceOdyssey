@@ -1,4 +1,6 @@
 data/dem/
 data/region/
+.venv/
+out/
 __pycache__/
 .pytest_cache/

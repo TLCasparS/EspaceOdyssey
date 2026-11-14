@@ -8,16 +8,25 @@
                   (corrected for UTM grid convergence); NaN on flat cells
    - relief_m:    max minus min elevation in a square window (default 5 km x 5 km)
    - roughness_m: standard deviation of elevation in a small window (default 3x3 pixels)
+   - tri_m:       Terrain Ruggedness Index (Riley 1999), from dem.terrain.tri
+
+The lat/lon-grid versions of these metrics (no reprojection, for quick bbox summaries
+and GeoTIFF export) live in the dem package: see src/dem/ and scripts/analyze_bbox.py.
 
 Cells within half a window of the grid edge or of missing data are NaN, so no
 metric is computed from a truncated window. Fetch a buffer around the area of interest.
 """
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 from scipy import ndimage
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from dem.terrain import tri as _tri  # noqa: E402
 
 
 @dataclass
@@ -35,6 +44,7 @@ class Terrain:
     aspect_deg: np.ndarray
     relief_m: np.ndarray
     roughness_m: np.ndarray
+    tri_m: np.ndarray
     relief_window_m: float
     roughness_window_px: int
 
@@ -132,8 +142,10 @@ def compute_terrain(mg: MetricGrid, relief_window_m: float = 5000.0,
     rough = np.sqrt(np.clip(mean_sq - mean * mean, 0, None))
     rough = np.where(_window_valid(nan, k), rough, np.nan)
 
+    tri = np.where(_window_valid(nan, 3), _tri(mg.dem), np.nan)
+
     f32 = lambda a: a.astype(np.float32)
-    return Terrain(f32(slope), f32(aspect), f32(relief), f32(rough), n * mg.res_m, k)
+    return Terrain(f32(slope), f32(aspect), f32(relief), f32(rough), f32(tri), n * mg.res_m, k)
 
 
 def crop_center(arr: np.ndarray, mg: MetricGrid, lon: float, lat: float, half_km: float) -> np.ndarray:
