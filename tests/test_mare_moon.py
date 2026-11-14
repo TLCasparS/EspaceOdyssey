@@ -117,3 +117,22 @@ def test_evaluate_skips_bowls_and_takes_first_n_in_order(tmp_path):
     for k in MARE_CRITERIA:
         assert t[k]["n_cells"] == 4 and t[k]["tolerance"] >= cfg["mare"]["tolerance_floor"][k]
     assert t["c12_drivable"]["value"] == pytest.approx(1.0)                  # gentle synthetic mare
+
+
+def test_read_window_from_a_projected_mosaic_in_metres(tmp_path):
+    """The USGS mosaic is equirectangular in METRES (not degrees): the window must be transformed."""
+    import rasterio
+    from rasterio.transform import from_origin
+    eqc = "+proj=eqc +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs"
+    res = 59.2252938
+    x0, y0 = 30.0 * np.pi / 180 * 1737400, 12.0 * np.pi / 180 * 1737400        # 30 E, 12 N corner
+    w, h = 400, 400
+    p = tmp_path / "mosaic.tif"
+    with rasterio.open(p, "w", driver="GTiff", height=h, width=w, count=1, dtype="int16", crs=eqc,
+                       transform=from_origin(x0, y0, res, res), nodata=-32768) as d:
+        d.write(np.full((h, w), -2100, np.int16), 1)                           # metres
+    lat_c = (y0 - h / 2 * res) / 1737400 * 180 / np.pi
+    lon_c = (x0 + w / 2 * res) / 1737400 * 180 / np.pi
+    out, otf, crs, note = read_window(str(p), lat=lat_c, lon=lon_c, half_km=5)
+    assert out.shape[0] > 150 and out.shape[1] > 150                           # ~10 km / 59 m
+    assert np.nanmean(out) == pytest.approx(-2100.0) and note.startswith("m as stored")

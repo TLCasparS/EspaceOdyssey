@@ -65,21 +65,30 @@ def to_metres(z: np.ndarray) -> tuple[np.ndarray, str]:
 def read_window(src: str, lat: float, lon: float, half_km: float):
     """(z in metres, transform, crs, note) for +-half_km around (lat, lon), at native resolution."""
     import rasterio
+    from rasterio.crs import CRS
+    from rasterio.warp import transform_bounds
     from rasterio.windows import from_bounds
     path = "/vsicurl/" + src if src.startswith(("http://", "https://")) else src
     dlat = math.degrees(half_km * 1000 / R_MOON)
     dlon = dlat / math.cos(math.radians(lat))
     with rasterio.open(path) as s:
+        crs = s.crs or CRS.from_proj4(MOON_LL)
         b = s.bounds
-        x = lon if b.left < 0 else lon % 360                     # -180..180 mosaic or 0..360 tiles
-        w, e, so, n = x - dlon, x + dlon, lat - dlat, lat + dlat
+        if crs.is_geographic:                                    # SLDEM tiles: degrees, 0..360 or -180..180
+            x = lon if b.left < 0 else lon % 360
+            w, e, so, n = x - dlon, x + dlon, lat - dlat, lat + dlat
+        else:                                                    # USGS mosaic: equirectangular in metres
+            w, so, e, n = transform_bounds(CRS.from_proj4(MOON_LL), crs, lon - dlon, lat - dlat,
+                                           lon + dlon, lat + dlat, densify_pts=21)
         if w < b.left or e > b.right or so < b.bottom or n > b.top:
-            raise ValueError(f"window ({w:.3f}..{e:.3f}, {so:.3f}..{n:.3f}) leaves {os.path.basename(src)}")
+            raise ValueError(f"window ({w:.6g}..{e:.6g}, {so:.6g}..{n:.6g}) leaves {os.path.basename(src)} "
+                             f"({b.left:.6g}..{b.right:.6g}, {b.bottom:.6g}..{b.top:.6g})")
         win = from_bounds(w, so, e, n, transform=s.transform)
         z = s.read(1, window=win, masked=True).astype("float64").filled(np.nan)
+        if z.size == 0 or not np.isfinite(z).any():
+            raise ValueError(f"empty window {z.shape} or all no-data in {os.path.basename(src)} (crs {crs})")
         z = z * float(s.scales[0] or 1.0) + float(s.offsets[0] or 0.0)
         tf = s.window_transform(win)
-        crs = s.crs or MOON_LL
     z, note = to_metres(z)
     return z.astype("float32"), tf, crs, note
 
