@@ -10,7 +10,7 @@ Counting for Mare (config mare.criteria): c9, c10, c12, c13. Display: c16 day-ni
 possible, fact), c23 basalt (not computed yet: GLiM download not checked).
 
 Lunar target (Mateo, compute_lunar_target / lunar side): median over a FIXED list of mare cells (~20 across
-4 maria, random with a seed, inside the mare, cells with a bowl excluded via has_bowl()). Tolerance per
+4 maria, random with a seed, inside the mare; NO bowl exclusion, as on Earth: has_bowl() is information only). Tolerance per
 criterion = IQR across those cells, at least mare.tolerance_floor[criterion]. target_from_cells() computes
 exactly the entry stored in config/lunar_targets.json["mare"]["criteria"][name].
 Named site for the card: Apollo 11 (Mare Tranquillitatis).

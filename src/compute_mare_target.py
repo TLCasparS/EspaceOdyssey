@@ -4,8 +4,10 @@ config/lunar_targets.json["mare"]: median over the fixed cell list, tolerance = 
 Per mare, in the committed order of config/mare_cells.json:
   - the SLDEM window (src/fetch_sldem_window.py) goes onto the 60 m grid in a local stereographic CRS
     (dem.grid.reproject_dem, grid.resampling), cell = grid.cell_km square centred on the cell point
-  - cells where pipeline.mare.has_bowl finds a qualifying depression are skipped (same detector as Earth)
-  - the first mare_cells.per_mare cells that pass AND are kept by pipeline.mare.mare_cell count
+  - NO bowl exclusion (team decision 14 Nov, to mirror Earth, where Mare cells keep their craters):
+    small craters are normal mare texture; excluding them biased the target toward unusually smooth
+    mare (34 of 60 cells had a >= 1 km bowl). has_bowl is recorded per cell for information only.
+  - the first mare_cells.per_mare cells that pipeline.mare.mare_cell keeps count
 Then pipeline.mare.target_from_cells builds the entries. Apollo 11 is computed the same way, stored as
 display only (the named site on the card), never part of the median.
 
@@ -67,16 +69,15 @@ def evaluate(spec: dict, sldem_dir: Path, cfg: dict) -> tuple[dict, list, list, 
                 skipped.append({**c, "reason": "no SLDEM window (run fetch_sldem_window.py)"})
                 continue
             mg, in_cell = load_cell_grid(tif, c["lat"], c["lon"], cfg)
-            if has_bowl(mg, in_cell, cfg):
-                skipped.append({**c, "reason": "bowl in cell (pipeline.mare.has_bowl)"})
-                continue
+            bowl = has_bowl(mg, in_cell, cfg)                  # information only, not an exclusion
             r = mare_cell(mg, in_cell, None, cfg)
             if not r["keep"]:
                 skipped.append({**c, "reason": r["reason"]})
                 continue
             for k in MARE_CRITERIA:
                 values[k].append(r[k])
-            used.append({k: c[k] for k in ("id", "mare", "order", "lat", "lon")} | {k: r[k] for k in MARE_CRITERIA})
+            used.append({k: c[k] for k in ("id", "mare", "order", "lat", "lon")} | {k: r[k] for k in MARE_CRITERIA}
+                        | {"has_bowl": bowl})
             n += 1
         if n < per_mare:
             print(f"WARNING: {mare}: only {n} of {per_mare} cells usable")
@@ -98,7 +99,8 @@ def main():
     floors = cfg["mare"]["tolerance_floor"]
     entries = target_from_cells(values, floors, [c["id"] for c in used], spec["seed"])
 
-    print(f"{len(used)} cells used, {len(skipped)} skipped")
+    print(f"{len(used)} cells used ({sum(c['has_bowl'] for c in used)} contain a bowl, kept as on Earth), "
+          f"{len(skipped)} skipped")
     for s in skipped:
         print(f"  skipped {s['id']}: {s['reason']}")
     print(f"\n{'criterion':15s} {'median':>9s} {'IQR':>8s} {'floor':>7s} {'tolerance':>9s} {'min':>8s} {'max':>8s}  n")
@@ -114,7 +116,9 @@ def main():
     m = t["mare"]
     today = date.today().isoformat()
     m["status"] = (f"computed {today} by src/compute_mare_target.py: median over {len(used)} lunar mare cells "
-                   "(pipeline.mare.mare_cell), tolerance = max(IQR, floor) (pipeline.mare.target_from_cells)")
+                   "(pipeline.mare.mare_cell; first per_mare cells per mare in the fixed order of "
+                   "config/mare_cells.json, no bowl exclusion, as on Earth), tolerance = max(IQR, floor) "
+                   "(pipeline.mare.target_from_cells)")
     m["seed"], m["cells"], m["cells_skipped"] = spec["seed"], used, skipped
     for k in MARE_CRITERIA:
         e = entries[k]

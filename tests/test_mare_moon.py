@@ -94,7 +94,7 @@ def _write_window(path, lat, lon, crater=False, seed=0, half_km=13.0):
         d.write(z.astype("float32"), 1)
 
 
-def test_evaluate_skips_bowls_and_takes_first_n_in_order(tmp_path):
+def test_evaluate_keeps_bowls_and_takes_first_n_in_order(tmp_path):
     from compute_mare_target import evaluate
     from pipeline.config import load_config
     from pipeline.mare import MARE_CRITERIA, target_from_cells
@@ -110,8 +110,9 @@ def test_evaluate_skips_bowls_and_takes_first_n_in_order(tmp_path):
             "named_site": {"apollo_11": {"lat": 0.67416, "lon": 23.47314}}}
     _write_window(tmp_path / "apollo_11.tif", 0.67416, 23.47314, seed=9)
     values, used, skipped, apollo = evaluate(spec, tmp_path, cfg)
-    assert [c["id"] for c in used] == ["a_02", "a_03", "b_01", "b_02"]       # a_01 has a bowl
-    assert skipped[0]["id"] == "a_01" and "bowl" in skipped[0]["reason"]
+    # no bowl exclusion (as on Earth): the first per_mare cells in order count; the bowl is recorded
+    assert [c["id"] for c in used] == ["a_01", "a_02", "b_01", "b_02"] and not skipped
+    assert [c["has_bowl"] for c in used] == [True, False, False, False]
     assert apollo and apollo["name"] == "apollo_11" and not apollo["has_bowl"]
     t = target_from_cells(values, cfg["mare"]["tolerance_floor"], [c["id"] for c in used], 1)
     for k in MARE_CRITERIA:
