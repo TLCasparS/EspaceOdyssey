@@ -72,7 +72,7 @@ def _add_lonlat(place: dict, mg) -> None:
     place["utm_crs"] = mg.crs
 
 
-def cell_candidates(cell, dem, dem_tf, usable, lc_tf, cfg, ice=None, lc=None):
+def cell_candidates(cell, dem, dem_tf, usable, lc_tf, cfg, ice=None, lc=None, return_grid=False):
     """(cell info, candidate places with lon/lat) for one cell on its local-UTM grid."""
     pcfg, gcfg = cfg["polar"], cfg["grid"]
     lon_c, lat_c = (cell["west"] + cell["east"]) / 2, (cell["south"] + cell["north"]) / 2
@@ -88,7 +88,7 @@ def cell_candidates(cell, dem, dem_tf, usable, lc_tf, cfg, ice=None, lc=None):
     for c in cands:
         _add_lonlat(c, mg)
         c["cell_id"] = cell["id"]
-    return info, cands
+    return (info, cands, mg) if return_grid else (info, cands)
 
 
 def evaluate_cell_terrain(cell, dem, dem_tf, usable, lc_tf, cfg):

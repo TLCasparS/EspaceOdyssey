@@ -3,7 +3,15 @@
 ## Challenge
 NASA Space Apps Challenge 2026: "Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars".
 Page: https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/
-(TODO: paste the official summary and objectives from that page.)
+Summary (copied from the team brief on branch sofia/setup, 14 Nov 2026): find and characterize new terrestrial
+analogs for future Moon or Mars bases or landing sites.
+
+Selecting landing sites and lunar base locations depends on topography, geology, environment and available resources. Earth places with analogous characteristics (Atacama Desert, Haughton Crater, Death Valley) let mission teams test equipment and methods before flight, but terrestrial analog sites are not well characterized.
+
+Objectives:
+- Use open Earth, Moon and Mars data from NASA and other space agencies.
+- Identify and characterize new terrestrial analogs: deserts, polar regions, volcanic and arid terrain, caves, and other environments that share conditions with the lunar or Martian surface.
+- Present the findings as a map, visualization or other tool.
 
 ## Our question, in one sentence
 DRAFT, not yet agreed: Which places on Earth best stand in for lunar base sites (polar rim, lava tube, mare plain), ranked by measurable similarity from open Earth and Moon data?

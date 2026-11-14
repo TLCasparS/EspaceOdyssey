@@ -262,6 +262,8 @@ class _Cell:
                "c7_depth_m": round(dep["depth_m"], 1) if dep else 0.0,
                "c7_width_m": round(dep["width_m"], 0) if dep else 0.0,
                "c7_elongation": round(dep["elongation"], 2) if dep else None,
+               "bowl_r_m": round(dep["width_m"] / 2, 1) if dep else None,          # geometry for re-scoring
+               "rim_zone_px": int(zone.sum()) if dep else None,
                "depression_extends_outside_cell": dep["extends_outside_cell"] if dep else None,
                "c14_n_steep": n_steep, **light_info,
                "ice_floor_share": None if ice_floor is None else round(ice_floor, 3),

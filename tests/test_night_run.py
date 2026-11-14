@@ -14,36 +14,18 @@ sys.path.insert(0, str(ROOT / "src"))
 pytest.importorskip("rasterio")
 from rasterio.transform import from_origin  # noqa: E402
 
-LAT_C, LON_C = 35.5, -111.5
+sys.path.insert(0, str(ROOT / "tests"))
 
-
-def _z(lon, lat):
-    dx = (lon - LON_C) * 111_320 * math.cos(math.radians(LAT_C))
-    dy = (lat - LAT_C) * 110_574
-    r = np.hypot(dx, dy)
-    return np.where(r < 3000, 400 * (r ** 2 / 3000 ** 2 - 1), 0.0) + 1000.0
-
-
-def fake_read_bbox(west, south, east, north, res=30):
-    d = res / 111_320
-    w, h = int(math.ceil((east - west) / d)), int(math.ceil((north - south) / d))
-    tf = from_origin(west, north, d, d)
-    cc, rr = np.meshgrid(np.arange(w) + 0.5, np.arange(h) + 0.5)
-    lon, lat = tf * (cc, rr)
-    return _z(lon, lat).astype(np.float32), {"transform": tf, "crs": "EPSG:4326"}
-
-
-def fake_read_landcover(west, south, east, north, res_m=100.0):
-    d = res_m / 111_320
-    w, h = max(1, round((east - west) / d)), max(1, round((north - south) / d))
-    return np.full((h, w), 60, np.uint8), from_origin(west, north, (east - west) / w, (north - south) / h)
+from night_fakes import fake_read_bbox, fake_read_glo90, fake_read_landcover, z_at as _z  # noqa: E402
 
 
 @pytest.fixture
 def patched(monkeypatch, tmp_path):
+    import dem.glo90_cache
     import night_run
     import stage0_world as sw
     monkeypatch.setattr(night_run, "read_bbox", fake_read_bbox)
+    monkeypatch.setattr(dem.glo90_cache, "read_glo90", fake_read_glo90)
     monkeypatch.setattr(night_run, "read_landcover", fake_read_landcover)
     monkeypatch.setattr(sw.LC, "block", lambda lat3, lon3: np.full((333, 333), 60, np.uint8))
 
@@ -93,6 +75,14 @@ def test_night_run_world_A_B1_defer_B2_resume_score(patched):
     with_bowl = [r for r in recs_a if r["cands"]]
     assert len(with_bowl) >= 1
     assert any(r["prefilter"] and "world stage 0" in r["prefilter"] for r in recs_a)   # flat cells: not A candidates
+    for r in with_bowl:                                             # A1 found it, A2 computed it, crop + provenance
+        assert r["a1"]["depressions"] and r["a1"]["depressions"][0]["depth_m"] > 300
+        assert r["prov"]["config_polar"] == "config-v1" and "GLO-30" in r["prov"]["dem"]
+        crop = np.load(tmp / "night" / r["crop"]["path"])
+        assert crop["z_dm"].dtype == np.int16 and crop["res_m"] == 60.0
+        c = r["cands"][0]
+        assert c["bowl_r_m"] and c["rim_zone_px"] and all(k in c for k in ("c1_sunny_ridge", "c2_dark_floor", "c3_light_dark", "c24_impact"))
+    assert all("prov" in r for r in recs_a)
     recs_b1 = [json.loads(l) for l in open(tmp / "night" / "raw" / "B1" / "N35W112.jsonl")]
     assert sum(1 for r in recs_b1 if r["res"]) >= 40 and all(r["coarse_res"] == 90 for r in recs_b1)
 
@@ -112,6 +102,7 @@ def test_night_run_world_A_B1_defer_B2_resume_score(patched):
     n2.run_b2()
     recs_b2 = [json.loads(l) for l in open(tmp / "night" / "raw" / "B2" / "N35W112.jsonl")]
     assert len(recs_b2) == 10 and all(r["res"]["c10_flat_base"] is not None for r in recs_b2)
+    assert all(r["prov"]["config_mare"] and r["crop"]["shape"] for r in recs_b2)
 
     # morning: scoring from raw values only
     n2.res = 30
@@ -131,3 +122,28 @@ def test_max_hours_stops_cleanly(patched):
     log = (tmp / "night" / "night.log").read_text(encoding="utf-8")
     assert "time limit" in log and "B2 not started" in log
     assert "N35W112" not in n.prog["tiles"]
+
+
+def test_parallel_regions_mode_a1_skip_reasons(patched, monkeypatch):
+    """2 tiles in regions mode with 2 spawned workers (fakes installed by the test hook): A1 runs on all kept
+    cells, only the bowl cell(s) go to A2, the rest store the A1 skip reason; progress written by main only."""
+    night_run, _, tmp = patched
+    monkeypatch.setenv("NIGHT_RUN_TEST_HOOK", str(ROOT / "tests" / "night_fakes.py") + ":install")
+    n = night_run.Night(tmp / "night", ROOT / "config" / "night_regions.yaml")
+    n.regions = [{"name": "t", "bbox": [-112.0, 35.0, -110.0, 36.0], "priority": 1}]
+    n.s["auto_b2"] = False
+    n.run(tracks=("A",), res=30, workers=2)
+    tiles = n.prog["tiles"]
+    assert len(tiles) == 2 and all(st["A"] == "done" and not st.get("error") for st in tiles.values())
+    recs = [json.loads(l) for p in sorted((tmp / "night" / "raw" / "A").glob("*.jsonl")) for l in open(p)]
+    a2 = [r for r in recs if r["cands"]]
+    skipped = [r for r in recs if r["prefilter"] and r["prefilter"].startswith("A1:")]
+    assert 1 <= len(a2) <= 4 and len(skipped) >= 80
+    assert sum(st["A2_cells"] for st in tiles.values()) == len(a2)
+    assert all(r["prov"]["track"] == "A1+A2" for r in recs)
+    assert not list((tmp / "night").glob("progress.json.tmp*"))
+    # resume with workers: nothing to redo
+    n2 = night_run.Night(tmp / "night", ROOT / "config" / "night_regions.yaml")
+    n2.regions = n.regions
+    n2.run(tracks=("A",), res=30, workers=2)
+    assert "0 to do" in (tmp / "night" / "night.log").read_text(encoding="utf-8")

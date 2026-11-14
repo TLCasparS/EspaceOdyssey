@@ -17,6 +17,7 @@ dependencies:
 - earthengine-api
 - jupyterlab
 - folium
+- plotly
 - streamlit
 - pytest
 - pyyaml

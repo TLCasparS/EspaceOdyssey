@@ -35,7 +35,7 @@ def mare_buffer_m(cfg) -> float:
     return cfg["mare"]["radius_km"] * 1000 + 500        # the 5 km zone around a pad at the cell edge + margin
 
 
-def cell_mare(cell, dem, dem_tf, usable, lc_tf, cfg):
+def cell_mare(cell, dem, dem_tf, usable, lc_tf, cfg, return_grid=False):
     m = cfg["mare"]
     lon_c, lat_c = (cell["west"] + cell["east"]) / 2, (cell["south"] + cell["north"]) / 2
     sub, sub_tf = cut_window(dem, dem_tf, padded_bbox(cell["west"], cell["south"], cell["east"], cell["north"],
@@ -55,7 +55,7 @@ def cell_mare(cell, dem, dem_tf, usable, lc_tf, cfg):
     for name in MARE_CRITERIA:
         sc = score_direct(res[name], m["criteria"][name])
         res[f"s_{name}"] = None if sc is None else round(sc, 4)
-    return res
+    return (res, mg) if return_grid else res
 
 
 def run_mare(bbox, name, cfg, dem_res=30, pop_path=None, out_root="out", log=print):
