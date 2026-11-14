@@ -49,7 +49,6 @@ a { color: var(--earth); }
 .filter-label { font-family: var(--title); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .seg button { background: transparent; border: 0; padding: 6px 10px; min-height: 32px; font-size: 12px; color: var(--muted); cursor: pointer; }
-.seg-lg button { padding: 8px 14px; min-height: 40px; font-size: 14px; }
 .seg button[aria-pressed="true"] { background: var(--brand); color: var(--text); font-weight: 600; box-shadow: inset 0 -3px 0 var(--signal); }
 .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
 .tab { background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 8px 14px; min-height: 40px; font-size: 14px; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
@@ -69,14 +68,20 @@ a { color: var(--earth); }
 .link-btn { background: none; border: 0; color: var(--earth); text-decoration: underline; cursor: pointer; padding: 8px 4px; font-size: 13px; }
 .chip-x { background: var(--signal); color: var(--on-signal); border: 0; border-radius: 999px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
 
-/* Layout: list | globe | card */
-.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr) 430px; gap: 16px; padding: 16px 24px; min-height: calc(100vh - 230px); }
+/* Layout: Earth twins list | Earth | Moon on top (both globes turning), the site card under the two globes */
+.layout { display: grid; grid-template-columns: 300px minmax(0, 1.7fr) minmax(320px, 1fr); grid-template-rows: minmax(480px, 62vh) auto;
+  grid-template-areas: "list earth moon" "list card card"; gap: 16px; padding: 16px 24px; align-items: start; }
+.moon-wrap, .globe-wrap { align-self: stretch; }
+.moon-wrap { grid-area: moon; }
+.globe-wrap { grid-area: earth; }
+.list-panel { grid-area: list; }
+.card-panel { grid-area: card; }
 .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); }
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .panel-head h2 { font-size: 20px; text-transform: uppercase; }
 
 /* Site list */
-.list-panel { padding: 16px; display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 230px); min-height: 520px; overflow: auto; }
+.list-panel { padding: 16px; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 16px; max-height: calc(100vh - 32px); min-height: 420px; overflow: auto; }
 .hint { margin: 0; font-size: 12px; color: var(--muted); }
 .site-list { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .site-btn { width: 100%; text-align: left; display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--panel-2); border: 2px solid transparent; cursor: pointer; }
@@ -93,7 +98,7 @@ a { color: var(--earth); }
 .empty { font-size: 13px; color: var(--muted); padding: 8px 2px; }
 
 /* Globe */
-.globe-wrap { position: relative; min-height: 520px; border-radius: var(--radius); overflow: hidden; background: #030A12; border: 1px solid var(--border); }
+.globe-wrap { position: relative; min-height: 420px; border-radius: var(--radius); overflow: hidden; background: #030A12; border: 1px solid var(--border); }
 .globe { position: absolute; inset: 0; }
 .globe-legend { position: absolute; left: 12px; bottom: 12px; background: rgba(6,18,28,.85); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; max-width: 240px; }
 .legend-title { font-weight: 600; }
@@ -112,6 +117,31 @@ a { color: var(--earth); }
 .view-btn[aria-pressed="true"] { background: var(--brand); border-color: var(--signal); box-shadow: inset 0 -3px 0 var(--signal); }
 .terrain-caption { position: absolute; left: 12px; bottom: 12px; z-index: 3; margin: 0; max-width: calc(100% - 24px); background: rgba(6,18,28,.88); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: var(--muted); }
 .terrain-caption b { color: var(--text); font-size: 14px; }
+/* Values panel over the 3D view (right side, left of the map's zoom and tilt buttons) */
+.terrain-values { position: absolute; top: 12px; right: 52px; z-index: 3; width: 260px; max-width: calc(100% - 64px); max-height: calc(100% - 110px); overflow: auto; background: rgba(6,18,28,.9); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px 10px; font-size: 12px; color: var(--muted); }
+.terrain-values[hidden] { display: none; }
+.tv-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.tv-head b { display: block; color: var(--text); font-size: 14px; line-height: 1.25; }
+.tv-score { display: block; color: var(--signal); font-weight: 600; margin-top: 2px; }
+.tv-toggle { flex: none; font: inherit; font-weight: 600; color: var(--text); background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
+.tv-toggle:hover, .tv-toggle:focus-visible { border-color: var(--signal); }
+.tv-group { margin: 10px 0 4px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.terrain-values ul { list-style: none; margin: 0; padding: 0; }
+.tv-row { display: grid; grid-template-columns: 1fr auto; column-gap: 8px; padding: 3px 0; }
+.tv-label { color: var(--text); }
+.tv-val { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tv-val.tv-wide { white-space: normal; }
+.tv-bar { grid-column: 1 / -1; height: 4px; margin-top: 3px; border-radius: 2px; background: rgba(255,255,255,.1); overflow: hidden; }
+.tv-bar i { display: block; height: 100%; background: var(--signal); border-radius: 2px; }
+.tv-bar.is-plain i { background: var(--muted); }
+.tv-note { margin: 8px 0 0; font-size: 11px; line-height: 1.4; }
+/* Narrow map: sit under the Back/Moon buttons; while open, hide the help caption to make room */
+.globe-wrap { container-type: inline-size; }
+@container (max-width: 600px) {
+  .terrain-values { top: 60px; max-height: calc(100% - 132px); }
+  .terrain-values.is-open { max-height: calc(100% - 72px); }
+  .globe-wrap:has(.terrain-values.is-open) .terrain-caption { display: none; }
+}
 .cell-key { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 4px; }
 .cell-key i { display: inline-block; width: 14px; height: 0; border-top: 2.5px solid; margin-left: 4px; }
 .cell-key i:first-child { margin-left: 0; }
@@ -119,7 +149,7 @@ a { color: var(--earth); }
 .globe-error { position: absolute; inset: auto 16px 50% 16px; text-align: center; color: var(--muted); }
 
 /* Card */
-.card-panel { padding: 20px; max-height: calc(100vh - 230px); min-height: 520px; overflow: auto; }
+.card-panel { padding: 20px; max-height: 80vh; min-height: 420px; overflow: auto; }
 .card { display: flex; flex-direction: column; gap: 16px; }
 .card-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
 .card-title h2 { font-size: 28px; line-height: 1.1; }
@@ -165,13 +195,14 @@ a { color: var(--earth); }
 
 /* Narrower screens: stack */
 @media (max-width: 1180px) {
-  .layout { grid-template-columns: 280px minmax(0, 1fr); }
-  .card-panel { grid-column: 1 / -1; max-height: none; min-height: 0; }
+  .layout { grid-template-columns: 280px minmax(0, 1fr); grid-template-rows: minmax(420px, 55vh) auto auto; grid-template-areas: "list earth" "list moon" "card card"; }
+  .moon-wrap { min-height: 520px; }
+  .list-panel { position: static; }
 }
 @media (max-width: 760px) {
-  .layout { grid-template-columns: minmax(0, 1fr); padding: 12px 16px; }
-  .globe-wrap { min-height: 380px; order: -1; }
-  .list-panel { max-height: none; min-height: 0; }
+  .layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "earth" "moon" "list" "card"; padding: 12px 16px; }
+  .globe-wrap { min-height: 380px; }
+  .list-panel, .card-panel { max-height: none; min-height: 0; }
   .topbar, .filters { padding-left: 16px; padding-right: 16px; }
   .brand h1 { font-size: 24px; }
   .team-mark { align-items: flex-start; }
@@ -212,3 +243,52 @@ a { color: var(--earth); }
 .impact-line > span:first-child { display: inline-block; min-width: 110px; color: var(--muted); }
 .impact-line a { color: var(--signal-soft); }
 .region-btn .muted { color: var(--muted); font-weight: 400; }
+
+/* Moon panel: globe, base buttons, the lunar target in a few lines */
+.moon-wrap { display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.moon-globe-box { position: relative; flex: 1 1 auto; min-height: 220px; background: #030A12; border-bottom: 1px solid var(--border); }
+.moon-label { position: absolute; top: 10px; left: 12px; margin: 0; font-family: var(--title); font-size: 18px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--moon); pointer-events: none; }
+.moon-bases { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px 0; }
+.moon-btn { flex: 1 1 140px; text-align: left; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font-size: 12.5px; cursor: pointer; line-height: 1.3; }
+.moon-btn b { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--signal); }
+.moon-btn[aria-pressed="true"] { border-color: var(--signal); box-shadow: inset 0 0 0 1px var(--signal); }
+.moon-btn[data-soon] b { color: var(--muted); }
+.moon-btn .soon { display: block; font-size: 11px; color: var(--muted); font-style: italic; }
+.moon-btn:hover, .moon-btn:focus-visible { border-color: var(--signal); }
+.moon-info { padding: 8px 12px 12px; font-size: 12.5px; color: var(--muted); overflow: auto; max-height: 42%; flex: none; }
+.moon-info p { margin: 0 0 6px; }
+.moon-title { color: var(--text); font-size: 14px; }
+.moon-title b { color: var(--moon); }
+.moon-why { line-height: 1.45; }
+.moon-sub { margin-top: 8px !important; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.moon-vals { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; }
+.moon-vals li { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; border-bottom: 1px solid rgba(36,70,94,.6); }
+.moon-vals li span { color: var(--text); }
+.moon-vals b { color: var(--moon); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.moon-vals .is-fact { grid-column: 1 / -1; flex-wrap: wrap; }
+.moon-vals .is-fact em { flex-basis: 100%; font-size: 11px; color: var(--accent); }
+.moon-soon { color: var(--accent); }
+/* Closest Earth twins (or the regions searched next) under the Moon: each one turns the Earth to it */
+.moon-twins { display: flex; flex-direction: column; gap: 4px; }
+.moon-twin { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font: inherit; font-size: 12.5px; cursor: pointer; }
+.moon-twin:hover, .moon-twin:focus-visible { border-color: var(--signal); }
+.moon-twin > span:not(.rank) { flex: 1; }
+.moon-twin b { color: var(--signal); font-variant-numeric: tabular-nums; }
+.moon-twin i { font-size: 11px; color: var(--muted); }
+.moon-twin i.best { color: var(--accent); font-style: normal; font-weight: 600; }
+.moon-twin .rank { width: 22px; height: 22px; font-size: 11px; flex: none; }
+/* The top three twins pulse for a few seconds after a base is picked on the Moon */
+@keyframes twinPulse { 0%, 100% { border-color: transparent; box-shadow: none; } 50% { border-color: var(--signal); box-shadow: 0 0 0 3px rgba(60,200,180,.25); } }
+.site-btn.is-twin { animation: twinPulse 1.4s ease-in-out 4; }
+.site-btn.is-twin[aria-current="true"] { animation: none; }
+.list-note { margin: 2px 0 4px; padding: 8px 10px; border-radius: 8px; border: 1px dashed var(--moon); background: rgba(232,227,211,.06); font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+.list-note b { color: var(--moon); }
+@media (prefers-reduced-motion: reduce) { .site-btn.is-twin { animation: none; border-color: var(--signal); } }
+.moon-vals .has-note { grid-column: 1 / -1; flex-wrap: wrap; }
+.moon-vals .has-note em { flex-basis: 100%; font-size: 11px; font-style: normal; color: var(--muted); }
+.moon-detail { margin-top: 8px !important; padding: 6px 8px; border-left: 2px solid var(--moon); background: rgba(232,227,211,.06); line-height: 1.45; }
+.moon-fig { font-size: 12px; }
+@media (max-width: 760px) {
+  .moon-globe-box { flex: none; height: 260px; }
+  .moon-info { max-height: none; }
+}

@@ -1,7 +1,8 @@
 # App: Earth Twins of the Moon
 
-A static web page (HTML + JavaScript, no build step): ranked site list, 3D globe with a
-suitability heatmap, and an analog card with a radar chart for each site.
+A static web page (HTML + JavaScript, no build step). Layout: the ranked list of Earth twins on the left,
+the Earth globe with a suitability heatmap in the middle, the Moon globe to pick the lunar base on the
+right, and under the two globes an analog card with a radar chart for each site.
 
 ## Run it on your laptop
 
@@ -57,9 +58,35 @@ The app knows all 29 criteria from "Moon Analog Criteria and Datasets" (list `CR
 five groups: Light, Terrain, Environment, Material & subsurface, Practical). A criterion with no data
 shows as greyed out in the filters. Only the `polar` base type has pipeline data so far.
 
+## Moon globe
+
+- Shows one marker per lunar base (list `MOON_BASES` in `app.js`, positions from `config/lunar_targets.json`
+  and Mateo's notes): Polar = Shackleton crater (89.625°S, 118.8°E), Mare = Apollo 11 site (0.674°N, 23.473°E;
+  "typical lunar mare plain").
+- Clicking a marker (or its button under the Moon) picks that base type: the Earth list, heatmap and cards are
+  re-ranked against it. This is the only base-type selector (the old "Base type" buttons are gone).
+- Picking a base links the two globes: its best independent Earth twin (the highest-ranked site that is not a
+  tuning site, e.g. Al Wahbah) is selected and the Earth turns to it, the top
+  three pulse on the globe and in the list for a few seconds, and the Moon card lists them ("Closest Earth
+  twins", each one clickable).
+- A base without Earth scores yet (Mare until the night run): the Earth shows the regions searched next
+  (`PLANNED_REGIONS` in `app.js`, from Caspar's `config/night_regions.yaml`) as dashed cream outlines with
+  rings, the list says the Mare twins are coming and that its ranking is still Polar, and the Moon card lists
+  those regions (click one to turn the Earth to it).
+- A base can be picked once `outputs/targets.json` has its values; until then it says "Earth twins coming".
+- Mare: the Moon card already shows Mateo's final target (median of 20 sample areas in 4 maria: relief 154 m,
+  landing pad 0.24°, drivable 99.3%, roughness 1.7 m), the day–night swing fact (≈ 290–300 K, LRO Diviner,
+  no Earth analog) and the Apollo 11 site's own values, kept in `MOON_BASES`. Once Caspar's export has the mare
+  base, the values come from `outputs/targets.json` instead.
+- The figure link shows only when the figure is in the repo (`figures/moon/mare_cells.png` comes with
+  Mateo's `mare-moon` branch).
+- Under the Moon: why it is a base site, its target values, and the facts no Earth place can match
+  (e.g. Grazing sun 1.9°).
+- Lava tube: add an entry with id `cave` to `MOON_BASES` when its data exists (candidate: Mare Tranquillitatis
+  pit, 8.336°N, 33.222°E).
+
 ## Filters
 
-- **Base type** switches the lunar target (only Polar with real data; Lava tube and Mare in `?sample`).
 - **Filter by** opens a group; pick criteria to keep only sites that match the Moon on them
   by at least the minimum match (default 70 %). Practical criteria filter on their own score.
 
@@ -90,6 +117,9 @@ team name, EspaceOdyssey. NASA imagery (Blue Marble) is used as data, with credi
   (NASA Earth Observatory, public domain), resized to 4096×2048 in
   `assets/blue-marble-2004-07-4096.jpg`. Source:
   https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/
+- Moon image: CGI Moon Kit colour map, 2019 version, 4096×2048 (`lroc_color_poles_4k.tif`), by NASA's
+  Scientific Visualization Studio from LRO camera data (LROC WAC mosaic, Arizona State University),
+  converted to JPEG in `assets/lroc-moon-color-4096.jpg`. Source: https://svs.gsfc.nasa.gov/4720
 - Radar chart: plain SVG in `app.js`, no library.
 - 3D terrain close-up: MapLibre GL JS 4.7.1 (open source), loaded from unpkg. No account or key.
   - Elevation: [Terrain Tiles on AWS](https://registry.opendata.aws/terrain-tiles/) (Mapzen; SRTM, GMTED,
@@ -97,5 +127,7 @@ team name, EspaceOdyssey. NASA imagery (Blue Marble) is used as data, with credi
   - Imagery: [Sentinel-2 cloudless 2020](https://s2maps.eu) by EOX (modified Copernicus Sentinel data),
     CC BY-NC-SA 4.0, fine for a non-commercial hackathon.
   - Clicking a site (list or globe) spins the globe to it, then flies into 3D terrain and orbits slowly.
+    A values panel (top right) shows that site's numbers, Earth vs Moon with a match bar, grouped into
+    Light, Shape and On the ground (only the criteria that count; display-only ones stay on the card); open on desktop, folded behind a "Values" button on phones.
     "Moon colours" turns the imagery grey. Esc or "Back to globe" returns. How close it flies in is
     the `zoom` value per site in `site_info.json`.
