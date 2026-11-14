@@ -14,6 +14,8 @@ DRAFT, not yet agreed: Which places on Earth best stand in for lunar base sites 
 - Lunar target for Polar: Shackleton rim area (LOLA 5 m site DEMs + LROC WAC illumination map). Targets for Mare/Cave: to be decided (e.g. Mare Tranquillitatis pit).
 - Earth candidates: not chosen by hand. They come out of the pipeline (filter → score → rank).
 - Test run done: Kali Gandaki (bbox 83.6 28.7 84.0 29.1) → median slope 28.75°, only 3.7 % of the area under 5° → too steep for a base site.
+- **Meteor Crater** (bbox -111.2 34.85 -110.85 35.15, `out/meteor_crater/`) is a **sanity/tuning site** with a known bowl. It is used to check and tune the pipeline and does **not** count for the later validation.
+- **Mustang** (bbox 83 28 85 30, `out/mustang_polar/`) stays as the example of a region without good analogs (deep valleys, almost no closed bowls).
 
 ## Data we use
 Full list and caveats: `docs/Moon_Analog_Criteria_and_Datasets.md`.

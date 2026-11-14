@@ -18,11 +18,11 @@ from dem.fetch import read_bbox
 from dem.grid import MetricGrid, metric_crs_for, onto_grid, reproject_dem
 from pipeline.filters import padded_bbox, run_filter
 from pipeline.polar import CRITERIA, best_of, polar_candidates, select_best
-from pipeline.scoring import NO_TARGET_NOTE, method
+from pipeline.scoring import method, scoring_note
 
 LABELS = {
     "c7_bowl": ("7 Bowl shape", "depth/width"),
-    "c9_relief": ("9 Relief ~5 km", "m"),
+    "c9_relief": ("9 Rim-to-floor depth", "m"),
     "c10_flat_base": ("10 Flat base spot", "deg"),
     "c11_walls": ("11 Steep walls", "deg"),
     "c13_roughness": ("13 Roughness", "m"),
@@ -155,9 +155,10 @@ def run(bbox, name, cfg, dem_res=30, pop_path=None, out_root="out", log=print):
 
 RANK_COLS = (["rank", "id", "score", "n_scored", "lon", "lat"]
              + [x for c in CRITERIA for x in (c, f"s_{c}", f"method_{c}")]
-             + ["anchor", "c7_depth_m", "c7_width_m", "depression_extends_outside_cell", "n_depressions",
+             + ["anchor", "c7_depth_m", "c7_width_m", "c7_elongation", "depression_extends_outside_cell", "n_depressions",
                 "n_candidates", "n_valid_candidates", "c14_n_steep", "low_lon", "low_lat", "low_elev_m",
-                "base_lon", "base_lat", "base_elev_m", "base_to_low_km",
+                "base_lon", "base_lat", "base_elev_m", "base_to_low_km", "base_to_bowl_km",
+                "wall_ring_km", "c11_ring_covered",
                 "usable", "largest_patch_km2", "utm_crs", "west", "south", "east", "north"])
 
 
@@ -194,9 +195,10 @@ def write_outputs(out_dir, bbox, dem_res, cfg, rows, ranked):
     crit = cfg["polar"]["criteria"]
     radar = {
         "base_type": "polar",
-        "note": NO_TARGET_NOTE + "; criteria with method 'none' have no score yet (null = no data, not 0)",
+        "note": scoring_note(crit),
         "axes": [{"id": c, "label": LABELS[c][0], "unit": LABELS[c][1], "direction": crit[c]["direction"],
-                  "method": method(crit[c]), "weight": crit[c]["weight"]} for c in CRITERIA],
+                  "method": method(crit[c]), "weight": crit[c]["weight"],
+                  "target": crit[c].get("target"), "tolerance": crit[c].get("tolerance")} for c in CRITERIA],
         "lunar_target": cfg["lunar_targets"]["polar"],    # raw values in the same units; null = TODO
         "cells": [{"id": r["id"], "rank": r["rank"], "score": r["score"], "lon": r["lon"], "lat": r["lat"],
                    "scores": {c: _clean(r.get(f"s_{c}")) for c in CRITERIA},
@@ -207,9 +209,9 @@ def write_outputs(out_dir, bbox, dem_res, cfg, rows, ranked):
 
     with open(os.path.join(out_dir, "run_info.json"), "w") as f:
         json.dump({"bbox": list(bbox), "dem": f"Copernicus GLO-{dem_res} (AWS)",
-                   "landcover": "ESA WorldCover 2021 v200 (AWS)", "note": NO_TARGET_NOTE,
+                   "landcover": "ESA WorldCover 2021 v200 (AWS)", "note": scoring_note(crit),
                    "n_cells": len(rows), "n_ranked": len(ranked),
                    "dropped_by_filter": sum(1 for r in rows if r["filter_reason"]),
                    "dropped_by_terrain": sum(1 for r in rows if r.get("terrain_reason")),
-                   "rank_basis": "percentile among all valid candidate places of this run",
+                   "rank_basis": "rank-method criteria only: percentile among all valid candidate places of this run",
                    "config": cfg}, f, indent=1)

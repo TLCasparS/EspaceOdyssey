@@ -24,7 +24,7 @@ from pipeline.config import load_config  # noqa: E402
 from pipeline.polar import CRITERIA  # noqa: E402
 from pipeline.run import run  # noqa: E402
 
-SHORT = {"c7_bowl": "7 bowl", "c9_relief": "9 relief m", "c10_flat_base": "10 base deg",
+SHORT = {"c7_bowl": "7 bowl", "c9_relief": "9 depth m", "c10_flat_base": "10 base deg",
          "c11_walls": "11 walls deg", "c13_roughness": "13 rough m", "c14_aspect": "14 pole"}
 
 
@@ -46,7 +46,7 @@ def main():
     cfg = load_config(a.config)
     rows, ranked = run(tuple(a.bbox), a.name, cfg, a.res, a.pop, a.out)
 
-    print(f"\nTop {min(a.top, len(ranked))} (raw value [score]; rank scores only comparable within this run):")
+    print(f"\nTop {min(a.top, len(ranked))} (raw value [score]; target scores comparable across runs, rank scores only within this run):")
     head = f"{'#':>3} {'cell':9} {'score':>5} {'n':>2} " + " ".join(f"{SHORT[c]:>17}" for c in CRITERIA)
     print(head)
     for r in ranked[:a.top]:

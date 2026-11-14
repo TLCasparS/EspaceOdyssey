@@ -43,10 +43,10 @@ The "Base type" column says which lunar base a criterion matters for; "Any" appl
 | 6 | Clear skies | Any | hard, direct light | annual cloud-free share | MODIS clear-sky coverage | Secondary |
 |  | **Terrain** |  |  |  |  |  |
 | 7 | Bowl shape | Polar | closed, deep crater | closed depression; depth to width ratio | DEM | Core |
-| 8 | Crater size match | Polar | Shackleton \~21 km wide, \~4 km deep | diameter and depth vs. target crater | DEM | Secondary |
-| 9 | Relief | Any | high walls at the pole, low relief on mare | max minus min elevation within \~5 km | DEM | Core |
+| 8 | Crater size match | Polar | Shackleton rim crest 20.9 km wide, rim to floor 4073 m (LOLA LDEM\_80S\_20MPP\_ADJ, resampled to 60 m, measured 14 Nov 2026)¹ | diameter and depth vs. target crater | DEM | Secondary |
+| 9 | Rim-to-floor depth | Any | Shackleton 4073 m (LOLA, 14 Nov 2026)¹; low relief on mare | rim-to-floor depth of the bowl: median rim crest elevation minus the floor low point (changed 14 Nov 2026 from "max minus min within \~5 km", which did not reach Shackleton's rim and was scale-dependent). Size-dependent, so display only (weight 0) | DEM | Core |
 | 10 | Flat base spot | Any | landing and building | slope at the candidate cell (low is good) | DEM | Core |
-| 11 | Steep walls | Polar | inner walls \~30° | mean slope of walls around the low point (high is good) | DEM | Core |
+| 11 | Steep walls | Polar | Shackleton inner wall mean slope 29.0° (LOLA LDEM\_80S\_20MPP\_ADJ at 60 m, measured 14 Nov 2026)¹ | mean slope of walls around the low point (high is good) | DEM | Core |
 | 12 | Drivable share | Any | rover routes around the base | share of cells within \~5 km under 15–20° | DEM | Secondary |
 | 13 | Roughness | Any | traverse difficulty | spread of elevation in a moving window | DEM | Core |
 | 14 | Aspect | Polar | pole-facing slopes hold shadow | share of steep terrain facing the nearer pole | DEM | Core |
@@ -68,6 +68,8 @@ The "Base type" column says which lunar base a criterion matters for; "Any" appl
 | 27 | Dark when reachable | Polar | Haughton's gap: no shadow in field season | overlap of dark period and accessible months | shadow sim + snow cover | Secondary |
 | 28 | Line of sight | Any | direct-to-Earth communication | viewshed from the site | DEM | Stretch |
 | 29 | Research station nearby | Any | existing logistics | distance to nearest station | station lists | Stretch |
+
+¹ Measured by `src/compute_lunar_target.py` from [LDEM\_80S\_20MPP\_ADJ.TIF](https://pgda.gsfc.nasa.gov/products/90) (LOLA, Barker et al. 2023), a ±25 km window around the pole, bilinear to the common 60 m grid. Crater found from the data (largest closed depression near the pole). Rim crest = highest point per 1° azimuth within 1.3 × the bowl's equivalent radius; diameter = 2 × median crest distance from the floor low point; depth = median crest elevation minus the low point (−2869 m). Inner wall = bowl pixels between the floor (< 10°, ~5.2 km across) and the rim crest. Full values in `config/lunar_targets.json`. The pipeline's criterion 11 ring (0.5–1.0 × equivalent radius) gives 27.1° for the same crater.
 
 Rows 10 and 11 must stay separate: low slope is good at the base spot and high slope is good on the walls, so one combined slope score cancels out.
 
