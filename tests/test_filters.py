@@ -120,3 +120,13 @@ def test_population_filter(tmp_path):
 def test_distance_without_targets_is_inf():
     _, tf = _raster(n=10)
     assert np.isinf(distance_m(np.zeros((10, 10), bool), tf, 2000)).all()
+
+
+def test_partial_edge_cell_is_dropped():
+    lc, tf = _raster()
+    m = pixel_masks(lc, tf, F)
+    full = _cell(tf, 160)                                    # ~16 km x 18 km of grass
+    assert evaluate_cell(full, lc, tf, m, F, cell_km=15)["keep"]
+    sliver = dict(full, east=full["west"] + 0.02)            # ~2 km wide
+    row = evaluate_cell(sliver, lc, tf, m, F, cell_km=15)
+    assert not row["keep"] and row["reason"].startswith("edge-cell")

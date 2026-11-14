@@ -21,6 +21,7 @@ filter:
   water_classes: [80, 90]     # water + herbaceous wetland
   water_buffer_m: 200         # (team start value)
 
+  min_cell_frac: 0.5          # (team start value) drop edge cells smaller than this share of a full cell
   min_land: 0.9               # min share of the cell with land-cover data; drops ocean / coast cells
   min_usable: 0.5             # (team start value) min share of the cell that is usable after masking
   min_patch_km2: 2.0          # (team start value) largest connected usable patch in the cell

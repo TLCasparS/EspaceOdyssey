@@ -6,6 +6,7 @@ flat base spot, later, in the criteria step.
 Pixel level (whole bbox, so buffers reach across cell borders):
     usable = keep class  AND  > built_up_buffer_m from built-up  AND  > water_buffer_m from water/wetland
 Cell level, dropped if any of:
+    cell area < min_cell_frac of a full cell (partial cells at the bbox edge),
     land share < min_land (ocean / coast), usable share < min_usable,
     largest connected usable patch < min_patch_km2, population > max_pop_per_km2 (only with --pop).
 Masked pixels are only excluded as base-spot locations; the DEM keeps all pixels.
@@ -103,7 +104,7 @@ class Population:
 
 
 def evaluate_cell(c: dict, lc: np.ndarray, transform, masks: dict, fcfg: dict,
-                  pop: Population | None = None) -> dict:
+                  pop: Population | None = None, cell_km: float | None = None) -> dict:
     """One output row: land-cover shares, masking shares, largest patch, keep + reasons."""
     rs, cs = window_of(c, transform, lc.shape)
     block = lc[rs, cs]
@@ -122,6 +123,9 @@ def evaluate_cell(c: dict, lc: np.ndarray, transform, masks: dict, fcfg: dict,
     density = pop.density(c) if pop else None
 
     reasons = []
+    area_frac = cell_area_km2(c) / cell_km ** 2 if cell_km else 1.0
+    if area_frac < fcfg["min_cell_frac"]:
+        reasons.append(f"edge-cell {area_frac:.0%} of full size")
     if land < fcfg["min_land"]:
         reasons.append(f"ocean/no-data {1 - land:.0%}")
     if usable < fcfg["min_usable"]:
@@ -134,6 +138,7 @@ def evaluate_cell(c: dict, lc: np.ndarray, transform, masks: dict, fcfg: dict,
     return {
         **{k: (round(v, 5) if isinstance(v, float) else v) for k, v in c.items()},
         "keep": not reasons, "reason": "; ".join(reasons),
+        "area_km2": round(cell_area_km2(c), 1),
         "land": round(land, 4), "usable": round(usable, 4),
         "lost_to_built_buffer": round(lost_built, 4), "lost_to_water_buffer": round(lost_water, 4),
         "largest_patch_km2": round(patch_km2, 2),
@@ -162,5 +167,5 @@ def run_filter(bbox, cfg: dict, pop_path: str | None = None, log=print):
     lc, transform = read_landcover(*padded_bbox(west, south, east, north, pad), fcfg["landcover_res_m"])
     masks = pixel_masks(lc, transform, fcfg)
     pop = Population(pop_path) if pop_path else None
-    rows = [r for r in (evaluate_cell(c, lc, transform, masks, fcfg, pop) for c in cells) if r]
+    rows = [r for r in (evaluate_cell(c, lc, transform, masks, fcfg, pop, cfg["grid"]["cell_km"]) for c in cells) if r]
     return rows, lc, transform, masks
