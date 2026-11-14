@@ -201,3 +201,8 @@ a { color: var(--earth); }
 .missed-box p { margin: 0; color: var(--text); font-size: 14px; line-height: 1.5; }
 .regions .missed-title { margin-top: 10px; }
 .region-btn.missed-btn { border-color: rgba(255,138,112,.6); }
+
+/* Tuning sites (Meteor Crater, Pinacate): used to set up the method, not an independent result */
+.tag-tuning { display: inline-block; padding: 1px 7px; border-radius: 999px; border: 1px dashed var(--signal-soft); color: var(--signal-soft); font-size: 11px; font-weight: 600; letter-spacing: .02em; }
+.tuning-note { margin: 0 0 14px; padding: 8px 12px; border-radius: 10px; background: rgba(60,200,180,.08); color: var(--muted); font-size: 13px; line-height: 1.5; }
+.tuning-note .tag-tuning { margin-right: 6px; }

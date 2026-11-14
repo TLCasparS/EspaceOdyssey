@@ -198,6 +198,11 @@ function scoreSite(site) {
 
 const typeOf = site => state.info[site.SITE]?.type ?? 'candidate';
 const nameOf = site => state.info[site.SITE ?? site]?.name ?? site.SITE ?? site;
+// Tuning regions (CLAUDE.md, "do not count for validation"): used to check and set up the method, so a
+// high rank there is partly built in. Screening regions (Al Wahbah, Roter Kamm, ...) are the fair results.
+const TUNING_RUNS = new Set(['meteor_crater', 'pinacate', 'sf_volcanic']);
+const isTuning = site => TUNING_RUNS.has(site.RUN);
+const TUNING_NOTE = 'Tuning site: we used this region to check and set up our method, so its rank is partly built in and does not count as an independent result.';
 
 // Active filters: a site passes when it has data and matches at least the threshold on every selected criterion.
 function passesFilters(site) {
@@ -360,6 +365,7 @@ function renderList() {
             ${s.sim == null ? '<span class="not-scored">Not scored yet</span>' : `<span class="bar"><span style="width:${Math.round(s.sim * 100)}%"></span></span>
             <span class="pct">${pct(s.sim)}</span>`}
             <span>${s.type === 'known' ? 'Known' : 'New'}</span>
+            ${isTuning(s) ? `<span class="tag-tuning" title="${esc(TUNING_NOTE)}">Tuning</span>` : ''}
           </span>
         </span>
       </button>
@@ -525,6 +531,7 @@ function renderCard() {
     </div>
 
     ${info.why ? `<p class="why">${research(info.why)}</p>` : ''}
+    ${isTuning(s) ? `<p class="tuning-note"><span class="tag-tuning">Tuning site</span> We used this region to check and set up our method, so its high rank is partly built in. The fair test results are the screening regions, such as Al Wahbah and Roter Kamm.</p>` : ''}
 
     <div class="card-body">
     <div class="card-col card-col-a">
