@@ -497,7 +497,7 @@ function terrainStyle() {
     },
     layers: [
       { id: 'space', type: 'background', paint: { 'background-color': '#03051A' } },
-      { id: 'img', type: 'raster', source: 'img' },
+      { id: 'img', type: 'raster', source: 'img', paint: moonPaint() },
       { id: 'shade', type: 'hillshade', source: 'shade', paint: { 'hillshade-exaggeration': 0.3, 'hillshade-shadow-color': '#000000' } },
     ],
     terrain: { source: 'dem', exaggeration: TERRAIN.exaggeration },
@@ -528,6 +528,7 @@ function openTerrain() {
   state.view = 'terrain';
   syncViewUI();
   pauseRotation(0);
+  state.globe?.pauseAnimation();   // the globe is covered; stop drawing it so the 3D map gets the GPU
   if (!terrainMap) {
     terrainMap = new maplibregl.Map({
       container: 'terrain', style: terrainStyle(), center: [s.lng, s.lat], zoom: 4, pitch: 0,
@@ -537,7 +538,14 @@ function openTerrain() {
     terrainMap.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     // Any touch, drag or scroll by the viewer stops the slow orbit.
     ['mousedown', 'touchstart', 'wheel'].forEach(ev => terrainMap.on(ev, stopOrbit));
-    terrainMap.once('load', () => { applyMoonColours(); flyTerrainTo(s); });
+    // Fly only after 'load': a flight started before the map has loaded stalls it (no tiles load).
+    terrainMap.once('load', () => {
+      // Start the credits folded into the ⓘ button so they don't cover the caption.
+      document.querySelectorAll('#terrain .maplibregl-ctrl-attrib').forEach(d => {
+        d.classList.remove('maplibregl-compact-show'); d.removeAttribute('open');
+      });
+      flyTerrainTo(currentSite());
+    });
   } else {
     terrainMap.resize();
     flyTerrainTo(s);
@@ -549,14 +557,19 @@ function closeTerrain() {
   stopOrbit();
   state.view = 'globe';
   syncViewUI();
+  state.globe?.resumeAnimation();
   pauseRotation(3000);
 }
 
 // Grey, high-contrast imagery so Earth terrain reads like the Moon.
+const moonPaint = () => ({ 'raster-saturation': state.moonColours ? -1 : 0, 'raster-contrast': state.moonColours ? 0.25 : 0 });
+// With 3D terrain, MapLibre caches the imagery draped on the ground, so setPaintProperty only
+// recolours tiles that load later. Re-adding the layer redraws all of it at once.
 function applyMoonColours() {
-  if (!terrainMap?.getLayer('img')) return;
-  terrainMap.setPaintProperty('img', 'raster-saturation', state.moonColours ? -1 : 0);
-  terrainMap.setPaintProperty('img', 'raster-contrast', state.moonColours ? 0.25 : 0);
+  const layer = terrainMap?.getStyle()?.layers.find(l => l.id === 'img');
+  if (!layer) return;
+  terrainMap.removeLayer('img');
+  terrainMap.addLayer({ ...layer, paint: moonPaint() }, 'shade');
 }
 
 function syncViewUI() {
