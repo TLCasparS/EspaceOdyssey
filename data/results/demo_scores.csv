@@ -1,2 +1,0 @@
-name,lat,lon,flat_lit_fraction,flat_max_dark_days,darkest_terrain_shadow_p99,near_permanent_shadow_km2,max_extra_dark_days,sunniest_lit_vs_flat_p99,max_continuous_sun_h,analog_score
-synthetic_crater_75N,75.0,0.0,0.518,93,0.407,0.0,110,1.0,2711.0,0.638

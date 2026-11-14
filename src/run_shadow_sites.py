@@ -1,7 +1,7 @@
 """Rank candidate sites by how much they behave like the lunar south pole.
 
 Usage (from the repo root):
-    python src/run_shadow_sites.py                      # all sites in data/sites.csv
+    python src/run_shadow_sites.py                      # all sites in config/sites.csv
     python src/run_shadow_sites.py --only rjukan        # one site
     python src/run_shadow_sites.py --demo               # synthetic crater, no internet
 
@@ -50,7 +50,7 @@ def plot_site(name, grid, res, out_png: Path):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--sites", default="data/sites.csv")
+    p.add_argument("--sites", default="config/sites.csv")
     p.add_argument("--only", help="run just this site name")
     p.add_argument("--radius-km", type=float, default=5.0, help="half-width of analysis square")
     p.add_argument("--horizon-km", type=float, default=20.0, help="how far to look for blocking terrain")

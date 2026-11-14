@@ -38,11 +38,11 @@ ridges that get almost all the sun possible at that latitude.
 conda env create -f environment.yml && conda activate spaceapps
 python src/run_shadow_sites.py --demo           # synthetic 20 km crater at 75 N, ~10 s
 python src/run_shadow_sites.py --only rjukan    # one real site (downloads ~2 tiles)
-python src/run_shadow_sites.py                  # all sites in data/sites.csv
+python src/run_shadow_sites.py                  # all sites in config/sites.csv
 python -m pytest tests                          # sanity checks
 ```
 
-Add candidates to `data/sites.csv`. The coordinates there are approximate
+Add candidates to `config/sites.csv`. The coordinates there are approximate
 (`coords_checked = no`): check them on a map before you trust the results.
 
 ## Known limits
