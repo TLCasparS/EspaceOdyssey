@@ -27,7 +27,7 @@ the old fake sample data instead, useful for design work.
 | `outputs/targets.json` | pipeline | per base type: which criteria count, their weight, and the raw Moon value with its unit |
 | `outputs/heatmap.json` | pipeline | globe heatmap points `{lat, lng, weight}` |
 | `outputs/cells.json` | pipeline | every searched grid cell: outlines in the 3D view (teal = scored, orange = skipped at an edge or the sea, grey = no crater, light blue = ice-filled floor); grouped per region into outlines on the globe (teal = crater found, coral = nothing found) and the "Searched, no crater found" list |
-| `sample/scores.csv` | Sofia | in normal mode only its `SITE,LAT,LON`: puts the sites the pipeline hasn't scored yet on the map, listed as "Not scored yet" (its fake values are never shown) |
+| `sample/scores.csv` | Sofia | in normal mode only its `SITE,LAT,LON`, for the **known analog sites** the pipeline hasn't scored yet: they show as faint grey dots on the globe and in a folded "Known analog sites · not scored yet" box under the ranking, with their notes. Its fake values are never shown, and unscored team candidates (the valleys) are left out |
 | `sample/site_info.json` | Sofia | names, research notes, sources and 3D zoom per site; `export_app.py` reads it too, to name known sites |
 
 How the scores are read:

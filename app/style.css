@@ -189,3 +189,9 @@ a { color: var(--earth); }
 .region-note { color: var(--muted) !important; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 5px; }
 .region-note[hidden] { display: none; }
 .region-note i { display: inline-block; width: 12px; height: 0; border-top: 3px solid; margin-left: 4px; }
+
+/* Known analog sites (not scored yet): folded box under the ranking */
+.known-ref summary { cursor: pointer; list-style-position: inside; }
+.known-ref summary .muted { color: var(--muted); font-weight: 400; }
+.known-ref details[open] summary { margin-bottom: 6px; }
+.region-btn.is-current { border-color: var(--signal); background: var(--brand); }

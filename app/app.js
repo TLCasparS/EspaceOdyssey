@@ -77,6 +77,7 @@ const state = {
   heat: null, cells: [], // pipeline heatmap points and searched cells
   base: 'polar', group: 'all', active: new Set(), threshold: 0.7,
   typeFilter: 'all', selected: null, globe: null,
+  knownOpen: false,      // the folded "Known analog sites" box under the ranking
   view: 'globe', moonColours: false,   // 'globe' or 'terrain' (3D close-up of the selected site)
 };
 
@@ -118,12 +119,13 @@ async function loadAll() {
   const rawFor = r => rawRows.find(x => (r.RUN && x.RUN === r.RUN && x.CELL === r.CELL) || x.SITE === r.SITE) ?? {};
   state.columns = new Set(head);
   state.sites = rows.map(r => ({ ...r, lat: r.LAT, lng: r.LON, raw: rawFor(r) }));
-  // Sites in site_info.json that the pipeline hasn't scored yet (it has only run on a few areas so far):
-  // kept on the map and in the list as "not scored yet", with their research notes. Only their
-  // coordinates are read from the sample file, never its fake values.
+  // Known analog sites the pipeline hasn't scored yet (it has only run on a few regions so far): kept as a
+  // reference, in a small box under the ranking and as faint dots on the globe, with their research notes.
+  // Team candidates without a score (the valleys) are left out. Only coordinates are read from the
+  // sample file, never its fake values.
   if (coordsCsv) {
     const have = new Set(state.sites.map(x => x.SITE));
-    parseCSV(coordsCsv).rows.filter(r => info[r.SITE] && !have.has(r.SITE) && r.LAT != null && r.LON != null)
+    parseCSV(coordsCsv).rows.filter(r => info[r.SITE]?.type === 'known' && !have.has(r.SITE) && r.LAT != null && r.LON != null)
       .forEach(r => state.sites.push({ SITE: r.SITE, LAT: r.LAT, LON: r.LON, lat: r.LAT, lng: r.LON, raw: {}, unscored: true }));
   }
   state.targets = Object.fromEntries(Object.entries(targets).filter(([k]) => !k.startsWith('_')));
@@ -334,12 +336,13 @@ function wireFilters() {
 
 function renderList() {
   const list = document.getElementById('siteList');
-  const rows = visibleSites().filter(s => state.typeFilter === 'all' || s.type === state.typeFilter);
-  const total = state.sites.length, shown = visibleSites().length, unscored = total - scoredCount();
+  const ofType = s => state.typeFilter === 'all' || s.type === state.typeFilter;
+  const rows = visibleSites().filter(s => s.sim != null && ofType(s));          // the ranking: scored sites only
+  const reference = visibleSites().filter(s => s.sim == null && ofType(s));     // known analogs, not scored yet
+  const total = scoredCount(), shown = visibleSites().filter(s => s.sim != null).length;
   document.getElementById('listHint').textContent = state.active.size
     ? `${shown} of ${total} sites pass the filters. Ranked by similarity to a ${baseLabel().toLowerCase()} base.`
-    : `Ranked by similarity to a ${baseLabel().toLowerCase()} base on the ${similarityCriteria().length} criteria that count.`
-      + (unscored ? ` ${unscored} sites the pipeline hasn't scored yet are listed after them.` : '');
+    : `Ranked by similarity to a ${baseLabel().toLowerCase()} base on the ${similarityCriteria().length} criteria that count.`;
   list.innerHTML = rows.length ? rows.map(s => `
     <li>
       <button type="button" class="site-btn" data-site="${esc(s.SITE)}" aria-current="${s.SITE === state.selected}">
@@ -354,6 +357,18 @@ function renderList() {
         </span>
       </button>
     </li>`).join('') : '<li class="empty">No site passes these filters. Lower the minimum match or remove a filter.</li>';
+  // Known analog sites the pipeline hasn't scored yet: a small, folded reference box.
+  if (reference.length) {
+    list.insertAdjacentHTML('beforeend', `<li class="regions known-ref">
+      <details ${state.knownOpen || reference.some(s => s.SITE === state.selected) ? 'open' : ''}>
+        <summary class="regions-title">Known analog sites <span class="muted">· not scored yet (${reference.length})</span></summary>
+        <p class="regions-hint">Where analog work already happens. Our pipeline hasn't searched these regions yet; click one for its notes.</p>
+        ${reference.map(s => `<button type="button" class="region-btn site-btn-ref${s.SITE === state.selected ? ' is-current' : ''}" data-site="${esc(s.SITE)}">${esc(nameOf(s))}</button>`).join('')}
+      </details>
+    </li>`);
+    list.querySelector('.known-ref details').addEventListener('toggle', e => { state.knownOpen = e.target.open; });
+    list.querySelectorAll('.site-btn-ref').forEach(b => b.addEventListener('click', () => select(b.dataset.site, true)));
+  }
   // Regions the pipeline searched without finding a crater: also a result, worth showing.
   const empty = searchedRegions().filter(r => !r.ranked);
   if (empty.length && !state.active.size && state.typeFilter !== 'known') {
@@ -617,8 +632,10 @@ function initGlobe() {
     .labelLng('lng')
     .labelText(d => labelTextOf(d))
     .labelSize(d => (d.SITE === state.selected ? 1.6 : 1.0) * labelScale)
-    .labelDotRadius(d => (d.SITE === state.selected ? 0.7 : 0.45) * labelScale)
-    .labelColor(d => (d.SITE === state.selected ? '#FFFFFF' : (typeOf(d) === 'known' ? COLORS.known : COLORS.newSite)))
+    .labelDotRadius(d => (d.SITE === state.selected ? 0.7 : d.sim == null ? 0.3 : 0.45) * labelScale)
+    // Scored sites stand out; known analogs not scored yet are faint grey dots without a name.
+    .labelColor(d => (d.SITE === state.selected ? '#FFFFFF' : d.sim == null ? 'rgba(167,186,199,0.55)'
+      : (typeOf(d) === 'known' ? COLORS.known : COLORS.newSite)))
     .labelAltitude(() => 0.07 * labelScale)
     .labelResolution(2)
     .onLabelClick(d => select(d.SITE, true))
@@ -665,11 +682,11 @@ function setHeatNote() {
     : DATA.isFake ? 'Fake pattern, for design only'
     : heatPoints.length ? `${heatPoints.length} craters scored so far` : 'No heatmap data yet';
 }   // SITE → '' (hidden) or ' +n' (leader of a group)
-const labelTextOf = d => (labelHidden.has(d.SITE) ? (labelHidden.get(d.SITE) === '' ? '' : nameOf(d) + labelHidden.get(d.SITE)) : nameOf(d));
+const labelTextOf = d => (d.sim == null && d.SITE !== state.selected ? '' : labelHidden.has(d.SITE) ? (labelHidden.get(d.SITE) === '' ? '' : nameOf(d) + labelHidden.get(d.SITE)) : nameOf(d));
 
 function declutterLabels(sites) {
   labelHidden = new Map();
-  const order = [...sites].sort((a, b) => (b.SITE === state.selected) - (a.SITE === state.selected) || (a.rank ?? 1e9) - (b.rank ?? 1e9));
+  const order = sites.filter(s => s.sim != null || s.SITE === state.selected)   // unnamed dots don't count.sort((a, b) => (b.SITE === state.selected) - (a.SITE === state.selected) || (a.rank ?? 1e9) - (b.rank ?? 1e9));
   const kept = [];
   const minGap = 3 * labelScale;     // degrees; about three label heights
   for (const s of order) {
