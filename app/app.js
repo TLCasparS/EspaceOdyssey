@@ -58,7 +58,7 @@ const BASES = [
   { id: 'mare', label: 'Mare' },
 ];
 const byKey = Object.fromEntries(CRITERIA.map(c => [c.key, c]));
-const COLORS = { earth: '#6CB4EE', moon: '#E8E3D3', newSite: '#F0C85D', known: '#AAB3D6', red: '#D53C25' };
+const COLORS = { earth: '#6CB4EE', moon: '#E8E3D3', newSite: '#F0C85D', known: '#A7BAC7', signal: '#3CC8B4' };
 
 const state = {
   sites: [], targets: {}, info: {}, columns: new Set(),
@@ -280,17 +280,17 @@ function radarSVG(site) {
   const pt = (i, v) => [cx + Math.cos(ang(i)) * R * v, cy + Math.sin(ang(i)) * R * v];
   const poly = vals => vals.map((v, i) => (v == null ? null : pt(i, v).map(x => x.toFixed(1)).join(','))).filter(Boolean).join(' ');
   const rings = [0.25, 0.5, 0.75, 1].map(f =>
-    `<polygon points="${axes.map((_, i) => pt(i, f).join(',')).join(' ')}" fill="none" stroke="#283580" stroke-width="1"></polygon>`).join('');
+    `<polygon points="${axes.map((_, i) => pt(i, f).join(',')).join(' ')}" fill="none" stroke="#24465E" stroke-width="1"></polygon>`).join('');
   const lines = axes.map((a, i) => {
     const [x, y] = pt(i, 1);
-    return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#283580" ${a.site == null ? 'stroke-dasharray="3 4"' : ''}></line>`;
+    return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#24465E" ${a.site == null ? 'stroke-dasharray="3 4"' : ''}></line>`;
   }).join('');
   const labels = axes.map((a, i) => {
     const [x, y] = pt(i, 1.17);
     const cos = Math.cos(ang(i));
     const anchor = Math.abs(cos) < 0.2 ? 'middle' : cos > 0 ? 'start' : 'end';
     const note = a.site == null ? `<tspan x="${x.toFixed(1)}" dy="14" font-size="10.5">no data</tspan>` : '';
-    return `<text x="${x.toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="${anchor}" font-size="12" font-family="Fira Sans, sans-serif" fill="${a.site == null ? '#8D96BD' : '#EEF1FA'}">${esc(a.label)}${note}</text>`;
+    return `<text x="${x.toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="${anchor}" font-size="12" font-family="Fira Sans, sans-serif" fill="${a.site == null ? '#8AA2B2' : '#EEF3F6'}">${esc(a.label)}${note}</text>`;
   }).join('');
   const dots = axes.map((a, i) => (a.site == null ? '' : `<circle cx="${pt(i, a.site)[0].toFixed(1)}" cy="${pt(i, a.site)[1].toFixed(1)}" r="3.5" fill="${COLORS.earth}"></circle>`)).join('');
   return `<svg class="radar" viewBox="0 0 ${W} ${H}" role="img" aria-label="Radar chart: ${esc(site.SITE)} compared with the lunar target on ${n} axes">
@@ -415,7 +415,7 @@ function initGlobe() {
     // NASA Blue Marble Next Generation, July 2004, topography + bathymetry (NASA Earth Observatory),
     // resized from 5400x2700 to 4096x2048. Relief shading is already in the image.
     .globeImageUrl('assets/blue-marble-2004-07-4096.jpg')
-    .backgroundColor('#03051A')
+    .backgroundColor('#030A12')
     .atmosphereColor('#6CB4EE')
     .atmosphereAltitude(0.15)
     .heatmapsData([{ points: heat }])
@@ -504,7 +504,7 @@ function terrainStyle() {
       shade: dem,
     },
     layers: [
-      { id: 'space', type: 'background', paint: { 'background-color': '#03051A' } },
+      { id: 'space', type: 'background', paint: { 'background-color': '#030A12' } },
       { id: 'img', type: 'raster', source: 'img', paint: moonPaint() },
       { id: 'shade', type: 'hillshade', source: 'shade', paint: { 'hillshade-exaggeration': 0.3, 'hillshade-shadow-color': '#000000' } },
     ],
