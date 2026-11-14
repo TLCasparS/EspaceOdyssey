@@ -16,38 +16,41 @@ the browser blocks reading the data files from disk.
 
 ## Data it reads
 
-Set at the top of `app.js` (`DATA`):
+Set at the top of `app.js` (`DATA`). By default the app reads the pipeline's export in `../outputs/`
+(written by `src/export_app.py`). Add `?sample` to the URL (http://localhost:8000/app/?sample) to see
+the old fake sample data instead, useful for design work.
 
-| File | Who writes it | Now |
+| File | Who writes it | What the app does with it |
 |---|---|---|
-| `scores.csv` | Earth scoring (Caspar) | `sample/scores.csv`, fake values |
-| `targets.json` | Moon targets role | `sample/targets.json`, fake values |
-| `site_info.json` | Sofia (research notes per site) | `sample/site_info.json`, draft text |
+| `outputs/scores.csv` | pipeline (Caspar) | one row per scored crater: 0–1 similarity to the Moon per criterion, `SCORE_TOTAL`, `RANK` |
+| `outputs/raw_values.csv` | pipeline | raw Earth values for the chips, e.g. "Steep walls 23.9° vs 27.2°", and crater width/depth |
+| `outputs/targets.json` | pipeline | per base type: which criteria count, their weight, and the raw Moon value with its unit |
+| `outputs/heatmap.json` | pipeline | globe heatmap points `{lat, lng, weight}` |
+| `outputs/cells.json` | pipeline | every searched grid cell, drawn as outlines in the 3D view (teal = scored, orange = crater left out, grey = no crater) |
+| `sample/site_info.json` | Sofia | names, research notes, sources and 3D zoom per site; `export_app.py` reads it too, to name known sites |
 
-`scores.csv` follows the team format: `SITE,LAT,LON` and one 0–1 column per criterion.
-An empty cell means "no data": the app leaves it out of the score and says so on the card.
+How the scores are read:
 
-The app knows all 29 criteria from "Moon Analog Criteria and Datasets" (list `CRITERIA` in
-`app.js`, five groups: Light, Terrain, Environment, Material & subsurface, Practical). The
-original eight columns keep their names; the other 21 column names are a **proposal** to agree
-with the scoring roles (for example `GRAZING_SUN`, `COLD`, `BASALT`, `CAVE`, `ACCESS`). A
-criterion whose column is missing from `scores.csv` simply shows as "no data yet" in the filters.
+- The values in `scores.csv` already are the similarity to the Moon (1 = same as the Moon). So on the
+  radar the Moon is the full outer ring, and the site's shape shows how close it gets on each axis.
+- The headline % is `SCORE_TOTAL`, the weighted mean of the criteria that count (`counts: true` in
+  `targets.json`). Criteria with weight 0 (Sky-view, Relief, Pole-facing slopes) are shown as hollow
+  dots and "Also compared, not in the score".
+- An empty cell means "no value", never zero. The card says which of three reasons: no data yet,
+  waiting for a lunar value (the light criteria), or not computed yet.
+- Sites are keyed by `SITE`. A crater that matches a known site keeps that name (e.g. Meteor Crater);
+  others are named `<run> <cell>` (e.g. `pinacate r001c002`) and get a display `name` in `site_info.json`
+  (e.g. "El Elegante crater").
 
-`targets.json` has one entry per base type (`polar`, `cave`, `mare`) and lists only the
-criteria that matter for that base. Practical criteria have no lunar value: they never change
-the similarity score, they only filter.
+The app knows all 29 criteria from "Moon Analog Criteria and Datasets" (list `CRITERIA` in `app.js`,
+five groups: Light, Terrain, Environment, Material & subsurface, Practical). A criterion with no data
+shows as greyed out in the filters. Only the `polar` base type has pipeline data so far.
 
 ## Filters
 
-- **Base type** switches the lunar target (Polar, Lava tube, Mare).
+- **Base type** switches the lunar target (only Polar with real data; Lava tube and Mare in `?sample`).
 - **Filter by** opens a group; pick criteria to keep only sites that match the Moon on them
   by at least the minimum match (default 70 %). Practical criteria filter on their own score.
-
-To switch to real data, point `DATA.scores` and `DATA.targets` at `../outputs/...` and set
-`isFake: false`.
-
-The heatmap is a fake pattern for now (`fakeHeatPoints()` in `app.js`). It should be
-replaced by a grid of real suitability scores (lat, lng, weight) from the pipeline.
 
 ## AI use
 
@@ -55,8 +58,9 @@ The hackathon asks teams to say where and how AI was used. For this app:
 
 - **Code:** `index.html`, `style.css` and `app.js` were written with help from an AI assistant
   (Claude, by Anthropic). Commits it helped with carry a `Co-Authored-By: Claude` line.
-- **Data:** `sample/scores.csv` and `sample/targets.json` are fake values made by a script, only to
-  design the app. The heatmap is a fake pattern for the same reason. The app shows a "Fake data" badge.
+- **Data:** the scores come from the team's pipeline (`outputs/`). Only the optional `?sample` view uses
+  fake values made by a script (`sample/scores.csv`, `sample/targets.json`, a fake heatmap pattern), only
+  to design the app; it shows a "Fake data" badge.
 - **Text:** the notes in `sample/site_info.json` were drafted with AI help. Facts about known sites
   link to their sources; `[brackets]` mark text still to research or check.
 - **Images and video:** none are AI-generated. The globe uses NASA's Blue Marble, and the 3D view uses

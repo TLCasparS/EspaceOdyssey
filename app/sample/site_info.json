@@ -139,5 +139,33 @@
     "breaks": "[to research]",
     "helps": "[to write once ranked: what we could test here]",
     "zoom": 12
+  },
+  "pinacate r001c002": {
+    "type": "candidate",
+    "name": "El Elegante crater",
+    "place": "El Pinacate y Gran Desierto de Altar, Sonora, Mexico",
+    "why": "A near-circular volcanic crater (maar) about 1.6 km wide and 244 m deep, with steep inner walls and a flat floor: our pipeline's closest bowl after Meteor Crater.",
+    "breaks": "It is a volcanic maar, made by steam explosions, not an impact crater. Hot, low-latitude desert: no polar light or permanent shadow, and far smaller than Shackleton (about 21 km).",
+    "helps": "[to write once ranked: what we could test here]",
+    "sources": [
+      {
+        "label": "GSA abstract: Crater Elegante, Pinacate volcanic field (2006)",
+        "url": "https://gsa.confex.com/gsa/2006RM/webprogram/Paper104697.html"
+      },
+      {
+        "label": "OpenTopography: Crater Elegante lidar survey report",
+        "url": "https://opentopography.s3.sdsc.edu/dataspace/OTDS.122025.6340.1/docs/Crater_Elegante_FullReport.pdf"
+      }
+    ],
+    "zoom": 13.5
+  },
+  "pinacate r002c001": {
+    "type": "candidate",
+    "name": "Pinacate NW crater",
+    "place": "El Pinacate y Gran Desierto de Altar, Sonora, Mexico",
+    "why": "A second crater bowl in the Pinacate volcanic field, about 1.6 km wide and 100 m deep (our pipeline). [check: probably MacDougal crater]",
+    "breaks": "Volcanic maar, not an impact crater; shallower than Elegante. Hot, low-latitude desert with no polar light. [check]",
+    "helps": "[to write once ranked: what we could test here]",
+    "zoom": 13.5
   }
 }

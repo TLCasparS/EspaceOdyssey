@@ -1,13 +1,23 @@
 /* Earth Twins of the Moon: static web app (no build step).
- * Reads three files and draws: filter bar, ranked site list, 3D globe with heatmap, analog card.
- * To switch from fake to real data, change the paths in DATA below.
+ * Reads the pipeline's files in ../outputs/ (written by src/export_app.py) and draws:
+ * filter bar, ranked site list, 3D globe with heatmap, analog card, 3D terrain close-up.
+ * Add ?sample to the URL to see the old fake sample data instead (for design work).
  */
 
-const DATA = {
-  scores: 'sample/scores.csv',       // later: '../outputs/scores.csv'   (Earth scoring)
-  targets: 'sample/targets.json',    // later: '../outputs/targets.json' (Moon targets role)
-  info: 'sample/site_info.json',     // Sofia's research notes per site
+const USE_SAMPLE = new URLSearchParams(location.search).has('sample');
+const DATA = USE_SAMPLE ? {
+  scores: 'sample/scores.csv',       // fake 0–1 site values, compared with fake 0–1 targets
+  targets: 'sample/targets.json',
+  info: 'sample/site_info.json',
   isFake: true,                      // shows the "Fake data" badge
+} : {
+  scores: '../outputs/scores.csv',   // 0–1 values ARE the similarity to the Moon; SCORE_TOTAL, RANK
+  targets: '../outputs/targets.json',// per base: criteria list with counts, weight, score_method, raw Moon value
+  raw: '../outputs/raw_values.csv',  // raw Earth values, for "23.9° vs 27.2°" chips
+  heatmap: '../outputs/heatmap.json',// [{lat, lng, weight}]
+  cells: '../outputs/cells.json',    // every searched cell, with status (ranked / no_bowl / filtered)
+  info: 'sample/site_info.json',     // Sofia's research notes per site (export_app.py reads it too)
+  isFake: false,
 };
 
 // The 29 criteria from "Moon Analog Criteria and Datasets", in five groups.
@@ -30,7 +40,7 @@ const CRITERIA = [
   { key: 'CLEAR_SKIES',     group: 'light',    label: 'Clear skies',         hint: 'hard, direct light', bases: ANY },
   { key: 'BOWL_SHAPE',      group: 'terrain',  label: 'Bowl shape',          hint: 'closed, deep crater', bases: ['polar'] },
   { key: 'CRATER_SIZE',     group: 'terrain',  label: 'Crater size match',   hint: 'close to Shackleton’s size', bases: ['polar'] },
-  { key: 'RELIEF',          group: 'terrain',  label: 'Relief',              hint: 'height range within ~5 km', bases: ANY },
+  { key: 'RELIEF',          group: 'terrain',  label: 'Relief',              hint: 'rim-to-floor depth', bases: ANY },
   { key: 'SLOPE_BASE',      group: 'terrain',  label: 'Flat base spot',      hint: 'flat enough to land and build', bases: ANY },
   { key: 'STEEP_WALLS',     group: 'terrain',  label: 'Steep walls',         hint: 'steep inner walls', bases: ['polar'] },
   { key: 'DRIVABLE',        group: 'terrain',  label: 'Drivable share',      hint: 'rover routes around the base', bases: ANY },
@@ -62,6 +72,8 @@ const COLORS = { earth: '#6CB4EE', moon: '#E8E3D3', newSite: '#F0C85D', known: '
 
 const state = {
   sites: [], targets: {}, info: {}, columns: new Set(),
+  crit: {},              // per base: { KEY: { counts, weight, method, moon, unit, earthUnit } }, same shape for both data formats
+  heat: null, cells: [], // pipeline heatmap points and searched cells
   base: 'polar', group: 'all', active: new Set(), threshold: 0.7,
   typeFilter: 'all', selected: null, globe: null,
   view: 'globe', moonColours: false,   // 'globe' or 'terrain' (3D close-up of the selected site)
@@ -78,59 +90,99 @@ function parseCSV(text) {
     head.forEach((h, i) => {
       const raw = (cells[i] ?? '').trim();
       // Agreed rule: an empty cell means "no data", never zero.
-      row[h] = raw === '' ? null : (h === 'SITE' ? raw : Number(raw));
+      row[h] = raw === '' ? null : (TEXT_COLUMNS.has(h) ? raw : Number(raw));
     });
     return row;
   });
   return { head, rows };
 }
+const TEXT_COLUMNS = new Set(['SITE', 'RUN', 'CELL', 'BASE_TYPE']);
+
+const getText = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.text(); });
+const getJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.json(); });
+const optional = (url, fallback) => (url ? getJSON(url).catch(() => fallback) : Promise.resolve(fallback));
 
 async function loadAll() {
-  const [csv, targets, info] = await Promise.all([
-    fetch(DATA.scores).then(r => { if (!r.ok) throw new Error(DATA.scores); return r.text(); }),
-    fetch(DATA.targets).then(r => { if (!r.ok) throw new Error(DATA.targets); return r.json(); }),
-    fetch(DATA.info).then(r => (r.ok ? r.json() : {})).catch(() => ({})),
+  const [csv, targets, info, rawCsv, heat, cells] = await Promise.all([
+    getText(DATA.scores),
+    getJSON(DATA.targets),
+    optional(DATA.info, {}),
+    DATA.raw ? getText(DATA.raw).catch(() => '') : Promise.resolve(''),
+    optional(DATA.heatmap, null),
+    optional(DATA.cells, []),
   ]);
   const { head, rows } = parseCSV(csv);
+  const rawRows = rawCsv ? parseCSV(rawCsv).rows : [];
+  const rawFor = r => rawRows.find(x => (r.RUN && x.RUN === r.RUN && x.CELL === r.CELL) || x.SITE === r.SITE) ?? {};
   state.columns = new Set(head);
-  state.sites = rows.map(r => ({ ...r, lat: r.LAT, lng: r.LON }));
+  state.sites = rows.map(r => ({ ...r, lat: r.LAT, lng: r.LON, raw: rawFor(r) }));
   state.targets = Object.fromEntries(Object.entries(targets).filter(([k]) => !k.startsWith('_')));
   state.info = info;
+  state.heat = Array.isArray(heat) ? heat : null;
+  state.cells = Array.isArray(cells) ? cells : [];
+  state.crit = Object.fromEntries(Object.entries(state.targets).map(([base, t]) => [base, criteriaMeta(t)]));
   if (!state.targets[state.base]) state.base = Object.keys(state.targets)[0];
+}
+
+// One shape for both formats. Pipeline: targets[base].criteria = [{column, counts, weight, score_method,
+// moon: {value, unit, source}, earth_unit}]. Sample: targets[base] = {KEY: 0–1 target}, all counted.
+function criteriaMeta(t) {
+  if (Array.isArray(t.criteria)) {
+    return Object.fromEntries(t.criteria.map(c => [c.column, {
+      counts: !!c.counts, weight: c.weight ?? 0, method: c.score_method,
+      moon: c.moon?.value ?? null, unit: c.moon?.unit ?? '', source: c.moon?.source ?? null, earthUnit: c.earth_unit ?? '',
+    }]));
+  }
+  return Object.fromEntries(Object.entries(t).filter(([k, v]) => k !== 'label' && typeof v === 'number').map(([k, v]) => [k, {
+    counts: true, weight: 1, method: 'target', moon: v, unit: '', source: null, earthUnit: '',
+  }]));
 }
 
 /* ---------- Scoring ---------- */
 
 const target = () => state.targets[state.base] ?? {};
+const meta = key => state.crit[state.base]?.[key];
 const isPractical = c => c.group === 'practical';
-// A criterion counts for similarity when it matters for this base, has a lunar value and is not practical.
-const similarityCriteria = () => CRITERIA.filter(c => !isPractical(c) && c.bases.includes(state.base) && target()[c.key] != null);
-const closeness = (site, c) => {
-  const s = site[c.key];
-  if (s == null) return null;
-  if (isPractical(c)) return s;            // practical: higher is better, no lunar target
-  const t = target()[c.key];
-  return t == null ? null : 1 - Math.abs(s - t);
-};
+const isPipeline = () => !DATA.isFake;
+// Criteria the Moon target knows for this base (counted, display-only, or still awaiting a lunar value).
+const baseCriteria = () => CRITERIA.filter(c => !isPractical(c) && c.bases.includes(state.base) && meta(c.key));
+// Criteria that make up the total score.
+const similarityCriteria = () => baseCriteria().filter(c => meta(c.key).counts);
 
-// Similarity = 1 − mean absolute difference to the lunar target, over criteria with data.
+// Similarity to the Moon, 0–1 (1 = same as the Moon). Pipeline: the value in scores.csv already is it.
+// Sample: 1 − |site − target|. Practical criteria: their own score (higher = easier to use).
+function sim(site, c) {
+  const v = site[c.key];
+  if (v == null) return null;
+  if (isPractical(c) || isPipeline()) return v;
+  const m = meta(c.key);
+  return m?.moon == null ? null : 1 - Math.abs(v - m.moon);
+}
+// Raw Earth value (pipeline: raw_values.csv; sample: the 0–1 value itself).
+const rawOf = (site, c) => (isPipeline() ? site.raw?.[c.key] ?? null : site[c.key]);
+const hasData = key => state.sites.some(s => s[key] != null);
+
 function scoreSite(site) {
-  const diffs = [];
-  for (const c of similarityCriteria()) {
-    const s = site[c.key], t = target()[c.key];
-    if (s == null) continue;
-    diffs.push({ ...c, site: s, target: t, diff: Math.abs(s - t), signed: s - t });
-  }
-  const sim = diffs.length ? 1 - diffs.reduce((a, d) => a + d.diff, 0) / diffs.length : null;
-  return { sim, diffs, coverage: diffs.length, possible: similarityCriteria().length };
+  const details = baseCriteria().map(c => {
+    const m = meta(c.key), s = sim(site, c), earth = rawOf(site, c);
+    return { ...c, sim: s, earth, moon: m.moon, counts: m.counts, method: m.method,
+      signed: earth != null && m.moon != null ? earth - m.moon : null };
+  });
+  const counted = details.filter(d => d.counts && d.sim != null);
+  const wsum = counted.reduce((a, d) => a + (meta(d.key).weight || 1), 0);
+  const own = counted.length ? counted.reduce((a, d) => a + d.sim * (meta(d.key).weight || 1), 0) / wsum : null;
+  // Pipeline: SCORE_TOTAL is the weighted mean of the counted criteria, already computed.
+  const total = isPipeline() && site.SCORE_TOTAL != null ? site.SCORE_TOTAL : own;
+  return { sim: total, details, coverage: counted.length, possible: similarityCriteria().length };
 }
 
 const typeOf = site => state.info[site.SITE]?.type ?? 'candidate';
+const nameOf = site => state.info[site.SITE ?? site]?.name ?? site.SITE ?? site;
 
 // Active filters: a site passes when it has data and matches at least the threshold on every selected criterion.
 function passesFilters(site) {
   for (const key of state.active) {
-    const v = closeness(site, byKey[key]);
+    const v = sim(site, byKey[key]);
     if (v == null || v < state.threshold) return false;
   }
   return true;
@@ -143,6 +195,16 @@ function ranked() {
     .map((s, i) => ({ ...s, rank: i + 1, passes: passesFilters(s) }));
 }
 const visibleSites = () => ranked().filter(s => s.passes);
+
+// "23.9° vs 27.2°": raw values with a short unit taken from earth_unit (e.g. "deg (inner wall slope)").
+function fmtVal(v, unit) {
+  if (v == null) return '–';
+  const u = (unit || '').split(' (')[0].trim();
+  if (u === 'deg') return `${v.toFixed(1)}°`;
+  if (u === 'm') return `${Math.round(v)} m`;
+  if (u === 'share' || u.startsWith('share of')) return `${Math.round(v * 100)}%`;
+  return Math.abs(v) >= 10 ? v.toFixed(0) : v.toFixed(2);
+}
 
 /* ---------- Helpers ---------- */
 
@@ -182,10 +244,13 @@ function renderFilters() {
       ? 'Practical criteria do not change the similarity score. Pick one to hide sites that score below the minimum.'
       : `Pick criteria to keep only sites close to the Moon on them. Greyed out: not used for a ${baseLabel().toLowerCase()} base, or no data yet.`;
     document.getElementById('criterionChips').innerHTML = CRITERIA.filter(c => c.group === g.id).map(c => {
-      const noColumn = !state.columns.has(c.key);
+      const noData = !hasData(c.key);
       const notForBase = !c.bases.includes(state.base);
-      const disabled = noColumn || notForBase;
-      const tag = noColumn ? 'no data yet' : notForBase ? `not for ${baseLabel()}` : '';
+      const disabled = noData || notForBase;
+      const m = meta(c.key);
+      const tag = notForBase ? `not for ${baseLabel()}`
+        : noData ? (m?.method === 'rank' ? 'awaiting lunar value' : m?.method === 'not computed' ? 'not computed yet' : 'no data yet')
+        : m && !m.counts && !isPractical(c) ? 'not in score' : '';
       return `<button type="button" class="crit" data-key="${c.key}" aria-pressed="${state.active.has(c.key)}" ${disabled ? 'disabled' : ''} title="${esc(c.hint)}">${esc(c.label)}${tag ? ` <span class="tag">${esc(tag)}</span>` : ''}</button>`;
     }).join('');
   }
@@ -237,13 +302,13 @@ function renderList() {
   const total = state.sites.length, shown = visibleSites().length;
   document.getElementById('listHint').textContent = state.active.size
     ? `${shown} of ${total} sites pass the filters. Ranked by similarity to a ${baseLabel().toLowerCase()} base.`
-    : `Ranked by similarity to a ${baseLabel().toLowerCase()} base, across all criteria with data.`;
+    : `Ranked by similarity to a ${baseLabel().toLowerCase()} base on the ${similarityCriteria().length} criteria that count.`;
   list.innerHTML = rows.length ? rows.map(s => `
     <li>
       <button type="button" class="site-btn" data-site="${esc(s.SITE)}" aria-current="${s.SITE === state.selected}">
         <span class="rank ${s.type === 'known' ? 'known' : 'new'}">${s.rank}</span>
         <span>
-          <span class="site-name">${esc(s.SITE)}</span>
+          <span class="site-name">${esc(nameOf(s))}</span>
           <span class="site-meta">
             <span class="bar"><span style="width:${Math.round((s.sim ?? 0) * 100)}%"></span></span>
             <span class="pct">${pct(s.sim)}</span>
@@ -257,75 +322,123 @@ function renderList() {
 
 /* ---------- Radar chart (SVG, no library) ---------- */
 
-// "All criteria": one axis per group (mean of its criteria). A group tab: one axis per criterion in it.
+// Every axis is "similarity to the Moon", 0–1, so the Moon itself is the full outer ring.
+// Axis status: ok (counts in the score), display (shown, weight 0), rank / notcomputed / nodata (no value).
+function critAxis(site, c) {
+  const m = meta(c.key), v = sim(site, c);
+  const status = v != null ? (m.counts ? 'ok' : 'display')
+    : m.method === 'rank' ? 'rank' : m.method === 'not computed' ? 'notcomputed' : 'nodata';
+  return { label: c.label, value: v, status };
+}
+const AXIS_NOTE = { display: 'not in score', rank: 'awaiting lunar value', notcomputed: 'not computed yet', nodata: 'no data' };
+
+// "All criteria": one axis per group (mean of its criteria) when at least three groups have data,
+// otherwise one axis per criterion. A group tab: one axis per criterion in it.
 function radarAxes(site) {
-  const crits = similarityCriteria();
+  const crits = baseCriteria();
   if (state.group === 'all' || state.group === 'practical') {
-    return GROUPS.filter(g => g.id !== 'practical').map(g => {
-      const cs = crits.filter(c => c.group === g.id && site[c.key] != null);
-      const mean = arr => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
-      return { label: g.short ?? g.label, site: mean(cs.map(c => site[c.key])), target: mean(cs.map(c => target()[c.key])) };
-    }).filter(a => a.target != null || a.site != null);
+    const groups = GROUPS.filter(g => g.id !== 'practical').map(g => {
+      const vals = crits.filter(c => c.group === g.id).map(c => sim(site, c)).filter(v => v != null);
+      return { label: g.short ?? g.label, value: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null, status: vals.length ? 'ok' : 'nodata', has: crits.some(c => c.group === g.id) };
+    }).filter(a => a.has);
+    if (groups.filter(a => a.value != null).length >= 3) return { axes: groups, perGroup: true };
+    // Per criterion: only the ones with a value, so the chart stays readable; the rest are listed under it.
+    const all = crits.map(c => critAxis(site, c)), withValue = all.filter(a => a.value != null);
+    return { axes: withValue.length >= 3 ? withValue : all, perGroup: false };
   }
-  return crits.filter(c => c.group === state.group).map(c => ({ label: c.label, site: site[c.key], target: target()[c.key] }));
+  return { axes: crits.filter(c => c.group === state.group).map(c => critAxis(site, c)), perGroup: false };
 }
 
-function radarSVG(site) {
-  const axes = radarAxes(site);
+function radarSVG(site, axes) {
   if (axes.length < 3) {
-    return `<p class="nodata">This group has fewer than three criteria for a ${esc(baseLabel().toLowerCase())} base, so there is no radar. See the chips below.</p>`;
+    return `<p class="nodata">This group has fewer than three criteria for a ${esc(baseLabel().toLowerCase())} base, so there is no radar. See the chips.</p>`;
   }
-  const W = 470, H = 340, cx = W / 2, cy = H / 2 + 4, R = 112, n = axes.length;
+  const W = 520, H = 380, cx = W / 2, cy = H / 2 + 4, R = 118, n = axes.length;
   const ang = i => (-90 + (360 / n) * i) * Math.PI / 180;
   const pt = (i, v) => [cx + Math.cos(ang(i)) * R * v, cy + Math.sin(ang(i)) * R * v];
-  const poly = vals => vals.map((v, i) => (v == null ? null : pt(i, v).map(x => x.toFixed(1)).join(','))).filter(Boolean).join(' ');
-  const rings = [0.25, 0.5, 0.75, 1].map(f =>
-    `<polygon points="${axes.map((_, i) => pt(i, f).join(',')).join(' ')}" fill="none" stroke="#24465E" stroke-width="1"></polygon>`).join('');
+  const xy = (i, v) => pt(i, v).map(x => x.toFixed(1)).join(',');
+  const rings = [0.25, 0.5, 0.75].map(f =>
+    `<polygon points="${axes.map((_, i) => xy(i, f)).join(' ')}" fill="none" stroke="#24465E" stroke-width="1"></polygon>`).join('');
   const lines = axes.map((a, i) => {
     const [x, y] = pt(i, 1);
-    return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#24465E" ${a.site == null ? 'stroke-dasharray="3 4"' : ''}></line>`;
+    return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#24465E" ${a.value == null ? 'stroke-dasharray="3 4"' : ''}></line>`;
   }).join('');
   const labels = axes.map((a, i) => {
-    const [x, y] = pt(i, 1.17);
+    const [x, y] = pt(i, 1.14);
     const cos = Math.cos(ang(i));
     const anchor = Math.abs(cos) < 0.2 ? 'middle' : cos > 0 ? 'start' : 'end';
-    const note = a.site == null ? `<tspan x="${x.toFixed(1)}" dy="14" font-size="10.5">no data</tspan>` : '';
-    return `<text x="${x.toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="${anchor}" font-size="12" font-family="Fira Sans, sans-serif" fill="${a.site == null ? '#8AA2B2' : '#EEF3F6'}">${esc(a.label)}${note}</text>`;
+    const off = a.status !== 'ok';
+    const note = off ? `<tspan x="${x.toFixed(1)}" dy="13" font-size="10">${AXIS_NOTE[a.status]}</tspan>` : '';
+    return `<text x="${x.toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="${anchor}" font-size="11.5" font-family="Fira Sans, sans-serif" fill="${off ? '#8AA2B2' : '#EEF3F6'}">${esc(a.label)}${note}</text>`;
   }).join('');
-  const dots = axes.map((a, i) => (a.site == null ? '' : `<circle cx="${pt(i, a.site)[0].toFixed(1)}" cy="${pt(i, a.site)[1].toFixed(1)}" r="3.5" fill="${COLORS.earth}"></circle>`)).join('');
-  return `<svg class="radar" viewBox="0 0 ${W} ${H}" role="img" aria-label="Radar chart: ${esc(site.SITE)} compared with the lunar target on ${n} axes">
+  // Earth polygon through the axes that have a value; display-only axes get a hollow dot.
+  const withVal = axes.map((a, i) => [a, i]).filter(([a]) => a.value != null);
+  const dots = withVal.map(([a, i]) => {
+    const [x, y] = pt(i, a.value);
+    return a.status === 'display'
+      ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="#06121C" stroke="${COLORS.earth}" stroke-width="1.5"><title>${esc(a.label)}: ${pct(a.value)} (not in score)</title></circle>`
+      : `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="${COLORS.earth}"><title>${esc(a.label)}: ${pct(a.value)}</title></circle>`;
+  }).join('');
+  const earth = withVal.length >= 2
+    ? `<polygon points="${withVal.map(([a, i]) => xy(i, a.value)).join(' ')}" fill="rgba(108,180,238,0.22)" stroke="${COLORS.earth}" stroke-width="2.5" stroke-linejoin="round"></polygon>` : '';
+  return `<svg class="radar" viewBox="0 0 ${W} ${H}" role="img" aria-label="Radar chart: ${esc(nameOf(site))} compared with the Moon on ${n} axes. The outer ring is the Moon.">
     ${rings}${lines}
-    <polygon points="${poly(axes.map(a => a.target))}" fill="rgba(232,227,211,0.06)" stroke="${COLORS.moon}" stroke-width="2" stroke-dasharray="6 4"></polygon>
-    <polygon points="${poly(axes.map(a => a.site))}" fill="rgba(108,180,238,0.25)" stroke="${COLORS.earth}" stroke-width="2.5"></polygon>
-    ${dots}${labels}
+    <polygon points="${axes.map((_, i) => xy(i, 1)).join(' ')}" fill="rgba(232,227,211,0.05)" stroke="${COLORS.moon}" stroke-width="2" stroke-dasharray="6 4"></polygon>
+    ${earth}${dots}${labels}
   </svg>`;
 }
 
 /* ---------- Analog card ---------- */
+
+// "Steep walls 23.9° vs 27.2°" (pipeline, raw values with units) or "0.62 vs 0.80" (sample).
+const vsText = d => {
+  const unit = meta(d.key)?.earthUnit || meta(d.key)?.unit;
+  return d.earth == null || d.moon == null ? pct(d.sim) : `${fmtVal(d.earth, unit)} vs ${fmtVal(d.moon, unit)}`;
+};
 
 function renderCard() {
   const el = document.getElementById('card');
   const s = ranked().find(r => r.SITE === state.selected);
   if (!s) { el.innerHTML = '<p class="hint">Pick a site from the list or the globe.</p>'; return; }
   const info = state.info[s.SITE] ?? {};
-  const isNew = info.type === 'candidate';
-  const byClosest = [...s.diffs].sort((a, b) => a.diff - b.diff);
-  const strengths = byClosest.slice(0, 3);
-  const gaps = byClosest.slice().reverse().filter(d => d.diff >= 0.15).slice(0, 3);
-  const missing = similarityCriteria().filter(c => s[c.key] == null).map(c => c.label);
-  const practical = CRITERIA.filter(c => isPractical(c) && c.bases.includes(state.base));
-  const groupName = state.group === 'all' || state.group === 'practical' ? 'Average per group' : GROUPS.find(g => g.id === state.group).label;
+  const isNew = info.type !== 'known';
+  // Chips: criteria with a value, closest to the Moon first. ≥ 50 % = close, below = what it lacks.
+  const scored = s.details.filter(d => d.counts && d.sim != null).sort((a, b) => b.sim - a.sim);
+  const shownOnly = s.details.filter(d => !d.counts && d.sim != null);
+  const strengths = scored.filter(d => d.sim >= 0.5).slice(0, 3);
+  const gaps = scored.filter(d => d.sim < 0.5).reverse().slice(0, 3);
+  // Three kinds of "no value": no data yet, waiting for a lunar value, not computed yet.
+  const missing = { nodata: [], rank: [], notcomputed: [] };
+  s.details.filter(d => d.sim == null).forEach(d => {
+    missing[d.method === 'rank' ? 'rank' : d.method === 'not computed' ? 'notcomputed' : 'nodata'].push(d.label);
+  });
+  const displayOnly = s.details.filter(d => !d.counts && d.sim != null).map(d => d.label);
+  const practical = CRITERIA.filter(c => isPractical(c) && c.bases.includes(state.base) && s[c.key] != null);
+  const { axes, perGroup } = radarAxes(s);
+  const groupName = state.group === 'all' || state.group === 'practical'
+    ? (perGroup ? 'Average per group' : 'All criteria') : GROUPS.find(g => g.id === state.group).label;
+  const moonName = (target().label ?? 'Lunar target').split(' (')[0];
+  const missingNote = [
+    missing.nodata.length && `No data yet: ${missing.nodata.join(', ')}.`,
+    missing.rank.length && `Waiting for a lunar value: ${missing.rank.join(', ')}.`,
+    missing.notcomputed.length && `Not computed yet: ${missing.notcomputed.join(', ')}.`,
+  ].filter(Boolean);
+  const raw = s.raw ?? {};
+  const facts = [
+    raw.DIAMETER_EQUIV_M != null && `about ${(raw.DIAMETER_EQUIV_M / 1000).toFixed(1)} km wide`,
+    raw.DEPTH_SPILL_M != null && `${Math.round(raw.DEPTH_SPILL_M)} m deep`,
+  ].filter(Boolean);
 
   el.innerHTML = `
     <div class="card-top">
       <div class="card-title">
         <span class="badge ${s.type === 'known' ? 'badge-known' : 'badge-new'}">${s.type === 'known' ? 'Known analog' : 'New candidate'}</span>
-        <h2 style="margin-top:8px">${esc(s.SITE)}</h2>
-        <p class="card-place">${esc(info.place ?? '')}${info.place ? ' · ' : ''}${fmtCoord(s.lat, s.lng)}</p>
+        <h2 style="margin-top:8px">${esc(nameOf(s))}</h2>
+        <p class="card-place">${esc(info.place ?? '')}${info.place ? ' · ' : ''}${fmtCoord(s.lat, s.lng)}${facts.length ? ' · crater ' + esc(facts.join(', ')) : ''}</p>
       </div>
       <div class="score">
         <strong>${pct(s.sim)}</strong>
-        <span>similar to a ${esc(baseLabel().toLowerCase())} base<br>rank ${s.rank} of ${state.sites.length}</span>
+        <span>similar to the Moon (${esc(baseLabel().toLowerCase())} base)<br>rank ${s.RANK ?? s.rank} of ${state.sites.length}</span>
       </div>
     </div>
 
@@ -335,35 +448,42 @@ function renderCard() {
     <div class="card-col card-col-a">
     <div class="radar-box">
       <h3>Fingerprint · ${esc(groupName)}</h3>
-      ${radarSVG(s)}
+      ${radarSVG(s, axes)}
       <div class="radar-legend">
-        <span><span class="swatch" style="border-color:${COLORS.earth}"></span>${esc(s.SITE)}</span>
-        <span><span class="swatch" style="border-color:${COLORS.moon};border-top-style:dashed"></span>${esc(target().label ?? 'Lunar target')}</span>
+        <span><span class="swatch" style="border-color:${COLORS.earth}"></span>${esc(nameOf(s))}</span>
+        <span><span class="swatch" style="border-color:${COLORS.moon};border-top-style:dashed"></span>${esc(moonName)} = outer ring</span>
       </div>
-      ${missing.length ? `<p class="nodata">No data yet: ${missing.map(esc).join(', ')}. Left out of the score, not counted as zero.</p>` : ''}
+      <p class="nodata">Each axis is how close the site is to the Moon: the centre is nothing alike, the outer ring is the same as the Moon.${displayOnly.length ? ` Hollow dots (${esc(displayOnly.join(', '))}) are shown but not counted in the score.` : ''}</p>
+      ${missingNote.length ? `<p class="nodata">${esc(missingNote.join(' '))} Left out of the score, not counted as zero.</p>` : ''}
     </div>
 
-    <div class="note-box prac-box">
+    ${practical.length ? `<div class="note-box prac-box">
       <h3>Practical</h3>
       <div class="prac">${practical.map(c => `
         <span title="${esc(c.hint)}">${esc(c.label)}</span>
-        <span class="bar"><span style="width:${Math.round((s[c.key] ?? 0) * 100)}%"></span></span>
-        <span class="pct">${s[c.key] == null ? '–' : Math.round(s[c.key] * 100)}</span>`).join('')}
+        <span class="bar"><span style="width:${Math.round(s[c.key] * 100)}%"></span></span>
+        <span class="pct">${Math.round(s[c.key] * 100)}</span>`).join('')}
       </div>
       <p class="nodata">Scored apart from similarity: these say how easy the site is to use, not how Moon-like it is.</p>
-    </div>
+    </div>` : ''}
     </div>
 
     <div class="card-col card-col-b">
     <div>
       <h3>Closest to the Moon on</h3>
-      <div class="chips">${strengths.map(d => `<span class="chip good"><b>${esc(d.label)}</b> ${d.site.toFixed(2)} vs ${d.target.toFixed(2)}</span>`).join('')}</div>
+      <div class="chips">${strengths.length ? strengths.map(d => `<span class="chip good" title="${esc(d.hint)} · ${pct(d.sim)} match"><b>${esc(d.label)}</b> ${esc(vsText(d))}</span>`).join('') : '<span class="chip">Nothing above 50 % yet</span>'}</div>
     </div>
 
     <div>
       <h3>What it lacks</h3>
-      <div class="chips">${gaps.length ? gaps.map(d => `<span class="chip gap"><b>${esc(d.label)}</b> ${d.signed < 0 ? 'too little' : 'too much'} (${d.site.toFixed(2)} vs ${d.target.toFixed(2)})</span>`).join('') : '<span class="chip">No big gaps</span>'}</div>
+      <div class="chips">${gaps.length ? gaps.map(d => `<span class="chip gap" title="${esc(d.hint)} · ${pct(d.sim)} match"><b>${esc(d.label)}</b> ${d.signed == null ? '' : d.signed < 0 ? 'too little ' : 'too much '}(${esc(vsText(d))})</span>`).join('') : '<span class="chip">No big gaps</span>'}</div>
     </div>
+
+    ${shownOnly.length ? `<div>
+      <h3>Also compared, not in the score</h3>
+      <div class="chips">${shownOnly.map(d => `<span class="chip" title="${esc(d.hint)} · ${pct(d.sim)} match"><b>${esc(d.label)}</b> ${esc(vsText(d))}</span>`).join('')}</div>
+    </div>` : ''}
+    ${isPipeline() ? '<p class="nodata">Earth value vs Moon value. Hover a chip for its match.</p>' : ''}
 
     <div class="note-box">
       <h3>Where the analogy breaks down</h3>
@@ -408,8 +528,10 @@ let resumeTimer = null;
 function initGlobe() {
   const el = document.getElementById('globe');
   if (!hasWebGL() || typeof Globe !== 'function') { document.getElementById('globeError').hidden = false; return; }
-  const heat = fakeHeatPoints();
-  document.getElementById('heatNote').textContent = DATA.isFake ? 'Fake pattern, for design only' : '';
+  // Pipeline: one point per ranked crater, weight = SCORE_TOTAL. Sample: a fake pattern, for design only.
+  const heat = DATA.isFake ? fakeHeatPoints() : (state.heat ?? []);
+  document.getElementById('heatNote').textContent = DATA.isFake ? 'Fake pattern, for design only'
+    : heat.length ? `${heat.length} craters scored so far` : 'No heatmap data yet';
 
   const g = Globe()(el)
     // NASA Blue Marble Next Generation, July 2004, topography + bathymetry (NASA Earth Observatory),
@@ -429,7 +551,7 @@ function initGlobe() {
     .heatmapTopAltitude(0.06)
     .labelLat('lat')
     .labelLng('lng')
-    .labelText('SITE')
+    .labelText(d => nameOf(d))
     .labelSize(d => (d.SITE === state.selected ? 1.8 : 1.1))
     .labelDotRadius(d => (d.SITE === state.selected ? 0.8 : 0.5))
     .labelColor(d => (d.SITE === state.selected ? '#FFFFFF' : (typeOf(d) === 'known' ? COLORS.known : COLORS.newSite)))
@@ -493,6 +615,16 @@ const TILT = { pitch: 68, bearing: -25 }; // the tilted 3D view; the 2D/3D butto
 
 const currentSite = () => visibleSites().find(s => s.SITE === state.selected);
 
+const CELL_COLORS = { ranked: '#3CC8B4', filtered: '#F2A35C', no_bowl: '#A7BAC7' };
+// Searched cells from cells.json as outlines (bbox = [W, S, E, N]).
+function cellsGeoJSON() {
+  return { type: 'FeatureCollection', features: state.cells.filter(c => Array.isArray(c.bbox)).map(c => {
+    const [w, so, e, n] = c.bbox;
+    return { type: 'Feature', properties: { status: c.status, reason: c.reason ?? '' },
+      geometry: { type: 'LineString', coordinates: [[w, so], [e, so], [e, n], [w, n], [w, so]] } };
+  }) };
+}
+
 function terrainStyle() {
   const dem = { type: 'raster-dem', tiles: [TERRAIN.dem], tileSize: 256, maxzoom: 15, encoding: 'terrarium' };
   return {
@@ -502,11 +634,21 @@ function terrainStyle() {
         attribution: 'Imagery: <a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless</a> by EOX (contains modified Copernicus Sentinel data 2020)' },
       dem: { ...dem, attribution: 'Elevation: <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">Terrain Tiles on AWS</a> (Mapzen)' },
       shade: dem,
+      cells: { type: 'geojson', data: cellsGeoJSON() },
     },
     layers: [
       { id: 'space', type: 'background', paint: { 'background-color': '#030A12' } },
       { id: 'img', type: 'raster', source: 'img', paint: moonPaint() },
       { id: 'shade', type: 'hillshade', source: 'shade', paint: { 'hillshade-exaggeration': 0.3, 'hillshade-shadow-color': '#000000' } },
+      // The grid cells the pipeline searched: teal = crater scored, orange = crater left out, grey = no crater.
+      // (Two layers: MapLibre can't change the dash pattern per feature.)
+      { id: 'cells-other', type: 'line', source: 'cells', filter: ['!=', ['get', 'status'], 'ranked'], paint: {
+        'line-color': ['match', ['get', 'status'], 'filtered', CELL_COLORS.filtered, CELL_COLORS.no_bowl],
+        'line-width': 1.2, 'line-opacity': 0.65, 'line-dasharray': [2, 2],
+      } },
+      { id: 'cells-ranked', type: 'line', source: 'cells', filter: ['==', ['get', 'status'], 'ranked'], paint: {
+        'line-color': CELL_COLORS.ranked, 'line-width': 2.5, 'line-opacity': 0.95,
+      } },
     ],
     terrain: { source: 'dem', exaggeration: TERRAIN.exaggeration },
   };
@@ -531,17 +673,51 @@ function flyTerrainTo(s) {
   stopOrbit();
   const zoom = state.info[s.SITE]?.zoom ?? TERRAIN.defaultZoom;
   flightTarget = null;   // flyTo first stops any old move, which fires a 'moveend' that must not orbit
+  settling = false;
   terrainMap.flyTo({ center: [s.lng, s.lat], zoom, ...TILT, duration: reducedMotion ? 0 : 4500, essential: true });
   flightTarget = s.SITE;
+  flightGoal = { zoom, pitch: TILT.pitch };
   syncViewUI();
 }
 
 function onMoveEnd() {
+  // A fly-in keeps the ground height of where it started (e.g. Meteor Crater, 1.7 km up), so it aims at
+  // a point in the air above a lower site and the crater ends up at the bottom edge. Once there (the
+  // elevation tiles are loaded by then), switch to the real ground height and glide to the centre.
+  if (flightTarget && !settling && landedOff()) return settleOnGround();
+  settling = false;
   // Orbit only when a fly-in finished untouched: a drag, scroll or new flight clears flightTarget first.
   // (Don't compare zoom: with terrain, MapLibre adjusts it for the ground height, e.g. 14 → 13.5.)
   if (flightTarget) startOrbit();
   flightTarget = null;
   syncTiltButton();
+}
+
+let settling = false, flightGoal = null;
+// After a fly-in: is the camera's ground height off, or did MapLibre change tilt or zoom to stay above ground?
+function landedOff() {
+  try {
+    const tr = terrainMap.transform, ground = terrainMap.terrain?.getElevationForLngLatZoom(tr.center, tr.tileZoom);
+    if (!Number.isFinite(ground) || !flightGoal) return false;
+    return Math.abs(ground - tr.elevation) > 50 || Math.abs(tr.pitch - flightGoal.pitch) > 1 || Math.abs(tr.zoom - flightGoal.zoom) > 0.05;
+  } catch { return false; }
+}
+function settleOnGround() {
+  // Glide camera height, tilt and zoom to where the fly-in meant to land; the centre stays on the site.
+  const tr = terrainMap.transform, keep = flightTarget;
+  const from = { e: tr.elevation, z: tr.zoom, p: tr.pitch };
+  const to = { e: terrainMap.terrain.getElevationForLngLatZoom(tr.center, tr.tileZoom), z: flightGoal.zoom, p: flightGoal.pitch };
+  const t0 = performance.now(), dur = reducedMotion ? 0 : 1200;
+  settling = true;
+  const step = now => {
+    if (flightTarget !== keep || state.view !== 'terrain') { settling = false; return; }  // viewer took over
+    const k = dur ? Math.min(1, (now - t0) / dur) : 1, f = k * k * (3 - 2 * k), mix = key => from[key] + (to[key] - from[key]) * f;
+    tr.elevation = mix('e'); tr.zoom = mix('z'); tr.pitch = mix('p');
+    terrainMap.triggerRepaint();
+    // Last frame: a real (no-op) jump so MapLibre redraws everything and fires 'moveend', which starts the orbit.
+    if (k < 1) requestAnimationFrame(step); else terrainMap.jumpTo({ zoom: to.z, pitch: to.p });
+  };
+  requestAnimationFrame(step);
 }
 
 function viewerTookOver() { flightTarget = null; stopOrbit(); }
@@ -656,7 +832,8 @@ function syncViewUI() {
   fly.disabled = !inTerrain && !s;
   const cap = document.getElementById('terrainCaption');
   cap.hidden = !inTerrain || !s;
-  if (s) cap.innerHTML = `<b>${esc(s.SITE)}</b><br>3D terrain, heights ×${TERRAIN.exaggeration}. Drag to look around, scroll to zoom.`;
+  if (s) cap.innerHTML = `<b>${esc(nameOf(s))}</b><br>3D terrain, heights ×${TERRAIN.exaggeration}. Drag to look around, scroll to zoom.`
+    + (state.cells.length ? `<br><span class="cell-key"><i style="border-color:${CELL_COLORS.ranked}"></i>scored crater <i style="border-color:${CELL_COLORS.filtered}"></i>crater left out <i style="border-color:${CELL_COLORS.no_bowl}"></i>no crater found</span>` : '');
 }
 
 function wireViewTools() {
@@ -706,7 +883,7 @@ function refresh() {
   // Name only the data the app really shows. Planned sources: Copernicus DEM, ESA WorldCover, MODIS, LOLA, LROC, Diviner.
   document.getElementById('footNote').textContent = DATA.isFake
     ? 'Scores and heatmap are sample values, not results yet'
-    : 'Scores from our pipeline: Copernicus DEM, ESA WorldCover, MODIS (Earth); LOLA, LROC, Diviner (Moon)';
+    : 'Scores from our pipeline: Earth terrain from Copernicus DEM GLO-30, Moon terrain from LOLA (LDEM 80°S, 20 m, Barker et al. 2023)';
   wireFilters();
   wireViewTools();
   initGlobe();
