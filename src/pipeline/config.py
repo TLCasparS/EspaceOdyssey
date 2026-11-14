@@ -17,6 +17,8 @@ def load_config(path: str | Path | None = None, targets_path: str | Path | None 
     with open(targets_path or TARGETS_PATH, encoding="utf-8") as f:
         targets = json.load(f)
     cfg["lunar_targets"] = targets
+    display = CONFIG_DIR / "display.yaml"                     # display-only parameters, outside the freeze
+    cfg["display"] = yaml.safe_load(display.read_text(encoding="utf-8")) if display.exists() else {}
     if "polar" in cfg:
         crit, lunar = cfg["polar"]["criteria"], targets["polar"]["criteria"]
         if set(crit) != set(lunar):

@@ -294,3 +294,16 @@ def test_ice_floor_excludes_place_and_ice_shares_are_shown():
             assert c["ice_floor_share"] == 0 and c["ice_rim_share"] > 0
     info, cands = polar_candidates(_grid(z), _cell_mask(), None, 28.5, CFG)   # no ice data -> shares None
     assert cands[0]["ice_floor_share"] is None and cands[0]["keep"]
+
+
+def test_display_values_drivable_and_bare_share():
+    from pipeline.polar import polar_candidates
+    z = _bowl()                                                          # bowl r = 3 km in a flat plain
+    x, y = _xy()
+    lc = np.where(np.hypot(x, y) < 3000, 60, 30).astype(np.uint8)        # bare inside the bowl, grass outside
+    _, cands = polar_candidates(_grid(z), _cell_mask(), None, 28.5, CFG, landcover=lc)
+    c = cands[0]
+    assert c["drivable_share_rim"] > 0.95       # flat plain; pixels at the bowl edge see the wall in the 3x3 slope window
+    assert 0.5 < c["drivable_share_5km"] < 1.0                           # includes the steep inner walls
+    assert 0 < c["bare_share"] < 1                                       # bare floor, grass rim
+    assert CFG["display"]["drivable_slope_deg"] == 15

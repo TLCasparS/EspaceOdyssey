@@ -117,6 +117,17 @@ The Moon side gives the target profile each Earth site is compared with, and eve
 
 Reference numbers for the cave target: the [Mare Tranquillitatis pit](https://lroc.im-ldi.com/pits/3) has an inner opening 88–100 m wide and is about 105 m deep.
 
+## ⚠ Structural limit: large craters (first candidate for config-v2)
+
+**Craters wider than ~20 km do not close inside the Earth DEM window.** Each Earth cell is evaluated on its
+15 km cell plus a 5.5 km buffer on every side (~26 km in total, `polar.buffer_m`). A depression only counts
+if it closes inside that window. A crater of ~20 km or more reaches the window edge, the fill spills there,
+and the bowl comes out too shallow or is not found at all. The lunar target used a ±35 km window (70 km), so
+Shackleton (~21 km) closes completely. **Earth and Moon are not treated the same for large craters.**
+Affected: Haughton (~20–23 km) and any large impact structure. **Not changed in config-v1** (frozen). First
+candidate for config-v2, e.g. a window sized from the depression (≥ 1.5 × its diameter) or a separate
+large-crater pass.
+
 ## Minimal data stack and traps
 
 For a first working ranking, five downloads are enough; start them tonight because the lunar files are large.
@@ -136,6 +147,34 @@ Traps we found while checking the data:
 - **Coverage gaps.** Travel time stops at 60°S, the permafrost map is Northern Hemisphere only, and CHIRPS stops at 50° latitude. Polar candidates lose some criteria; show them as "no data", not zero.
 - **Caves have no global map.** Criterion 25 is a hand check on shortlisted basalt fields.
 - **Small craters at 60 m (known limitation, found 14 Nov 2026).** A bowl only ~1 km wide is ~19 pixels across on the common grid, so its walls are smoothed and criterion 11 comes out too low (Meteor Crater: 23.9° on the 0.5–1.0 × r ring). Bowls near the size limit (1 km equivalent diameter) can also drop out of the bowl filter. Treat wall slope of small bowls as a lower bound. The bowl filter keeps a minimum equivalent diameter of **1 km for all regions** (decision 14 Nov 2026): a smaller bowl is < ~17 pixels across at 60 m, its walls are smoothed and its depth/width and wall slope are not reliable. This is a resolution limit, not a statement that small craters are poor analogs; it removes most maar craters in the Pinacate field and leaves Meteor Crater (1.1 km) just above the limit.
+- **Spill depth and filled craters (known limitation, found 14 Nov 2026).** The bowl filter's minimum depth (50 m, kept for all regions) uses the **spill depth**: from the floor up to the lowest saddle in the rim, not to the rim crest. Craters with a low gap in the rim, or partly filled with sand or sediment, fall below it. Example: Tenoumer crater (Mauritania) shows up as a round closed depression, 1.75 km wide, elongation 1.07, but only 44 m spill depth, so it is not scored (crater position matched from memory, unchecked).
+
+## Future work
+
+- **Display values built (14 Nov 2026, weight 0, outside the config-v1 freeze; parameters in `config/display.yaml`):**
+  - c8 crater size: equivalent diameter and rim-to-floor depth, raw only.
+  - c12 drivable share: pixels < 15° within 5 km of the base pad, and in the rim zone.
+  - c18 ground ice: WorldCover snow/ice share of the floor.
+  - c19 bare ground: WorldCover class 60 share of floor + rim.
+  - c24 impact crater: match against 88 confirmed structures from Wikipedia's list (incomplete; `src/impact_list.py`).
+- **Scoring rule for environment criteria (17–21):** "more is better" (dry, bare, dark, cold), **not** closeness
+  to the Moon. The Moon's values (no water, no vegetation, no air) are unreachable on Earth, as for c4.
+- **Practical criteria (26 access, 29 station nearby):** filters in the app, never part of the similarity score.
+
+### Planned, not built
+| # | Criterion | Data source | Size (checked 14 Nov 2026) | Effort | Notes |
+|---|---|---|---|---|---|
+| 17 | Dry (mean annual precipitation) | WorldClim 2.1 monthly precipitation (geodata.ucdavis.edu) | 10′ (~18 km): **7.3 MB**; 30″ (~1 km): **1.03 GB** (HTTP HEAD) | small: sum 12 months, sample at the cell; ~1–2 h | global incl. polar regions; CHIRPS (5 km) stops at 50° and my guessed download URL returned 404, so not checked |
+| 26 | Access (travel time to cities, practical → app filter) | MAP "accessibility to cities 2015" (Earth Engine or malariaatlas.org) | not checked (Earth Engine asset / no direct link found) | medium: needs an export from Earth Engine or the MAP download page; ~2–3 h | no data south of 60° S; roads from 2015 |
+| 21 | Night darkness (night lights) | NASA Black Marble VNP46A4 (annual, Earthdata login) or VIIRS VNL annual (EOG, registration) | not checked (login needed) | medium: login + tiles per region; ~2–3 h | annual composite; "darker is better" |
+| 23 | Basaltic ground (GLiM lithology) | GLiM, PANGAEA doi:10.1594/PANGAEA.788537 | not checked (download link and size not found on the page) | medium: polygon map, rasterise or point-in-polygon per cell; ~2–3 h | coarse; good for "basalt yes/no" (mare / cave base types) |
+
+- **"Open bowl" mode for polar analogs at high latitude (cirques).** The bowl filter needs a *closed* depression
+  (≥ 50 m deep, ≥ 1 km wide, elongation ≤ 2). In the first high-latitude screening (Svalbard, Ellesmere,
+  Peary Land, Kangerlussuaq; 14 Nov 2026) no place passed it. Glacial terrain has cirques: bowls open on the
+  downhill side, with steep head walls that hold shadow. A mode that accepts open bowls, with depth measured
+  from the head wall and not to the spill point, could find polar analogs there. Not built; it needs its own
+  definitions for c7, c9 and c11.
 
 ## Open decisions
 

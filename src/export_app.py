@@ -38,9 +38,25 @@ ROOT = Path(__file__).resolve().parents[1]
 APP_COLUMNS = {
     "c1_sunny_ridge": "SUNNY_RIDGE", "c2_dark_floor": "DARK_FLOOR", "c3_light_dark": "LIGHT_NEAR_DARK",
     "c4_grazing_sun": "GRAZING_SUN", "c5_sky_view": "SKY_VIEW", "c7_bowl": "BOWL_SHAPE",
-    "c8_crater_size": "CRATER_SIZE", "c9_relief": "RELIEF", "c10_flat_base": "SLOPE_BASE",
-    "c11_walls": "STEEP_WALLS", "c12_drivable": "DRIVABLE", "c13_roughness": "ROUGHNESS", "c14_aspect": "ASPECT",
+    "c9_relief": "RELIEF", "c10_flat_base": "SLOPE_BASE",
+    "c11_walls": "STEEP_WALLS", "c13_roughness": "ROUGHNESS", "c14_aspect": "ASPECT",
 }
+# DISPLAY-only columns (weight 0, never in SCORE_TOTAL; parameters in config/display.yaml, outside the freeze).
+# column: (criterion, raw field for scores.csv or None, kind, unit / meaning)
+DISPLAY_COLUMNS = {
+    "DRIVABLE": ("c12_drivable", "drivable_share_5km", "more is better",
+                 "share of pixels flatter than display.drivable_slope_deg within display.drivable_radius_km of the base pad"),
+    "BARE": ("c19_bare", "bare_share", "more is better", "share of WorldCover bare/sparse (class 60) in floor + rim zone"),
+    "GROUND_ICE": ("c18_ground_ice", "ice_floor_share", "more is better", "share of WorldCover snow & ice in the floor zone"),
+    "IMPACT_CRATER": ("c24_impact_crater", "impact_match", "fact",
+                      "1 = low point lies within max(0.6 x diameter, 1 km) of a confirmed impact structure in "
+                      "data/impact/impact_structures.csv (Wikipedia list, incomplete), 0 = not in that list"),
+    "CRATER_SIZE": ("c8_crater_size", None, "raw only",
+                    "size-dependent: diameter and depth in raw_values.csv (CRATER_DIAMETER_EQUIV_M, CRATER_RIM_TO_FLOOR_M); "
+                    "no 0-1 value"),
+}
+DISPLAY_RAW = {"drivable_share_rim": "DRIVABLE_RIM_SHARE", "drivable_share_5km": "DRIVABLE_5KM_SHARE",
+               "bare_share": "BARE_SHARE", "c7_width_m": "CRATER_DIAMETER_EQUIV_M", "c9_relief": "CRATER_RIM_TO_FLOOR_M"}
 UNITS = {
     "c1_sunny_ridge": "lit fraction / flat-land lit fraction", "c2_dark_floor": "terrain shadow fraction (p99 of floor)",
     "c3_light_dark": "distance / bowl radius", "c4_grazing_sun": "deg (max Sun elevation)",
@@ -92,6 +108,19 @@ def load_run(path: Path):
     return radar, rows
 
 
+def impact_match(lat, lon, impacts: list[dict], disp: dict):
+    """Nearest confirmed impact structure whose centre is within max(rel x diameter, min_km) of the point."""
+    if lat is None or lon is None or not impacts:
+        return None
+    best = None
+    for im in impacts:
+        d = math.hypot((lat - im["lat"]) * 110.6, (lon - im["lon"]) * 111.3 * math.cos(math.radians(lat)))
+        reach = max(disp.get("impact_match_rel", 0.6) * (im["diameter_km"] or 0.0), disp.get("impact_match_min_km", 1.0))
+        if d <= reach and (best is None or d < best["dist_km"]):
+            best = {**im, "dist_km": d}
+    return best
+
+
 def known_sites(info_path: Path | None, coords_path: Path | None) -> list[tuple[str, float, float]]:
     if not info_path or not coords_path or not info_path.exists() or not coords_path.exists():
         return []
@@ -117,7 +146,17 @@ def main():
     ap.add_argument("--sites-info", type=Path, default=ROOT / "app" / "sample" / "site_info.json")
     ap.add_argument("--sites-coords", type=Path, default=ROOT / "app" / "sample" / "scores.csv",
                     help="CSV with SITE,LAT,LON for the known sites (Sofia's approximate coordinates)")
+    ap.add_argument("--impacts", type=Path, default=ROOT / "data" / "impact" / "impact_structures.csv",
+                    help="confirmed impact structures (src/impact_list.py)")
     a = ap.parse_args()
+    import sys
+    sys.path.insert(0, str(ROOT / "src"))
+    from impact_list import load as load_impacts
+    from pipeline.config import load_config
+    disp = load_config().get("display", {})
+    impacts = load_impacts(a.impacts)
+    if not impacts:
+        print(f"note: no impact list at {a.impacts}: IMPACT_CRATER stays empty (run src/impact_list.py)")
 
     runs = [(p.name, *load_run(p)) for p in a.runs]
     ref_axes = {x["id"]: x for x in runs[0][1]["axes"]}
@@ -144,6 +183,11 @@ def main():
                 ax = ref_axes.get(crit)
                 ok = ax is not None and score_method(ax) in ("target", "display") and ax["method"] == "target"
                 row[col] = _num(r.get(f"s_{crit}")) if ok else None       # similarity only; rank -> empty
+            hit = impact_match(row["LAT"], row["LON"], impacts, disp)
+            r["impact_match"] = None if not impacts else (1.0 if hit else 0.0)
+            row["_impact"] = hit
+            for col, (_, field, _, _) in DISPLAY_COLUMNS.items():
+                row[col] = _num(r.get(field)) if field else None
             rows.append(row)
     rows.sort(key=lambda x: (x["SCORE_TOTAL"] is None, -(x["SCORE_TOTAL"] or 0.0)))
     for i, x in enumerate(rows, 1):
@@ -155,23 +199,29 @@ def main():
     assert all("," not in x["SITE"] for x in rows), "site names must not contain commas"
 
     a.out.mkdir(parents=True, exist_ok=True)
-    cols = ["SITE", "LAT", "LON", *APP_COLUMNS.values(), "RUN", "CELL", "BASE_TYPE", "SCORE_TOTAL", "RANK"]
+    cols = ["SITE", "LAT", "LON", *APP_COLUMNS.values(), *DISPLAY_COLUMNS, "RUN", "CELL", "BASE_TYPE", "SCORE_TOTAL", "RANK"]
     with open(a.out / "scores.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(cols)
         for x in rows:
             w.writerow([x["SITE"], _fmt(x["LAT"], 5), _fmt(x["LON"], 5), *[_fmt(x[c]) for c in APP_COLUMNS.values()],
+                        *[_fmt(x[c]) for c in DISPLAY_COLUMNS],
                         x["RUN"], x["CELL"], x["BASE_TYPE"], _fmt(x["SCORE_TOTAL"]), x["RANK"] or ""])
 
-    raw_cols = ["SITE", "LAT", "LON", *APP_COLUMNS.values(), *EXTRA_RAW.values(), "RUN", "CELL"]
+    # raw_values.csv also carries text columns (IMPACT_NAME, IMPACT_SOURCE): parse them as text in the app
+    raw_cols = ["SITE", "LAT", "LON", *APP_COLUMNS.values(), *EXTRA_RAW.values(), *DISPLAY_RAW.values(),
+                "IMPACT_NAME", "IMPACT_DIAMETER_KM", "IMPACT_DIST_KM", "IMPACT_SOURCE", "RUN", "CELL"]
     with open(a.out / "raw_values.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(raw_cols)
         for x in rows:
-            r = x["_r"]
+            r, hit = x["_r"], x["_impact"]
             w.writerow([x["SITE"], _fmt(x["LAT"], 5), _fmt(x["LON"], 5),
                         *[_fmt(_num(r.get(c))) for c in APP_COLUMNS],
-                        *[_fmt(_num(r.get(c))) for c in EXTRA_RAW], x["RUN"], x["CELL"]])
+                        *[_fmt(_num(r.get(c))) for c in EXTRA_RAW],
+                        *[_fmt(_num(r.get(c))) for c in DISPLAY_RAW],
+                        hit["name"] if hit else "", _fmt(hit["diameter_km"]) if hit else "",
+                        _fmt(hit["dist_km"], 2) if hit else "", hit["source"] if hit else "", x["RUN"], x["CELL"]])
 
     crit_list = []
     for crit, col in APP_COLUMNS.items():
@@ -190,6 +240,15 @@ def main():
             "moon": {"value": lt.get("value") if lt.get("verified") else None, "unit": lt.get("unit"),
                      "source": lt.get("source") if lt.get("verified") else None,
                      "zone": lt.get("zone"), "note": lt.get("note")} if lt else None,
+        })
+    for col, (crit, field, kind, meaning) in DISPLAY_COLUMNS.items():
+        crit_list.append({
+            "column": col, "criterion": crit, "label": None, "counts": False, "weight": 0,
+            "score_method": "display", "display_kind": kind, "in_scores_csv": field is not None,
+            "tolerance": None, "earth_unit": meaning, "limitation": None, "fact": None,
+            "moon": None, "note": ("Display only, not a similarity to the Moon: environment criteria are 'more is "
+                                   "better' (the Moon's values are not reachable or not meaningful as closeness, like "
+                                   "c4). Parameters in config/display.yaml, outside the config-v1 freeze."),
         })
     targets = {
         "_note": ("Lunar reference per base type. The 0-1 values in scores.csv ARE the similarity to the Moon "
@@ -266,6 +325,14 @@ Status counts here: {', '.join(f"{s} {sum(c['status'] == s for c in cells)}" for
   {(', '.join(by['rank']) + '. They get a similarity once their lunar value exists.') if by['rank'] else 'none (every scored criterion has a lunar value).'}
 - **Not computed by the pipeline yet:** {', '.join(by['not computed']) or 'none'}
 - Only the polar base type exists so far; `cave` and `mare` have no targets yet.
+
+## Display-only columns (weight 0, never in SCORE_TOTAL)
+Parameters in `config/display.yaml` (outside the config-v1 freeze). These are **not** a similarity to the Moon:
+environment criteria are "more is better" shares, because the Moon's values are not reachable or not meaningful
+as closeness (like GRAZING_SUN).
+{chr(10).join(f"- **{c}** ({v[2]}): {v[3]}" for c, v in DISPLAY_COLUMNS.items())}
+- Impact list: {len(impacts)} confirmed structures from {impacts[0]['source'] if impacts else 'no list'}
+  (incomplete; "0" means "not in this list"). Matched places: {', '.join(sorted({x['_impact']['name'] for x in rows if x['_impact']})) or 'none'}.
 
 ## No Earth analog possible: GRAZING_SUN
 {FACTS["c4_grazing_sun"]} (`targets.json` → `fact`.)

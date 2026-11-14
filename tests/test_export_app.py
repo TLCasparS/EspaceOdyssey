@@ -80,3 +80,12 @@ def test_export_refuses_runs_with_different_config(tmp_path):
     b = _run(tmp_path, "runb", [_row("r000c000", 0.6, 31.8, -113.4)], axes=axes_b)
     p, _ = _export(tmp_path, [a, b])
     assert p.returncode != 0 and "different config" in (p.stderr + p.stdout)
+
+
+def test_impact_match_radius():
+    sys.path.insert(0, str(ROOT / "src"))
+    from export_app import impact_match
+    ims = [{"name": "Test", "lat": 35.0, "lon": -111.0, "diameter_km": 1.2, "source": "x"}]
+    disp = {"impact_match_rel": 0.6, "impact_match_min_km": 1.0}
+    assert impact_match(35.005, -111.0, ims, disp)["name"] == "Test"           # 0.55 km < max(0.72, 1) km
+    assert impact_match(35.05, -111.0, ims, disp) is None                      # 5.5 km away

@@ -55,3 +55,15 @@ For SUNNY_RIDGE, DARK_FLOOR and LIGHT_NEAR_DARK, `targets.json` has a `limitatio
 > Light on the Moon is measured as the visible part of the Sun's disc (NASA PGDA illumination map); on Earth as the Sun's centre above the horizon. On flat ground at the pole both agree; on crater rims and floors they can differ a little.
 
 Suggested short label for a tooltip: "Moon: Sun disc · Earth: Sun centre".
+
+## New display columns (14 Nov 2026)
+`scores.csv` now also has **DRIVABLE, BARE, GROUND_ICE, IMPACT_CRATER** (and an empty CRATER_SIZE). They are
+**display only** (`targets.json`: `score_method: display`, `display_kind`):
+- **DRIVABLE, BARE, GROUND_ICE** are shares, "more is better". **Not** a similarity to the Moon, so don't compare
+  them with a Moon value. In the card a bar (0–100 %) works, like your practical criteria.
+- **IMPACT_CRATER** is 1/0. 1 = confirmed impact structure (name, diameter and source in `raw_values.csv`:
+  `IMPACT_NAME`, `IMPACT_DIAMETER_KM`, `IMPACT_SOURCE`); 0 = not in the (incomplete) list.
+- **CRATER_SIZE:** no 0–1 value; diameter and depth are in `raw_values.csv` (`CRATER_DIAMETER_EQUIV_M`, `CRATER_RIM_TO_FLOOR_M`).
+- `raw_values.csv` has text columns (`IMPACT_NAME`, `IMPACT_SOURCE`, `RUN`, `CELL`): parse them as text.
+- Practical criteria (ACCESS, STATION_NEARBY) stay filters, never part of the similarity.
+
