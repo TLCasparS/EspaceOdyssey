@@ -5,17 +5,21 @@
  */
 
 const USE_SAMPLE = new URLSearchParams(location.search).has('sample');
+// Scale test only (docs/APP_SCALE_TEST.md): ?data=outputs_fake/2000 reads that folder of FAKE data instead of
+// ../outputs/. Without the parameter nothing changes.
+const FAKE_DIR = (new URLSearchParams(location.search).get('data') ?? '').match(/^outputs_fake\/\d+$/)?.[0];
+const OUT = FAKE_DIR ? `../${FAKE_DIR}/` : '../outputs/';
 const DATA = USE_SAMPLE ? {
   scores: 'sample/scores.csv',       // fake 0–1 site values, compared with fake 0–1 targets
   targets: 'sample/targets.json',
   info: 'sample/site_info.json',
   isFake: true,                      // shows the "Fake data" badge
 } : {
-  scores: '../outputs/scores.csv',   // 0–1 values ARE the similarity to the Moon; SCORE_TOTAL, RANK
-  targets: '../outputs/targets.json',// per base: criteria list with counts, weight, score_method, raw Moon value
-  raw: '../outputs/raw_values.csv',  // raw Earth values, for "23.9° vs 27.2°" chips
-  heatmap: '../outputs/heatmap.json',// [{lat, lng, weight}]
-  cells: '../outputs/cells.json',    // every searched cell, with status (ranked / no_bowl / filtered)
+  scores: OUT + 'scores.csv',   // 0–1 values ARE the similarity to the Moon; SCORE_TOTAL, RANK
+  targets: OUT + 'targets.json',// per base: criteria list with counts, weight, score_method, raw Moon value
+  raw: OUT + 'raw_values.csv',  // raw Earth values, for "23.9° vs 27.2°" chips
+  heatmap: OUT + 'heatmap.json',// [{lat, lng, weight}]
+  cells: OUT + 'cells.json',    // every searched cell, with status (ranked / no_bowl / filtered)
   info: 'sample/site_info.json',     // Sofia's research notes per site (export_app.py reads it too)
   coords: 'sample/scores.csv',       // only SITE,LAT,LON: puts sites the pipeline hasn't scored yet on the map
   isFake: false,
@@ -1315,11 +1319,12 @@ function refresh() {
 (async function main() {
   try {
     await loadAll();
+    if (FAKE_DIR) performance.mark('scale:data-loaded');   // scale test timing only
   } catch (err) {
     document.getElementById('card').innerHTML = `<p class="hint">Could not load ${esc(err.message)}. Open the app through a web server (for example <code>python -m http.server</code> in the repo root), not by double-clicking the file.</p>`;
     return;
   }
-  document.getElementById('dataBadge').hidden = !DATA.isFake;
+  document.getElementById('dataBadge').hidden = !DATA.isFake && !FAKE_DIR;   // fake scale-test data shows the badge too
   // Name only the data the app really shows. Planned sources: Copernicus DEM, ESA WorldCover, MODIS, LOLA, LROC, Diviner.
   document.getElementById('footNote').textContent = DATA.isFake
     ? 'Scores and heatmap are sample values, not results yet'
@@ -1332,6 +1337,7 @@ function refresh() {
   renderMoonButtons();
   state.selected = bestTwin(ranked().filter(x => x.sim != null))?.SITE ?? ranked()[0]?.SITE ?? null;
   refresh();
+  if (FAKE_DIR) performance.mark('scale:first-render');
   // Load the 3D map quietly behind the globe, so the first fly-in doesn't wait for it.
   setTimeout(() => {
     const s = currentSite();
