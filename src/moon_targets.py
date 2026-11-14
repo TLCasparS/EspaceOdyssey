@@ -1,4 +1,8 @@
-"""Lunar target values for the Polar criteria, computed with the Earth pipeline's own code.
+"""CROSS-CHECK ONLY: recompute the Polar lunar targets independently and compare them with
+config/lunar_targets.json. It never writes that file: src/compute_lunar_target.py is the one
+script that produces the targets (agreed 14 Nov 2026).
+
+Lunar target values for the Polar criteria, computed with the Earth pipeline's own code.
 
 Shackleton is treated exactly like one Earth cell:
   - a 15 km cell (grid.cell_km) centred on the crater, read with the same buffer (polar.buffer_m),
@@ -12,17 +16,16 @@ or floor); the target is Shackleton itself, so the WIDEST depression is used, no
 Input : a LOLA LDEM GeoTIFF in lunar south polar stereographic metres, local path or https URL
         (cloud-optimized: only the window is downloaded). Recommended source:
         https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_20MPP_ADJ.TIF
-Output: prints the values; with --write, fills config/lunar_targets.json (value, source,
-        verified=false). A person flips "verified" to true after checking each number.
+Output: a table of this script's values next to config/lunar_targets.json and the difference.
+        The window differs on purpose (cell centred on the IAU crater coordinates, not on the
+        low point found from the data), so small differences are expected.
 
 Usage (from the repo root):
     python src/moon_targets.py https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_20MPP_ADJ.TIF
-    python src/moon_targets.py <dem.tif> --write
 """
 from __future__ import annotations
 
 import argparse
-import datetime as dt
 import json
 import os
 import sys
@@ -39,22 +42,6 @@ from pipeline.polar import CRITERIA, polar_candidates  # noqa: E402
 SHACKLETON_LAT, SHACKLETON_LON = -89.67, 129.8
 MOON_SPS = "+proj=stere +lat_0=-90 +lon_0=0 +k=1 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs"
 MOON_LL = "+proj=longlat +R=1737400 +no_defs"
-
-# Criteria whose lunar value is not used, and why (kept null in lunar_targets.json).
-NOT_USED = {
-    "c14_aspect": "Shackleton's rim touches the lunar south pole and the Sun circles the whole horizon "
-                  "there, so 'facing the pole' does not mean 'less sun' as it does on Earth. "
-                  "Computed value kept in the note for reference only.",
-}
-TODO_NOTES = {
-    "c10_flat_base": "TODO: with max_base_to_low_km = 5 the pad is searched within 5 km of the low point, "
-                     "i.e. on Shackleton's floor/lower wall (permanently dark), not on the rim where "
-                     "NASA's base sites are (~10 km out). Kept as is for v1; revisit the search radius.",
-    "c11_walls": "TODO: the wall ring (polar.wall_ring_m = 500-3000 m from the low point) covers Shackleton's "
-                 "floor and the foot of its walls; the steep inner walls run ~3-10 km out, so this value "
-                 "understates them. Kept as is for v1; revisit a ring scaled to the depression size.",
-}
-
 
 def read_window(path: str, half_m: float):
     """Native-resolution DEM window of +-half_m around Shackleton (only those bytes are read)."""
@@ -83,7 +70,6 @@ def read_window(path: str, half_m: float):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("dem", help="LOLA LDEM GeoTIFF path or https URL")
-    ap.add_argument("--write", action="store_true", help="fill config/lunar_targets.json")
     a = ap.parse_args()
 
     cfg = load_config()
@@ -113,44 +99,16 @@ def main():
     print(f"base pad: {shack['base_to_low_km']} km from the low point at {shack['base_elev_m']} m"
           f"{'  (REJECTED: ' + shack['reason'] + ')' if not shack['keep'] else ''}")
 
-    values = {name: shack.get(name) for name in CRITERIA}
-    # c13 is a per-place value since 14 Nov (bowl + rim ring), so it comes from shack like the others
-    for name in CRITERIA:
-        flag = "  (not used: see note)" if name in NOT_USED else ""
-        print(f"  {name:15s} {values[name]}{flag}")
-
-    if not a.write:
-        print("\nDry run. Add --write to fill config/lunar_targets.json.")
-        return
-
-    src_name = os.path.basename(a.dem)
-    source = (f"LOLA {src_name} (NASA PGDA; native {src_res:g} m) -> {res_m:g} m {resampling}, "
-              f"src/moon_targets.py, {dt.date.today().isoformat()}")
+    values = {name: shack.get(name) for name in CRITERIA}   # c13 is per place since 14 Nov
     with open(TARGETS_PATH, encoding="utf-8") as f:
-        targets = json.load(f)
-    pol = targets["polar"]
+        ref = json.load(f)["polar"]["criteria"]
+    print(f"\n  {'criterion':15s} {'this script':>12s} {'targets file':>13s} {'diff':>7s}  verified")
     for name in CRITERIA:
-        c = pol["criteria"][name]
-        if name in NOT_USED:
-            c.update(value=None, source=None, verified=False,
-                     note=f"{NOT_USED[name]} Computed: {values[name]}.")
-            continue
-        c.update(value=values[name], source=source, verified=False)
-        if name in TODO_NOTES:
-            c["note"] = TODO_NOTES[name]
-    pol["status"] = ("computed by src/moon_targets.py; verified=false until a person checks each value "
-                     "against the quicklook and the definition")
-    pol["window"] = (f"15 km cell centred on Shackleton ({SHACKLETON_LAT}, {SHACKLETON_LON}) in lunar south "
-                     f"polar stereographic, read with polar.buffer_m = {buf:g} m; widest depression in the cell")
-    pol["grid"] = {"res_m": res_m, "crs": "lunar south polar stereographic (R = 1737.4 km)",
-                   "resampling": resampling}
-    pol["computed"] = {"n_depressions_in_cell": len(deps), "spill_depth_m": shack["c7_depth_m"],
-                       "depression_width_m": shack["c7_width_m"], "low_elev_m": shack["low_elev_m"],
-                       "base_to_low_km": shack["base_to_low_km"], "base_elev_m": shack["base_elev_m"]}
-    with open(TARGETS_PATH, "w", encoding="utf-8") as f:
-        json.dump(targets, f, indent=2, ensure_ascii=False)
-        f.write("\n")
-    print(f"\nWrote {TARGETS_PATH.relative_to(Path.cwd()) if TARGETS_PATH.is_relative_to(Path.cwd()) else TARGETS_PATH}")
+        mine, theirs = values[name], ref.get(name, {}).get("value")
+        diff = (f"{100 * (mine - theirs) / abs(theirs):+.1f}%"
+                if mine is not None and theirs not in (None, 0) else "")
+        print(f"  {name:15s} {str(mine):>12s} {str(theirs):>13s} {diff:>7s}  {ref.get(name, {}).get('verified')}")
+    print("\nCross-check only: config/lunar_targets.json is written by src/compute_lunar_target.py.")
 
 
 if __name__ == "__main__":
