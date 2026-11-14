@@ -7,6 +7,8 @@
 
 grid:
   cell_km: 15                 # ~ size of an Artemis III candidate region
+  res_m: 60                   # common metric grid for Earth and Moon (decision 14 Nov)
+  resampling: bilinear        # unsure: for 5 m LOLA -> 60 m, 'average' may be better; compare later
 
 # --- Step 1: hard filters per cell (land cover, settlements). NO slope filter here. --------
 filter:

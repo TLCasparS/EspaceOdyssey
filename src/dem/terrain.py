@@ -144,8 +144,11 @@ def _horn_gradients(z: np.ndarray, res_m: float) -> tuple[np.ndarray, np.ndarray
 
 
 def _grid_north_azimuth(mg: MetricGrid) -> np.ndarray:
-    """Per pixel: azimuth of true north measured clockwise from grid north (degrees)."""
-    from pyproj import Transformer
+    """Per pixel: azimuth of true north measured clockwise from grid north (degrees).
+
+    Uses the grid CRS's own lon/lat CRS, so it works for Earth and for lunar CRSs.
+    """
+    from pyproj import CRS, Transformer
 
     rows, cols = mg.dem.shape
     # Convergence varies slowly; compute on a coarse lattice and interpolate.
@@ -154,8 +157,9 @@ def _grid_north_azimuth(mg: MetricGrid) -> np.ndarray:
     cc = np.arange(0, cols + step, step).clip(max=cols - 1)
     C, R = np.meshgrid(cc + 0.5, rr + 0.5)
     x, y = mg.transform * (C, R)
-    to_ll = Transformer.from_crs(mg.crs, "EPSG:4326", always_xy=True)
-    to_xy = Transformer.from_crs("EPSG:4326", mg.crs, always_xy=True)
+    crs = CRS.from_user_input(mg.crs)
+    to_ll = Transformer.from_crs(crs, crs.geodetic_crs, always_xy=True)
+    to_xy = Transformer.from_crs(crs.geodetic_crs, crs, always_xy=True)
     lon, lat = to_ll.transform(x, y)
     x2, y2 = to_xy.transform(lon, lat + 0.001)
     coarse = np.degrees(np.arctan2(x2 - x, y2 - y))
