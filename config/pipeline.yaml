@@ -116,3 +116,20 @@ light:
   bodies:                     # curvature drop of distant terrain: d^2 (1 - k) / (2 R)
     earth: {radius_m: 6371000, refraction_k: 0.13}   # shadowsim values (standard terrestrial refraction)
     moon:  {radius_m: 1737400, refraction_k: 0.0}    # LOLA reference sphere; no atmosphere
+
+# --- Mare surface base (src/pipeline/mare.py), agreed with Mateo 14 Nov 2026 -------------------------
+# NOT part of the config-v1 freeze (that covers Polar). Mare gets its own freeze once validated.
+mare:
+  pad_m: 200                  # base spot = flattest ~200 m pad in the cell (3x3 px at 60 m), as polar
+  radius_km: 5                # c9, c12, c13 are computed within this radius of the base pad
+  drivable_slope_deg: 15      # c12: drivable below this slope (criteria doc 15-20 deg)
+  roughness_window_px: 3      # c13: as polar
+  max_base_slope_deg: 15      # cell dropped if its flattest pad is steeper (hard filter, as polar)
+  # Lunar target = median over Mateo's fixed lunar cell list; tolerance = max(IQR across those cells, floor).
+  # Floors: (team start values 14 Nov, to confirm) keep the tolerance from collapsing on uniform maria.
+  tolerance_floor: {c9_relief: 20, c10_flat_base: 0.5, c12_drivable: 0.05, c13_roughness: 1.0}
+  criteria:                   # counting for Mare; weights (team start values) all equal
+    c9_relief:     {weight: 1.0, direction: target}   # m, max - min within 5 km of the base pad
+    c10_flat_base: {weight: 1.0, direction: target}   # deg, slope of the base pad
+    c12_drivable:  {weight: 1.0, direction: target}   # share < 15 deg within 5 km
+    c13_roughness: {weight: 1.0, direction: target}   # m, median 3x3 std within 5 km
