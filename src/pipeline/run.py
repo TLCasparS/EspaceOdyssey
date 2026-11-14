@@ -166,8 +166,7 @@ def write_outputs(out_dir, bbox, dem_res, cfg, rows, ranked):
         "note": NO_TARGET_NOTE + "; criteria with method 'none' have no score yet (null = no data, not 0)",
         "axes": [{"id": c, "label": LABELS[c][0], "unit": LABELS[c][1], "direction": crit[c]["direction"],
                   "method": method(crit[c]), "weight": crit[c]["weight"]} for c in CRITERIA],
-        "lunar_target": {"name": "Shackleton rim area (TODO: from LOLA 5 m site DEMs)",
-                         "raw": {c: crit[c].get("target") for c in CRITERIA}, "scores": None},
+        "lunar_target": cfg["lunar_targets"]["polar"],    # raw values in the same units; null = TODO
         "cells": [{"id": r["id"], "rank": r["rank"], "score": r["score"], "lon": r["lon"], "lat": r["lat"],
                    "scores": {c: _clean(r.get(f"s_{c}")) for c in CRITERIA},
                    "raw": {c: _clean(r.get(c)) for c in CRITERIA}} for r in ranked],

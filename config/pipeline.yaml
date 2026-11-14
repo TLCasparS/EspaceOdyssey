@@ -47,15 +47,16 @@ polar:
 
   # How each raw value becomes a 0-1 score (src/pipeline/scoring.py):
   #   scale: [a, b]   -> direct linear score, a -> 1 ... b -> 0 if direction lower (reverse if higher)
-  #   target: value   -> similarity to the lunar value (not implemented until targets exist)
+  #   lunar target    -> similarity to the lunar value (not implemented until targets exist).
+  #                      Targets live in config/lunar_targets.json (used only when verified: true).
   #   neither, direction higher/lower -> percentile rank among the surviving cells of THIS run
   #                                      (score_method=rank: only comparable within one run)
-  #   direction target, target null   -> score None ("no data") until the lunar value exists
+  #   direction target, no target     -> score None ("no data") until the lunar value exists
   # Weights: (team start value) all equal; adjustable for the jury demo.
   criteria:
-    c7_bowl:       {weight: 1.0, direction: higher, target: null}   # depth / width of closed depression. TODO lunar target (LOLA)
-    c9_relief:     {weight: 1.0, direction: higher, target: null}   # m, max-min in 5 km window at the low point. TODO lunar target
+    c7_bowl:       {weight: 1.0, direction: higher}   # depth / width of closed depression
+    c9_relief:     {weight: 1.0, direction: higher}   # m, max-min in 5 km window at the low point
     c10_flat_base: {weight: 1.0, direction: lower, scale: [0, 15]}  # deg, mean slope of flattest usable pad
-    c11_walls:     {weight: 1.0, direction: higher, target: null}   # deg, mean slope in ring around low point. TODO lunar target
-    c13_roughness: {weight: 1.0, direction: target, target: null}   # m, median std of elevation. TODO lunar target
+    c11_walls:     {weight: 1.0, direction: higher}   # deg, mean slope in ring around low point
+    c13_roughness: {weight: 1.0, direction: target}   # m, median std of elevation
     c14_aspect:    {weight: 1.0, direction: higher, scale: [0, 1]}  # share of steep pixels facing the nearer pole

@@ -133,3 +133,21 @@ def test_rank_scoring_direction_and_none_never_zero():
 def test_percentile_ranks():
     assert percentile_ranks([5.0]) == [0.5]
     assert percentile_ranks([3.0, 1.0, 2.0]) == [1.0, 0.0, 0.5]
+
+
+def test_lunar_targets_match_pipeline_and_unverified_values_are_unused(tmp_path):
+    import json
+    from pipeline.config import TARGETS_PATH
+    from pipeline.scoring import method
+    targets = json.loads(Path(TARGETS_PATH).read_text(encoding="utf-8"))
+    assert set(targets["polar"]["criteria"]) == set(CFG["polar"]["criteria"])
+    assert all(c["target"] is None for c in CFG["polar"]["criteria"].values())   # nothing verified yet
+
+    targets["polar"]["criteria"]["c9_relief"].update(value=1234.0, verified=False)
+    p = tmp_path / "t.json"
+    p.write_text(json.dumps(targets), encoding="utf-8")
+    assert load_config(targets_path=p)["polar"]["criteria"]["c9_relief"]["target"] is None
+    targets["polar"]["criteria"]["c9_relief"]["verified"] = True
+    p.write_text(json.dumps(targets), encoding="utf-8")
+    c9 = load_config(targets_path=p)["polar"]["criteria"]["c9_relief"]
+    assert c9["target"] == 1234.0 and method(c9) == "target"
