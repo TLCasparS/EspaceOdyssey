@@ -126,7 +126,11 @@ mare:
   roughness_window_px: 3      # c13: as polar
   max_base_slope_deg: 15      # cell dropped if its flattest pad is steeper (hard filter, as polar)
   # Lunar target = median over Mateo's fixed lunar cell list; tolerance = max(IQR across those cells, floor).
-  # Floors: (team start values 14 Nov, to confirm) keep the tolerance from collapsing on uniform maria.
+  # Floors keep the tolerance from collapsing on uniform maria, justified by data accuracy where possible:
+  #   c9 20 m, c13 1.0 m: start values from DEM accuracy. SLDEM2015 vertical accuracy is 3-4 m (criteria doc);
+  #     a 5 km max-min (c9) adds the error of two points plus 60 m resampling, so differences below ~20 m are
+  #     not meaningful; c13 (std in 3x3 px at 60 m) is a fraction of that error, so ~1 m is the noise level.
+  #   c10 0.5 deg, c12 0.05: PLACEHOLDERS. Mateo decides after seeing the IQR of his lunar cells.
   tolerance_floor: {c9_relief: 20, c10_flat_base: 0.5, c12_drivable: 0.05, c13_roughness: 1.0}
   criteria:                   # counting for Mare; weights (team start values) all equal
     c9_relief:     {weight: 1.0, direction: target}   # m, max - min within 5 km of the base pad
