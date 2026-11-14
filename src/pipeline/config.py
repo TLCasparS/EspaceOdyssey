@@ -29,4 +29,11 @@ def load_config(path: str | Path | None = None, targets_path: str | Path | None 
             ccfg["target"] = t["value"] if t.get("verified") and t.get("value") is not None else None
             if ccfg["target"] is not None and not ccfg.get("tolerance"):
                 raise ValueError(f"{name}: verified lunar target but no tolerance in pipeline.yaml")
+    if "mare" in cfg:                                         # Mare: target = median, tolerance from the IQR
+        lm = targets.get("mare", {}).get("criteria", {})
+        for name, ccfg in cfg["mare"]["criteria"].items():
+            t = lm.get(name, {})
+            ok = t.get("verified") and t.get("value") is not None and t.get("tolerance") is not None
+            ccfg["target"] = t["value"] if ok else None
+            ccfg["tolerance"] = max(t["tolerance"], cfg["mare"]["tolerance_floor"][name]) if ok else None
     return cfg
