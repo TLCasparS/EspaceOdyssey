@@ -266,6 +266,9 @@ a { color: var(--earth); }
 .moon-vals .is-fact { grid-column: 1 / -1; flex-wrap: wrap; }
 .moon-vals .is-fact em { flex-basis: 100%; font-size: 11px; color: var(--accent); }
 .moon-soon { color: var(--accent); }
+.moon-vals .has-note { grid-column: 1 / -1; flex-wrap: wrap; }
+.moon-vals .has-note em { flex-basis: 100%; font-size: 11px; font-style: normal; color: var(--muted); }
+.moon-detail { margin-top: 8px !important; padding: 6px 8px; border-left: 2px solid var(--moon); background: rgba(232,227,211,.06); line-height: 1.45; }
 .moon-fig { font-size: 12px; }
 @media (max-width: 760px) {
   .moon-globe-box { flex: none; height: 260px; }

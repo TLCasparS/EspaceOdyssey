@@ -72,15 +72,28 @@ const BASES = [
 // shows one marker per entry; a base can be picked once outputs/targets.json has its values. To add the
 // lava-tube base later, add an entry with id 'cave' (candidate: Mare Tranquillitatis pit, 8.336°N, 33.222°E).
 const MOON_BASES = [
-  { id: 'polar', name: 'Shackleton crater', place: 'Lunar south pole', lat: -89.625, lng: 118.8,
-    facts: '21 km wide, 4,077 m from rim crest to floor',
+  { id: 'polar', title: 'Polar base', name: 'Shackleton crater', place: 'lunar south pole', lat: -89.625, lng: 118.8,
+    subtitle: '21 km wide, 4,077 m from rim crest to floor',
     why: 'Its rim is one of the sunniest places on the Moon (best spot lit 78% of the time: solar power), while its floor never sees the Sun (permanent shadow: water ice). Power and ice are about 7.5 km apart.',
     figure: '../figures/shackleton_target.png' },
-  { id: 'mare', name: 'Apollo 11 site', place: 'Mare Tranquillitatis', lat: 0.674, lng: 23.473,
-    note: 'Typical lunar mare plain (Apollo 11 site shown): the target is the median of 20 sample areas in four maria.',
+  // Mare target: final values from Mateo (config/lunar_targets.json → mare, branch mare-moon, 14 Nov 2026).
+  // Shown on the Moon card until Caspar's outputs/targets.json has the mare base; then those values are used.
+  { id: 'mare', title: 'Mare surface base', name: 'Apollo 11 site', place: 'Mare Tranquillitatis', lat: 0.674, lng: 23.473,
+    subtitle: 'Typical lunar mare plain: median of 20 sample areas across 4 maria',
     why: 'Flat, smooth volcanic plains near the equator: easy to land and drive on, but with a huge day–night temperature swing.',
-    figure: '../figures/moon/mare_cells.png' },
+    target: [
+      { label: 'Relief within 5 km', value: '154 m', note: 'gentle, but small craters are part of normal mare' },
+      { label: 'Flattest landing pad', value: '0.24°', note: 'essentially flat' },
+      { label: 'Drivable ground', value: '99.3%', note: 'of the area under 15° slope' },
+      { label: 'Roughness', value: '1.7 m', note: 'smooth at the 60 m scale' },
+    ],
+    facts: [
+      { label: 'Day–night swing', value: '≈ 290–300 K', note: '≈ 390 K at noon, ≈ 95 K before sunrise (LRO Diviner)' },
+    ],
+    detail: 'The Apollo 11 site itself (130 m relief, 0.32° pad, 99.9% drivable, 1.7 m roughness) sits within the range of the 20 sample areas: Apollo 11 really did land on “average” mare.',
+    figure: '../figures/moon/mare_cells.png', figureLabel: 'See the map of the 20 sample areas' },
 ];
+const fmtLatLng = (lat, lng) => `${Math.abs(lat)}°${lat < 0 ? 'S' : 'N'}, ${Math.abs(lng)}°${lng < 0 ? 'W' : 'E'}`;
 const moonBase = id => MOON_BASES.find(b => b.id === id);
 const byKey = Object.fromEntries(CRITERIA.map(c => [c.key, c]));
 const COLORS = { earth: '#6CB4EE', moon: '#E8E3D3', newSite: '#F0C85D', known: '#A7BAC7', signal: '#3CC8B4' };
@@ -840,7 +853,7 @@ function initMoon() {
     .labelColor(b => (b.id === state.moonInfo ? '#FFFFFF' : moonReady(b.id) ? COLORS.signal : 'rgba(167,186,199,0.75)'))
     .labelAltitude(0.01)
     .labelResolution(3)
-    .labelLabel(b => `${esc(b.name)} · ${esc(baseLabelOf(b.id))} base${moonReady(b.id) ? '' : ' (values coming)'}`)
+    .labelLabel(b => `${esc(b.title)} · ${esc(b.name)}${moonReady(b.id) ? '' : ' (Earth twins coming)'}`)
     .onLabelClick(b => setBase(b.id, true))
     .ringColor(() => t => `rgba(255,255,255,${1 - t})`)
     .ringMaxRadius(6)
@@ -882,7 +895,7 @@ function updateMoon(fly) {
 function renderMoonButtons() {
   document.getElementById('moonBases').innerHTML = MOON_BASES.map(b => `<button type="button" class="moon-btn" data-moon="${b.id}"
       aria-pressed="${b.id === state.moonInfo}"${moonReady(b.id) ? '' : ' data-soon'}>
-      <b>${esc(baseLabelOf(b.id))}</b> ${esc(b.name)}${moonReady(b.id) ? '' : ' <span class="soon">values coming</span>'}</button>`).join('');
+      <b>${esc(baseLabelOf(b.id))}</b> ${esc(b.name)}${moonReady(b.id) ? '' : ' <span class="soon">Earth twins coming</span>'}</button>`).join('');
   renderMoonInfo();
 }
 
@@ -892,18 +905,27 @@ function renderMoonInfo() {
   const b = moonBase(state.moonInfo);
   if (!b) { el.innerHTML = '<p class="hint">Click a base on the Moon to find its Earth twins.</p>'; return; }
   const crit = state.crit[b.id];
-  const rows = crit ? CRITERIA.filter(c => crit[c.key]?.counts && crit[c.key].moon != null && !crit[c.key].kind)
-    .map(c => `<li><span>${esc(c.label)}</span><b>${esc(fmtVal(crit[c.key].moon, crit[c.key].earthUnit || crit[c.key].unit))}</b></li>`).join('') : '';
-  const facts = crit ? CRITERIA.filter(c => crit[c.key]?.fact && crit[c.key].moon != null)
-    .map(c => `<li class="is-fact"><span>${esc(c.label)}</span><b>${esc(fmtVal(crit[c.key].moon, crit[c.key].earthUnit || crit[c.key].unit))}</b><em>no Earth analog possible</em></li>`).join('') : '';
+  const row = (label, value, note, fact) => `<li class="${fact ? 'is-fact' : note ? 'has-note' : ''}"><span>${esc(label)}</span><b>${esc(value)}</b>${note ? `<em>${esc(note)}</em>` : ''}</li>`;
+  const val = c => fmtVal(crit[c.key].moon, crit[c.key].earthUnit || crit[c.key].unit);
+  // Target values: from outputs/targets.json once the pipeline exports this base, else the team's values above.
+  const rows = crit ? CRITERIA.filter(c => crit[c.key]?.counts && crit[c.key].moon != null && !crit[c.key].kind).map(c => row(c.label, val(c))).join('')
+    : (b.target ?? []).map(t => row(t.label, t.value, t.note)).join('');
+  const shownFacts = new Set();
+  const facts = [
+    ...(crit ? CRITERIA.filter(c => crit[c.key]?.fact && crit[c.key].moon != null).map(c => (shownFacts.add(c.label), row(c.label, val(c), 'no Earth analog possible', true))) : []),
+    ...(b.facts ?? []).filter(f => !shownFacts.has(f.label)).map(f => row(f.label, f.value, `${f.note}. No Earth analog possible.`, true)),
+  ].join('');
   el.innerHTML = `
-    <p class="moon-title"><b>${esc(b.name)}</b> · ${esc(b.place)}</p>
-    ${b.facts ? `<p class="moon-facts">${esc(b.facts)}</p>` : ''}
-    ${b.note ? `<p class="moon-facts">${esc(b.note)}</p>` : ''}
+    <p class="moon-title"><b>${esc(b.title)}</b> · ${esc(b.name)} (${esc(b.place)}), ${esc(fmtLatLng(b.lat, b.lng))}</p>
+    ${b.subtitle ? `<p class="moon-facts">${esc(b.subtitle)}</p>` : ''}
     <p class="moon-why">${esc(b.why)}</p>
-    ${crit ? `<p class="moon-sub">Target values (what Earth sites are compared with)</p><ul class="moon-vals">${rows}${facts}</ul>`
-      : '<p class="moon-soon">Values coming: Earth sites are not compared with this base yet.</p>'}
-    ${b.figure && crit ? `<a class="moon-fig" href="${esc(b.figure)}" target="_blank" rel="noopener">See the target figure</a>` : ''}`;
+    ${rows || facts ? `<p class="moon-sub">${crit ? 'Target values (what Earth sites are compared with)' : 'What a lunar mare base site looks like'}</p><ul class="moon-vals">${rows}${facts}</ul>` : ''}
+    ${b.detail ? `<p class="moon-detail">${esc(b.detail)}</p>` : ''}
+    ${crit ? '' : '<p class="moon-soon">Earth twins for this base come with the next pipeline run.</p>'}
+    <a class="moon-fig" href="${esc(b.figure)}" target="_blank" rel="noopener" hidden>${esc(b.figureLabel ?? 'See the target figure')}</a>`;
+  // Show the figure link only if the figure is in the repo (the mare map arrives with Mateo's branch).
+  const link = el.querySelector('.moon-fig');
+  if (b.figure) fetch(b.figure, { method: 'HEAD' }).then(r => { if (r.ok && state.moonInfo === b.id) link.hidden = false; }).catch(() => {});
 }
 
 /* ---------- 3D terrain: MapLibre GL with free tiles (no account, no key) ---------- */

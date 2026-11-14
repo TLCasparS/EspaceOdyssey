@@ -65,7 +65,13 @@ shows as greyed out in the filters. Only the `polar` base type has pipeline data
   "typical lunar mare plain").
 - Clicking a marker (or its button under the Moon) picks that base type: the Earth list, heatmap and cards are
   re-ranked against it. It stays in sync with the "Base type" buttons in the filter bar.
-- A base can be picked once `outputs/targets.json` has its values; until then it says "values coming".
+- A base can be picked once `outputs/targets.json` has its values; until then it says "Earth twins coming".
+- Mare: the Moon card already shows Mateo's final target (median of 20 sample areas in 4 maria: relief 154 m,
+  landing pad 0.24°, drivable 99.3%, roughness 1.7 m), the day–night swing fact (≈ 290–300 K, LRO Diviner,
+  no Earth analog) and the Apollo 11 site's own values, kept in `MOON_BASES`. Once Caspar's export has the mare
+  base, the values come from `outputs/targets.json` instead.
+- The figure link shows only when the figure is in the repo (`figures/moon/mare_cells.png` comes with
+  Mateo's `mare-moon` branch).
 - Under the Moon: why it is a base site, its target values, and the facts no Earth place can match
   (e.g. Grazing sun 1.9°).
 - Lava tube: add an entry with id `cave` to `MOON_BASES` when its data exists (candidate: Mare Tranquillitatis
