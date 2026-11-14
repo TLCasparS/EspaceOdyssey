@@ -172,7 +172,15 @@ def load_regions(registry: Path, night: Path) -> list[dict]:
     return regs
 
 
+WORLD_REGION = {"name": "world", "title": "World cell", "bbox": None, "role": "screening", "country": ""}
+
+
 def region_of(run: str, cell_id: str, lat, lon, regions: list[dict]) -> dict | None:
+    import re
+    if re.match(r"^b\d{3}_r\d+c\d+$", cell_id):            # night run --world: world grid cells (screening)
+        named = [rg for rg in regions if lat is not None and lon is not None and rg.get("bbox")
+                 and rg["bbox"][1] <= lat <= rg["bbox"][3] and rg["bbox"][0] <= lon <= rg["bbox"][2]]
+        return named[0] if named else WORLD_REGION
     for rg in regions:                                     # night runs: cell ids carry the region name
         if cell_id.startswith(rg["name"] + "_r"):
             return rg

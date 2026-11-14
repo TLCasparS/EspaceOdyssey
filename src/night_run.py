@@ -70,6 +70,7 @@ class Night:
         self.prog_path = work / "progress.json"
         self.prog = json.loads(self.prog_path.read_text()) if self.prog_path.exists() else {"tiles": {}}
         self.logf = open(work / "night.log", "a", encoding="utf-8")
+        self.cand, self._cur = {}, None                      # world mode: candidate cell ids per tile and track
 
     # --- bookkeeping ----------------------------------------------------------------------------
     def log(self, msg):
@@ -117,13 +118,14 @@ class Night:
                 time.sleep(wait)
 
     # --- stage 0 --------------------------------------------------------------------------------
-    def stage0(self, tid, bb, cells):
+    def stage0(self, tid, bb, cells, need_dem: bool = True):
+        """(rows, lc, lc_tf, dem30, dem_tf). need_dem=False (only B1 on this tile): no 30 m DEM read (dem empty)."""
         d = self.work / "cache" / tid
         if (d / "stage0.npz").exists() and (d / "rows.json").exists():
             z = np.load(d / "stage0.npz", allow_pickle=False)
             rows = json.loads((d / "rows.json").read_text())
             from rasterio import Affine
-            if z["dem"].size:                                     # DEM cache may have been deleted after the tile
+            if z["dem"].size or not need_dem:                     # DEM cache may have been deleted after the tile
                 return rows, z["lc"], Affine(*z["lc_tf"]), z["dem"], Affine(*z["dem_tf"])
         d.mkdir(parents=True, exist_ok=True)
         fcfg = self.cfg["filter"]
@@ -132,12 +134,20 @@ class Night:
         lc, lc_tf = read_landcover(*padded_bbox(*bb, pad), fcfg["landcover_res_m"])
         masks = pixel_masks(lc, lc_tf, fcfg)
         rows = [r for r in (evaluate_cell(c, lc, lc_tf, masks, fcfg, None, self.cfg["grid"]["cell_km"]) for c in cells) if r]
-        buf = max(self.cfg["polar"]["buffer_m"], self.cfg["mare"]["radius_km"] * 1000 + 500) + 1000
-        dem, prof = read_bbox(*padded_bbox(*bb, buf), res=self.res)
+        if need_dem:
+            buf = max(self.cfg["polar"]["buffer_m"], self.cfg["mare"]["radius_km"] * 1000 + 500) + 1000
+            dem, prof = read_bbox(*padded_bbox(*bb, buf), res=self.res)
+            dem_tf = prof["transform"]
+        else:
+            from rasterio import Affine
+            dem, dem_tf = np.zeros((0, 0), np.float32), Affine.identity()
         np.savez_compressed(d / "stage0.npz", lc=lc, lc_tf=np.array(tuple(lc_tf)[:6]), dem=dem,
-                            dem_tf=np.array(tuple(prof["transform"])[:6]))
+                            dem_tf=np.array(tuple(dem_tf)[:6]))
         (d / "rows.json").write_text(json.dumps(rows, cls=_NP))
-        return rows, lc, lc_tf, dem, prof["transform"]
+        return rows, lc, lc_tf, dem, dem_tf
+
+    def mare_buffer(self):
+        return self.cfg["mare"]["radius_km"] * 1000 + 500 + 1000
 
     # --- tracks ---------------------------------------------------------------------------------
     def track_a(self, rows, lc, lc_tf, dem, dem_tf):
@@ -148,7 +158,9 @@ class Night:
         out = []
         for r in rows:
             rec = {"cell": r, "info": None, "cands": [], "prefilter": None}
-            if r["keep"]:
+            if r["keep"] and self._cur is not None and r["id"] not in self._cur["A"]:
+                rec["prefilter"] = "prefilter: world stage 0, not an A candidate"
+            elif r["keep"]:
                 pw, ps, pe, pn = padded_bbox(r["west"], r["south"], r["east"], r["north"], p["buffer_m"])
                 rs, cs = window_of({"west": pw, "south": ps, "east": pe, "north": pn}, dem_tf, dem.shape)
                 win = dem[rs, cs]
@@ -181,28 +193,176 @@ class Night:
             out.append(rec)
         return out
 
-    # --- main loop ------------------------------------------------------------------------------
-    def run(self, only=None, tracks=("A", "B"), res=30):
-        self.res = res
-        todo = [(rg, t) for rg in self.regions if not only or rg["name"] in only for t in self.tiles(rg)]
-        n_tiles = len(todo)
-        self.log(f"night run: {n_tiles} tiles, tracks {','.join(tracks)}, DEM {res} m, work dir {self.work}")
-        t_start, done_now = time.time(), 0
-        for k, (rg, (tid, bb, cells)) in enumerate(todo, 1):
-            st = self.prog["tiles"].setdefault(tid, {"region": rg["name"], "bbox": bb, "n_cells": len(cells)})
-            if all(st.get(t) == "done" for t in tracks):
+    def track_b1(self, rows, lc, lc_tf, bb):
+        """B1: coarse Mare raw values (GLO-90) for low-relief, bare cells. ONLY for selecting B2 candidates."""
+        from pipeline.run_mare import cell_mare
+        masks = pixel_masks(lc, lc_tf, self.cfg["filter"])
+        dem, prof = read_bbox(*padded_bbox(*bb, self.mare_buffer()), res=self.s["coarse_res"])
+        lim, bare_min = self.s["mare_prefilter_relief_m"], self.s["bare_min_share"]
+        out = []
+        for r in rows:
+            rec = {"cell": r, "res": None, "prefilter": None, "coarse_res": self.s["coarse_res"]}
+            if r["keep"] and self._cur is not None and r["id"] not in self._cur["B1"]:
+                rec["prefilter"] = "prefilter: world stage 0, not a B candidate"
+            elif r["keep"]:
+                rs, cs = window_of(r, prof["transform"], dem.shape)
+                win = dem[rs, cs]
+                relief = float(np.nanmax(win) - np.nanmin(win)) if np.isfinite(win).any() else None
+                bare = r.get("f_bare") or 0.0
+                if relief is None:
+                    rec["prefilter"] = "prefilter: no DEM data in cell"
+                elif relief > lim:
+                    rec["prefilter"] = f"prefilter: cell relief {relief:.0f} m > {lim:g} m (not a plain)"
+                elif bare < bare_min:
+                    rec["prefilter"] = f"prefilter: bare share {bare:.2f} < {bare_min:g}"
+                else:
+                    rec["res"] = cell_mare(r, dem, prof["transform"], masks["usable"], lc_tf, self.cfg)
+            out.append(rec)
+        return out
+
+    # --- B2: select from B1 and run 30 m ----------------------------------------------------------
+    def mare_ready(self) -> bool:
+        """True if every counting Mare criterion has a verified lunar target (config loader set target)."""
+        return all(c.get("target") is not None for c in self.cfg["mare"]["criteria"].values())
+
+    def select_b2(self, n=None):
+        from pipeline.mare import MARE_CRITERIA
+        from pipeline.scoring import score_direct, total_score
+        crit = self.cfg["mare"]["criteria"]
+        n = n or self.s["b2_top_n"]
+        cand = []
+        for path in sorted((self.work / "raw" / "B1").glob("*.jsonl")):
+            tid = path.stem
+            with open(path, encoding="utf-8") as f:
+                for line in f:
+                    rec = json.loads(line)
+                    res = rec["res"]
+                    if not res or not res.get("keep"):
+                        continue
+                    for name in MARE_CRITERIA:
+                        res[f"s_{name}"] = score_direct(res.get(name), crit[name])
+                    sc, _ = total_score(res, crit)
+                    if sc is not None:
+                        cand.append((sc, tid, rec["cell"]["id"]))
+        cand.sort(reverse=True)
+        sel = cand[:n]
+        out = {"n_requested": n, "n_coarse_scored": len(cand), "n_selected": len(sel),
+               "coarse_score_cutoff": sel[-1][0] if sel else None,
+               "targets": {k: (v["target"], v["tolerance"]) for k, v in crit.items()},
+               "cells": [{"tile": t, "cell": c, "coarse_score": round(s, 4)} for s, t, c in sel]}
+        (self.work / "b2_selection.json").write_text(json.dumps(out, indent=1))
+        self.log(f"B2 selection: {len(sel)} of {len(cand)} coarse-scored cells (cutoff {out['coarse_score_cutoff']})")
+        return out
+
+    def run_b2(self):
+        from pipeline.run_mare import cell_mare
+        sel = json.loads((self.work / "b2_selection.json").read_text())
+        by_tile = {}
+        for c in sel["cells"]:
+            by_tile.setdefault(c["tile"], set()).add(c["cell"])
+        self.log(f"B2: 30 m Mare pass for {sel['n_selected']} cells in {len(by_tile)} tiles")
+        for k, (tid, ids) in enumerate(sorted(by_tile.items()), 1):
+            st = self.prog["tiles"].setdefault(tid, {})
+            if st.get("B2") == "done":
                 continue
             t0 = time.time()
             try:
-                rows, lc, lc_tf, dem, dem_tf = self.with_retries(f"{tid} stage 0", lambda: self.stage0(tid, bb, cells))
+                rows = [r for r in json.loads((self.work / "cache" / tid / "rows.json").read_text()) if r["id"] in ids]
+                z = np.load(self.work / "cache" / tid / "stage0.npz")
+                from rasterio import Affine
+                lc, lc_tf = z["lc"], Affine(*z["lc_tf"])
+                masks = pixel_masks(lc, lc_tf, self.cfg["filter"])
+                bb = (min(r["west"] for r in rows), min(r["south"] for r in rows),
+                      max(r["east"] for r in rows), max(r["north"] for r in rows))
+                dem, prof = self.with_retries(f"{tid} B2 DEM", lambda: read_bbox(*padded_bbox(*bb, self.mare_buffer()), res=30))
+                recs = [{"cell": r, "res": cell_mare(r, dem, prof["transform"], masks["usable"], lc_tf, self.cfg),
+                         "prefilter": None} for r in rows]
+                path = self.work / "raw" / "B2" / f"{tid}.jsonl"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                tmp = path.with_suffix(".tmp")
+                with open(tmp, "w", encoding="utf-8") as f:
+                    for rec in recs:
+                        f.write(json.dumps(rec, cls=_NP) + "\n")
+                os.replace(tmp, path)
+                st["B2"], st["B2_s"] = "done", round(time.time() - t0, 1)
+            except Exception as e:
+                st["B2"], st["B2_error"] = "failed", f"{type(e).__name__}: {e}"
+                self.log(f"{tid} B2 FAILED: {st['B2_error']}")
+            self.save()
+            self.log(f"{tid} B2 ({k}/{len(by_tile)}, {len(ids)} cells) in {round(time.time() - t0, 1)} s")
+
+    def auto_b2(self):
+        if not self.mare_ready():
+            self.log("B2 deferred: Mare lunar targets not verified in config/lunar_targets.json. Coarse B1 raw values "
+                     "are stored; tomorrow: `python src/night_run.py --b2` (selects from B1, runs 30 m).")
+            return
+        self.select_b2()
+        self.run_b2()
+
+    # --- main loop ------------------------------------------------------------------------------
+    def world_todo(self, world_dir: Path):
+        """Tiles from stage 0 world (world_priority.json order), each with its A / B1 candidate cells only."""
+        from pipeline.world import parse_tile, tile_cells
+        prio = json.loads((world_dir / "world_priority.json").read_text())["tiles"]
+        flags = {}
+        for line in open(world_dir / "stage0_world.jsonl", encoding="utf-8"):
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            flags[r["tile"]] = {"A": {c["id"] for c in r["cells"] if c["a"]}, "B1": {c["id"] for c in r["cells"] if c["b"]}}
+        todo = []
+        for t in prio:
+            tid, cand = t["tile"], flags.get(t["tile"])
+            if not cand:
+                continue
+            ids = cand["A"] | cand["B1"]
+            cells = [c for c in tile_cells(*parse_tile(tid)) if c["id"] in ids]
+            if not cells:
+                continue
+            bb = (min(c["west"] for c in cells), min(c["south"] for c in cells),
+                  max(c["east"] for c in cells), max(c["north"] for c in cells))
+            self.cand[tid] = cand
+            todo.append(({"name": "world"}, (tid, bb, cells)))
+        return todo
+
+    def run(self, only=None, tracks=("A", "B1"), res=30, world_dir=None, max_hours=None):
+        self.res = res
+        self.cand = {}
+        if world_dir:
+            todo = self.world_todo(Path(world_dir))
+        else:
+            todo = [(rg, t) for rg in self.regions if not only or rg["name"] in only for t in self.tiles(rg)]
+        n_tiles = len(todo)
+        self.log(f"night run: {n_tiles} tiles ({'world stage 0 order' if world_dir else 'regions'}), tracks "
+                 f"{','.join(tracks)}, DEM {res} m, work dir {self.work}"
+                 + (f", stops after {max_hours:g} h" if max_hours else ""))
+        t_start, done_now, stopped = time.time(), 0, False
+        for k, (rg, (tid, bb, cells)) in enumerate(todo, 1):
+            if max_hours and time.time() - t_start > max_hours * 3600:
+                self.log(f"time limit {max_hours:g} h reached after {k - 1}/{n_tiles} tiles: stopping cleanly "
+                         "(run the same command again to resume)")
+                stopped = True
+                break
+            st = self.prog["tiles"].setdefault(tid, {"region": rg["name"], "bbox": bb, "n_cells": len(cells)})
+            if all(st.get(t) == "done" for t in tracks):
+                continue
+            self._cur = self.cand.get(tid)                       # world mode: only candidate cells per track
+            t0 = time.time()
+            try:
+                need = any(t in ("A", "B") for t in tracks if st.get(t) != "done")
+                rows, lc, lc_tf, dem, dem_tf = self.with_retries(f"{tid} stage 0", lambda: self.stage0(tid, bb, cells, need))
                 st["stage0"] = "done"
                 st["n_kept"] = sum(r["keep"] for r in rows)
                 for t in tracks:
                     if st.get(t) == "done":
                         continue
                     t1 = time.time()
-                    fn = self.track_a if t == "A" else self.track_b
-                    recs = self.with_retries(f"{tid} track {t}", lambda: fn(rows, lc, lc_tf, dem, dem_tf))
+                    if t == "B1":
+                        recs = self.with_retries(f"{tid} track B1", lambda: self.track_b1(rows, lc, lc_tf, bb))
+                    else:
+                        fn = self.track_a if t == "A" else self.track_b
+                        recs = self.with_retries(f"{tid} track {t}", lambda: fn(rows, lc, lc_tf, dem, dem_tf))
                     path = self.work / "raw" / t / f"{tid}.jsonl"
                     path.parent.mkdir(parents=True, exist_ok=True)
                     tmp = path.with_suffix(".tmp")
@@ -231,10 +391,19 @@ class Night:
             left = sum(1 for _, (t2, _, _) in todo[k:] if not all(self.prog["tiles"].get(t2, {}).get(x) == "done" for x in tracks))
             self.log(f"{tid} ({k}/{n_tiles}, {len(cells)} cells, kept {st.get('n_kept')}) in {st['tile_s']} s | "
                      f"A {st.get('A_s', '-')} s B {st.get('B_s', '-')} s | ETA ~{el / done_now * left / 60:.0f} min")
+        self.log("tile loop finished" if not stopped else "tile loop stopped by the time limit")
+        if "B1" in tracks and self.s.get("auto_b2", True) and not stopped:
+            self.auto_b2()
+        elif stopped:
+            self.log("B2 not started (B1 incomplete). After B1 is complete: `python src/night_run.py --b2`")
         self.log("night run finished")
 
     # --- morning: scoring from raw values -------------------------------------------------------
-    def score(self, tracks=("A", "B"), out_root=ROOT / "out"):
+    FOLDERS = {"A": "night_polar", "B": "night_mare_all30", "B1": "night_mare_coarse", "B2": "night_mare"}
+
+    def score(self, tracks=None, out_root=ROOT / "out"):
+        """Rankings from stored raw values. B1 (coarse) goes to its own folder: selection only, never final."""
+        tracks = tracks or tuple(t for t in self.FOLDERS if (self.work / "raw" / t).exists())
         for t in tracks:
             recs = []
             for path in sorted((self.work / "raw" / t).glob("*.jsonl")):
@@ -246,9 +415,9 @@ class Night:
             bb = (min(r["cell"]["west"] for r in recs), min(r["cell"]["south"] for r in recs),
                   max(r["cell"]["east"] for r in recs), max(r["cell"]["north"] for r in recs))
             if t == "A":
-                self._score_a(recs, bb, out_root / "night_polar")
+                self._score_a(recs, bb, out_root / self.FOLDERS[t])
             else:
-                self._score_b(recs, bb, out_root / "night_mare")
+                self._score_b(recs, bb, out_root / self.FOLDERS[t])
 
     def _score_a(self, recs, bb, out_dir):
         from pipeline.polar import CRITERIA, best_of, select_best
@@ -338,20 +507,29 @@ def main():
     ap.add_argument("--work", type=Path, default=WORK)
     ap.add_argument("--regions", type=Path, default=REGIONS)
     ap.add_argument("--only", nargs="*", help="region names")
-    ap.add_argument("--tracks", default="A,B")
+    ap.add_argument("--tracks", default="A,B1", help="A (Polar), B1 (Mare coarse); B2 runs after; legacy B = 30 m all")
     ap.add_argument("--res", type=int, default=30, choices=[30, 90])
     ap.add_argument("--score", action="store_true", help="score the stored raw values (no downloads)")
     ap.add_argument("--status", action="store_true")
+    ap.add_argument("--b2", action="store_true", help="select the top coarse Mare cells from B1 and run the 30 m pass")
+    ap.add_argument("--world", type=Path, nargs="?", const=WORK / "world",
+                    help="process the tiles of stage 0 world (default its work dir) instead of the regions file")
+    ap.add_argument("--max-hours", type=float, help="stop cleanly after this many hours (resume later)")
     a = ap.parse_args()
     night = Night(a.work, a.regions)
     night.res = a.res
     tracks = tuple(a.tracks.split(","))
     if a.status:
         night.status()
+    elif a.b2:
+        if not night.mare_ready():
+            raise SystemExit("Mare lunar targets are not verified in config/lunar_targets.json: B2 cannot select yet")
+        night.select_b2()
+        night.run_b2()
     elif a.score:
-        night.score(tracks)
+        night.score(tuple(a.tracks.split(",")) if a.tracks != "A,B1" else None)
     else:
-        night.run(a.only, tracks, a.res)
+        night.run(a.only, tracks, a.res, world_dir=a.world, max_hours=a.max_hours)
 
 
 if __name__ == "__main__":

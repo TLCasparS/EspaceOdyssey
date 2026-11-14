@@ -15,5 +15,17 @@ settings:
   retries: 3                    # attempts per tile and stage before it is marked failed
   retry_wait_s: [30, 120, 300]  # wait before attempt 2, 3, ... (S3 hiccups)
   keep_dem_cache: false         # delete a tile's cached DEM once all tracks are done (saves GBs)
+  # Track B in two stages (14 Nov update): B1 coarse 90 m for all low-relief, bare cells -> select -> B2 30 m
+  coarse_res: 90                # B1 DEM resolution (Copernicus GLO-90); coarse values only SELECT, never final scores
+  bare_min_share: 0.5           # (interpreted) B1 prefilter: cell's WorldCover bare/sparse (class 60) share >= this
+  b2_top_n: 500                 # B2: 30 m mare_cell for the top N coarse candidates (generous: coarse scores approximate)
+  auto_b2: true                 # after the tile loop: select + run B2 if the Mare targets are verified, else defer
+  # stage 0 world prescreen (src/stage0_world.py), interpreted values, NOT scoring parameters:
+  world_lc_res_m: 1000          # WorldCover read at ~1 km (COG overview 64x = ~590 m per 3 deg tile)
+  world_dem_px: 300             # GLO-90 tile read at 300 x 300 px (its 4x overview, ~300 m)
+  world_min_land: 0.5           # cell must be at least half land (WorldCover class > 0)
+  world_max_drop: 0.5           # A: at most half of the cell in drop classes (tree, crop, built, water, wetland, mangrove)
+  world_max_snow: 0.9           # (interpreted) cells > 90 % snow/ice (ice sheets) are not candidates
+  world_relief_min_a: 30        # A: coarse relief >= 30 m (real bowl minimum is 50 m; 300 m sampling underestimates)
   mare_prefilter_relief_m: 1000 # (interpreted) track B skips cells whose own relief (max-min) is above this:
                                 # a Mare analog is a plain; mountain cells cannot score
