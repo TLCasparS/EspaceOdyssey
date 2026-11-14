@@ -93,10 +93,11 @@
       "sunny_ridge": {
         "unit": "fraction of time lit",
         "zone": "rim",
-        "value": 0.85,
-        "source": "LROC illumination map (as stated in the draft)",
+        "value": null,
+        "source": null,
         "verified": false,
-        "pipeline": "light criteria 1-5 via src/shadowsim, not wired into run_pipeline yet"
+        "pipeline": "light criteria 1-5 via src/shadowsim, not wired into run_pipeline yet",
+        "note": "0.85 was an illustrative placeholder from a chat format example, not a measurement (removed 14 Nov 2026 after Mateo's review). Rim lit fraction will come from a lunar illumination map (light criteria, Mateo)."
       },
       "dark_floor": {
         "unit": "TODO",
@@ -116,29 +117,29 @@
     },
     "draft_reference": {
       "relief_rim_floor": {
-        "value": 4100,
+        "value": 4073,
         "unit": "m",
-        "zone": "rim+floor",
-        "source": "LOLA Shackleton DEM (as stated in the draft)",
-        "verified": false,
-        "why_unused": "crater rim-to-floor depth, not c9 (5 km window at the low point); recompute c9 from LOLA"
+        "zone": "rim crest per 1-deg azimuth to the lowest floor point",
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/compute_lunar_target.py (20 m -> 60 m): median over 1-deg azimuth sectors of the highest elevation within 1.3 x bowl radius (rim crest, median 1205 m), minus the floor low point (-2869 m)",
+        "verified": true,
+        "note": "Same quantity as criterion c9 since 14 Nov (display only, weight 0). Replaces a 4100 m placeholder from a chat example. Mateo's src/moon_dem.py gives 3987 m from the same file: rim median 1115 m on a ring around a crater centre fitted to the rim crest, 30 m grid, minus floor min -2872 m. The ~86 m difference comes from the rim definition (per-azimuth highest point vs median on a fixed ring, which also samples lower parts of the rim) and the grid (60 vs 30 m). Spill depth (lowest rim saddle to floor) is 3753 m."
       },
       "bare_ground": {
         "why_unused": "land cover is a hard filter in the Earth pipeline (config filter), not a scored criterion"
       },
       "draft_scores": {
         "values": {
-          "slope_base": 0.8,
-          "steep_walls": 0.9,
-          "relief": 1.0,
-          "roughness": 0.4,
-          "bowl_shape": 0.9,
-          "sunny_ridge": 0.9,
-          "dark_floor": 1.0,
-          "bare_ground": 1.0,
-          "cold": 1.0
+          "slope_base": null,
+          "steep_walls": null,
+          "relief": null,
+          "roughness": null,
+          "bowl_shape": null,
+          "sunny_ridge": null,
+          "dark_floor": null,
+          "bare_ground": null,
+          "cold": null
         },
-        "why_unused": "0-1 scores for the target itself have no source and no meaning in the scoring: Earth cells are scored against the lunar raw values"
+        "why_unused": "0-1 scores for the target itself from a chat example, no source; set to null 14 Nov 2026. Earth cells are scored against the lunar raw values, not against target scores."
       }
     },
     "place": {
@@ -178,25 +179,31 @@
       "_note": "Independent computation by Mateo on branch moon-targets (src/moon_targets.py, src/moon_dem.py), merged 14 Nov 2026. Same source file (LDEM_80S_20MPP_ADJ.TIF) but the OLD pipeline definitions (c9 5 km window, c11 fixed 0.5-3 km ring, c10 within 5 km of the low point), cell centred on IAU coordinates of Shackleton. Not used for scoring; kept to compare.",
       "moon_targets_py": {
         "c7_bowl": {
-          "value": 0.1972
+          "value": 0.1972,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_targets.py (Mateo, old definitions, 14 Nov 2026)"
         },
         "c9_relief": {
-          "value": 1400.6382
+          "value": 1400.6382,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_targets.py (Mateo, old definitions, 14 Nov 2026)"
         },
         "c10_flat_base": {
           "value": 0.6284,
-          "note": "TODO: with max_base_to_low_km = 5 the pad is searched within 5 km of the low point, i.e. on Shackleton's floor/lower wall (permanently dark), not on the rim where NASA's base sites are (~10 km out). Kept as is for v1; revisit the search radius."
+          "note": "TODO: with max_base_to_low_km = 5 the pad is searched within 5 km of the low point, i.e. on Shackleton's floor/lower wall (permanently dark), not on the rim where NASA's base sites are (~10 km out). Kept as is for v1; revisit the search radius.",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_targets.py (Mateo, old definitions, 14 Nov 2026)"
         },
         "c11_walls": {
           "value": 14.7109,
-          "note": "TODO: the wall ring (polar.wall_ring_m = 500-3000 m from the low point) covers Shackleton's floor and the foot of its walls; the steep inner walls run ~3-10 km out, so this value understates them. Kept as is for v1; revisit a ring scaled to the depression size."
+          "note": "TODO: the wall ring (polar.wall_ring_m = 500-3000 m from the low point) covers Shackleton's floor and the foot of its walls; the steep inner walls run ~3-10 km out, so this value understates them. Kept as is for v1; revisit a ring scaled to the depression size.",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_targets.py (Mateo, old definitions, 14 Nov 2026)"
         },
         "c13_roughness": {
-          "value": 28.6108
+          "value": 28.6108,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_targets.py (Mateo, old definitions, 14 Nov 2026)"
         },
         "c14_aspect": {
           "value": null,
-          "note": "Shackleton's rim touches the lunar south pole and the Sun circles the whole horizon there, so 'facing the pole' does not mean 'less sun' as it does on Earth. Computed value kept in the note for reference only. Computed: 0.415."
+          "note": "Shackleton's rim touches the lunar south pole and the Sun circles the whole horizon there, so 'facing the pole' does not mean 'less sun' as it does on Earth. Computed value kept in the note for reference only. Computed: 0.415.",
+          "source": null
         }
       },
       "moon_targets_py_status": "computed by src/moon_targets.py; verified=false until a person checks each value against the quicklook and the definition",
@@ -206,7 +213,8 @@
         "depression_width_m": 19031.0,
         "low_elev_m": -2868.2,
         "base_to_low_km": 2.66,
-        "base_elev_m": -2813.1
+        "base_elev_m": -2813.1,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_targets.py (Mateo, old definitions, 14 Nov 2026)"
       },
       "moon_dem_py_rim_to_floor": {
         "value": 3987,
