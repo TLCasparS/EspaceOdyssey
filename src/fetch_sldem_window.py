@@ -4,8 +4,9 @@ mare cells and save them as GeoTIFFs in metres. Resampling to the common 60 m gr
 
 Sources, tried in this order:
   1. --tiles-dir: downloaded SLDEM2015 512 ppd tiles (30 deg lat x 45 deg lon, 0-360 E), e.g.
-       https://imbrium.mit.edu/DATA/SLDEM2015/TILES/JP2/SLDEM2015_512_00N_30N_000_045.JP2 (164 MB)
-     with its .LBL / _AUX.XML sidecars next to it (GDAL needs them for the georeference)
+       https://imbrium.mit.edu/EXTRAS/SLDEM2015/TILES/JP2/SLDEM2015_512_00N_30N_000_045.JP2 (~165 MB)
+     with its _JP2.LBL and _AUX.XML next to it (the _AUX.XML holds the georeference; it is copied to
+     <tile>.JP2.aux.xml, the name GDAL reads)
   2. the USGS global mosaic, read by window over HTTP (22 GB, int16 metres, R = 1737.4 km):
        https://planetarymaps.usgs.gov/mosaic/LolaKaguya_Topo/Lunar_LRO_LOLAKaguya_DEMmerge_60N60S_512ppd.tif
      (not documented as cloud-optimised: if the remote read fails, use the tiles)
@@ -53,6 +54,16 @@ def tile_name(lat: float, lon: float) -> str:
     return f"SLDEM2015_512_{lat_s}_{l0:03d}_{l0 + 45:03d}"
 
 
+def ensure_pam_sidecar(jp2: Path) -> None:
+    """The MIT archive ships the georeference as <tile>_AUX.XML; GDAL only reads <file>.aux.xml.
+    Copy it under the name GDAL expects (once)."""
+    import shutil
+    src = jp2.with_name(jp2.stem + "_AUX.XML")
+    dst = jp2.with_name(jp2.name + ".aux.xml")
+    if src.exists() and not dst.exists():
+        shutil.copyfile(src, dst)
+
+
 def to_metres(z: np.ndarray) -> tuple[np.ndarray, str]:
     """km or m, decided from the values; fails instead of guessing."""
     p = float(np.nanpercentile(np.abs(z), 99))
@@ -94,27 +105,61 @@ def read_window(src: str, lat: float, lon: float, half_km: float):
     return z.astype("float32"), tf, crs, note
 
 
+def read_window_tiles(tiles_dir: str, lat: float, lon: float, half_km: float):
+    """Like read_window, but from all SLDEM tiles in tiles_dir, stitched when the window crosses a
+    tile edge (e.g. a cell on 30 N). Tiles are lon/lat 0-360 E with a scale in the file."""
+    import rasterio
+    from rasterio.merge import merge
+    tiles = sorted(Path(tiles_dir).glob("SLDEM2015_512_*.JP2"))
+    for t in tiles:
+        ensure_pam_sidecar(t)
+    dlat = math.degrees(half_km * 1000 / R_MOON)
+    dlon = dlat / math.cos(math.radians(lat))
+    x = lon % 360
+    w, e, so, n = x - dlon, x + dlon, lat - dlat, lat + dlat
+    srcs = [rasterio.open(t) for t in tiles]
+    try:
+        hit = [s for s in srcs if s.bounds.left < e and s.bounds.right > w and s.bounds.bottom < n and s.bounds.top > so]
+        if not hit:
+            raise ValueError("no local tile overlaps the window")
+        covered = (min(s.bounds.left for s in hit) <= w and max(s.bounds.right for s in hit) >= e and
+                   min(s.bounds.bottom for s in hit) <= so and max(s.bounds.top for s in hit) >= n)
+        if not covered:
+            raise ValueError(f"local tiles do not cover the window ({w:.3f}..{e:.3f}, {so:.3f}..{n:.3f})")
+        scale, offset = float(hit[0].scales[0] or 1.0), float(hit[0].offsets[0] or 0.0)
+        if any(float(s.scales[0] or 1.0) != scale or float(s.offsets[0] or 0.0) != offset for s in hit):
+            raise ValueError("tiles with different scale/offset")
+        arr, tf = merge(hit, bounds=(w, so, e, n), nodata=hit[0].nodata)
+        crs = hit[0].crs or MOON_LL
+        z = arr[0].astype("float64")
+        if hit[0].nodata is not None:
+            z[arr[0] == hit[0].nodata] = np.nan
+        z = z * scale + offset
+        names = "+".join(Path(s.name).name for s in hit)
+    finally:
+        for s in srcs:
+            s.close()
+    if not np.isfinite(z).any():
+        raise ValueError("all no-data")
+    z, note = to_metres(z)
+    return z.astype("float32"), tf, crs, note, names
+
+
 def fetch(cell: dict, half_km: float, tiles_dir: str | None) -> Path:
     import rasterio
     lat, lon = cell["lat"], cell["lon"]
-    srcs = []
+    z = None
     if tiles_dir:
-        base = Path(tiles_dir) / tile_name(lat, lon)
-        srcs += [str(p) for p in (base.with_suffix(".JP2"), Path(f"{base}_FLOAT.IMG"), base.with_suffix(".LBL"))
-                 if p.exists()]
-        if not srcs:
-            print(f"  [{cell['id']}] no local tile {base.name} in {tiles_dir}; trying the USGS mosaic")
-    srcs.append(USGS_MOSAIC)
-    err = None
-    for src in srcs:
+        try:
+            z, tf, crs, note, src = read_window_tiles(tiles_dir, lat, lon, half_km)
+        except Exception as ex:
+            print(f"  [{cell['id']}] local tiles failed: {str(ex)[:120]}; trying the USGS mosaic")
+    if z is None:
+        src = USGS_MOSAIC
         try:
             z, tf, crs, note = read_window(src, lat, lon, half_km)
-            break
-        except Exception as ex:                                  # next source
-            err = ex
-            print(f"  [{cell['id']}] {os.path.basename(src)} failed: {str(ex)[:120]}")
-    else:
-        raise SystemExit(f"[{cell['id']}] no source worked: {err}")
+        except Exception as ex:
+            raise SystemExit(f"[{cell['id']}] no source worked: {ex}")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"{cell['id']}.tif"
     with rasterio.open(out, "w", driver="GTiff", height=z.shape[0], width=z.shape[1], count=1, dtype="float32",
