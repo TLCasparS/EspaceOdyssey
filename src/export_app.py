@@ -195,6 +195,27 @@ def main():
             for x in rows if x["SCORE_TOTAL"] is not None]
     (a.out / "heatmap.json").write_text(json.dumps(heat, indent=1) + "\n", encoding="utf-8")
 
+    # every searched cell (ranked or not), so the app can draw the searched area; not part of the heatmap
+    ranked_ids = {(x["RUN"], x["CELL"]): x for x in rows}
+    cells = []
+    for p in a.runs:
+        gj = p / "cells.geojson"
+        if not gj.exists():
+            continue
+        for f in json.loads(gj.read_text(encoding="utf-8"))["features"]:
+            pr = f["properties"]
+            ring = f["geometry"]["coordinates"][0]
+            lons, lats = [c[0] for c in ring], [c[1] for c in ring]
+            hit = ranked_ids.get((p.name, pr["id"]))
+            fr, tr = pr.get("filter_reason") or "", pr.get("terrain_reason") or ""
+            status = ("ranked" if hit else "filtered" if fr else "no_bowl" if tr.startswith("no depression")
+                      else "dropped")
+            cells.append({"run": p.name, "cell": pr["id"], "lat": pr.get("lat"), "lng": pr.get("lon"),
+                          "bbox": [round(min(lons), 5), round(min(lats), 5), round(max(lons), 5), round(max(lats), 5)],
+                          "status": status, "reason": fr or tr or "", "site": hit["SITE"] if hit else None,
+                          "score_total": hit["SCORE_TOTAL"] if hit else None})
+    (a.out / "cells.json").write_text(json.dumps(cells, indent=1) + "\n", encoding="utf-8")
+
     by = {m: [c["column"] for c in crit_list if c["score_method"] == m] for m in ("target", "display", "rank", "not computed")}
     counts = [c["column"] for c in crit_list if c["counts"]]
     readme = f"""# outputs/ for the app
@@ -210,6 +231,12 @@ Known sites matched this time: {', '.join(sorted({x['SITE'] for x in rows if not
 | `raw_values.csv` | same rows, raw Earth values (units in `targets.json` → `earth_unit`) plus depth, diameter, base pad, dark days |
 | `targets.json` | per base type: each criterion's column, `counts`, `weight`, `score_method`, raw Moon value + unit + source |
 | `heatmap.json` | `[{{lat, lng, weight}}]`, one point per ranked cell at the **cell centre**, weight = `SCORE_TOTAL` |
+| `cells.json` | every searched cell of these runs ({len(cells)}): centre, `bbox` [W,S,E,N], `status` (ranked / no_bowl / filtered / dropped) + `reason`, for drawing the searched area |
+
+**Why bowl-less cells are not in the heatmap with weight 0:** a weighted heatmap adds up the weights, so a
+point with weight 0 adds nothing and would be invisible. To show where we searched and found nothing, draw
+`cells.json` (e.g. faint outlines for `no_bowl` / `filtered`) under the heatmap instead.
+Status counts here: {', '.join(f"{s} {sum(c['status'] == s for c in cells)}" for s in ('ranked', 'no_bowl', 'filtered', 'dropped'))}.
 
 ## How to read the numbers
 - **A 0–1 value in `scores.csv` is already the similarity to the Moon**: exp(−((Earth − Moon) / tolerance)²),

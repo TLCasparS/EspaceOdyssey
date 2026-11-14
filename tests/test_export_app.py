@@ -71,6 +71,7 @@ def test_export_writes_app_files(tmp_path):
     heat = json.loads((out / "heatmap.json").read_text())
     assert heat[0] == {"lat": 31.8, "lng": -113.4, "weight": 0.6}                  # cell centre, weight = total
     assert (out / "README.md").exists()
+    assert json.loads((out / "cells.json").read_text()) == []                       # fake runs: no cells.geojson
 
 
 def test_export_refuses_runs_with_different_config(tmp_path):
