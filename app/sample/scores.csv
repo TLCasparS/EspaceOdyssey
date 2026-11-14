@@ -1,0 +1,9 @@
+SITE,LAT,LON,SLOPE_BASE,STEEP_WALLS,RELIEF,ROUGHNESS,BOWL_SHAPE,SUNNY_RIDGE,DARK_FLOOR,BARE
+Haughton Crater,75.383,-89.667,0.8,0.7,0.7,0.6,0.85,0.75,0.6,0.9
+Atacama (Yungay area),-24.08,-69.93,0.9,0.4,0.5,0.55,0.5,0.9,0.3,1.0
+Rjukan valley,59.879,8.594,0.5,0.9,0.8,0.6,0.5,0.4,0.85,0.3
+Viganella,46.053,8.194,0.4,0.85,0.9,0.7,0.4,0.5,0.7,0.35
+Seydisfjordur fjord,65.26,-14.011,0.55,0.8,0.7,0.5,0.6,0.35,0.75,
+Kali Gandaki gorge (Lete),28.63,83.61,0.6,0.95,0.95,0.8,0.55,0.8,0.8,0.6
+Kagbeni (Upper Mustang),28.839,83.785,0.75,0.6,0.7,0.65,0.45,0.85,0.4,0.85
+Gorafe badlands,37.481,-3.043,0.7,0.65,0.5,0.75,0.35,0.7,,0.8

@@ -1,0 +1,14 @@
+{
+  "_note": "FAKE lunar target values for building the app. The Moon-targets role replaces this with outputs/targets.json.",
+  "polar": {
+    "label": "Lunar south pole: Shackleton rim + floor",
+    "SLOPE_BASE": 0.85,
+    "STEEP_WALLS": 0.8,
+    "RELIEF": 0.8,
+    "ROUGHNESS": 0.6,
+    "BOWL_SHAPE": 0.9,
+    "SUNNY_RIDGE": 0.95,
+    "DARK_FLOOR": 0.95,
+    "BARE": 1.0
+  }
+}

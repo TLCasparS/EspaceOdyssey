@@ -1,0 +1,59 @@
+{
+  "_note": "Sofia's research file: what each site is, where the analogy breaks down, how it helps exploration. Draft text; [brackets] = still to research. Coordinates in scores.csv are approximate (not yet checked on a map).",
+  "Haughton Crater": {
+    "type": "known",
+    "place": "Devon Island, Nunavut, Canada",
+    "why": "About 20 km impact crater in a cold polar desert; long-running NASA analog site.",
+    "breaks": "24-hour sun during the summer field season, so no lasting shadow while crews are there.",
+    "helps": "[to research: what has been tested there]"
+  },
+  "Atacama (Yungay area)": {
+    "type": "known",
+    "place": "Antofagasta Region, Chile",
+    "why": "One of the driest places on Earth, with very high UV.",
+    "breaks": "Warm and near the tropics: no polar lighting and no long shadows.",
+    "helps": "[to research]"
+  },
+  "Rjukan valley": {
+    "type": "candidate",
+    "place": "Vestfold og Telemark, Norway",
+    "why": "Deep east-west valley; the town gets no direct sun for about six months a year.",
+    "breaks": "Green, wet and inhabited: nothing like bare lunar ground.",
+    "helps": "[to research: the town's sun mirrors as a model for lighting dark craters]"
+  },
+  "Viganella": {
+    "type": "candidate",
+    "place": "Piedmont, Italy",
+    "why": "Alpine village without direct sun from November to February.",
+    "breaks": "[to research]",
+    "helps": "[to research]"
+  },
+  "Seydisfjordur fjord": {
+    "type": "candidate",
+    "place": "East Iceland",
+    "why": "Narrow fjord with little sun even in summer.",
+    "breaks": "[to research]",
+    "helps": "[to research]"
+  },
+  "Kali Gandaki gorge (Lete)": {
+    "type": "candidate",
+    "place": "Mustang District, Nepal",
+    "why": "Deep gorge between Dhaulagiri and Annapurna.",
+    "breaks": "[to research]",
+    "helps": "[to research]"
+  },
+  "Kagbeni (Upper Mustang)": {
+    "type": "candidate",
+    "place": "Mustang District, Nepal",
+    "why": "Dry, high valley in the Himalayan rain shadow (team photos).",
+    "breaks": "[to research]",
+    "helps": "[to research]"
+  },
+  "Gorafe badlands": {
+    "type": "candidate",
+    "place": "Granada, Andalusia, Spain",
+    "why": "Bare, eroded badlands (team photos).",
+    "breaks": "[to research]",
+    "helps": "[to research]"
+  }
+}
