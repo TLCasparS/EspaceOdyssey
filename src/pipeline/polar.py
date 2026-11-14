@@ -28,9 +28,10 @@ import numpy as np
 from scipy import ndimage
 
 from dem.terrain import compute_terrain
+from pipeline.light import c5_sky_view
 from pipeline.scoring import apply_rank, score_direct, weighted_score
 
-CRITERIA = ("c7_bowl", "c9_relief", "c10_flat_base", "c11_walls", "c13_roughness", "c14_aspect")
+CRITERIA = ("c5_sky_view", "c7_bowl", "c9_relief", "c10_flat_base", "c11_walls", "c13_roughness", "c14_aspect")
 PLACE_CRITERIA = CRITERIA                          # all criteria are per place (13 too, since 14 Nov)
 
 
@@ -136,9 +137,10 @@ def rim_to_floor_m(z: np.ndarray, low, search_m: float, res_m: float):
 class _Cell:
     """Arrays shared by all candidates of one cell (computed once)."""
 
-    def __init__(self, mg, in_cell, usable, lat, cfg):
+    def __init__(self, mg, in_cell, usable, lat, cfg, body: str = "earth"):
         p = cfg["polar"]
         self.mg, self.in_cell, self.lat, self.cfg, self.p = mg, in_cell, lat, cfg, p
+        self.body = body                                    # earth / moon: curvature + refraction for horizons
         self.t = compute_terrain(mg, relief_window_m=p["relief_window_m"],
                                  roughness_window_px=p["roughness_window_px"])
         self.rr, self.cc = np.indices(mg.dem.shape)
@@ -210,6 +212,10 @@ class _Cell:
         else:
             raw["c14_aspect"] = 0.0                       # (interpreted) no steep walls at all
 
+        # 5: sky-view factor of the floor (light criterion, src/pipeline/light.py); same function on Earth and Moon
+        raw["c5_sky_view"], c5_info = c5_sky_view(self.mg.dem, dep, low, t.slope_deg, res, self.cfg["light"],
+                                                  self.body, fallback_dist_m=p["wall_ring_m"][1])
+
         reasons = []
         if raw["c10_flat_base"] is None:
             reasons.append(f"no usable base pad {where}")
@@ -229,7 +235,7 @@ class _Cell:
                "c7_width_m": round(dep["width_m"], 0) if dep else 0.0,
                "c7_elongation": round(dep["elongation"], 2) if dep else None,
                "depression_extends_outside_cell": dep["extends_outside_cell"] if dep else None,
-               "c14_n_steep": n_steep}
+               "c14_n_steep": n_steep, **c5_info}
         for name in PLACE_CRITERIA:
             v = raw[name]
             out[name] = None if v is None else round(v, 4)
@@ -238,14 +244,15 @@ class _Cell:
         return out
 
 
-def polar_candidates(mg, in_cell: np.ndarray, usable: np.ndarray | None, lat: float, cfg: dict):
+def polar_candidates(mg, in_cell: np.ndarray, usable: np.ndarray | None, lat: float, cfg: dict,
+                     body: str = "earth"):
     """(cell-level dict, list of candidate places). Candidates carry raw values and direct
     scores; rank scores are filled later by select_best (per cell or across the whole run)."""
     p = cfg["polar"]
     usable = np.ones_like(in_cell) if usable is None else usable
     if not (in_cell & np.isfinite(mg.dem)).any():
         return {"keep": False, "reason": "no DEM data in cell", "n_depressions": 0}, []
-    cell = _Cell(mg, in_cell, usable, lat, cfg)
+    cell = _Cell(mg, in_cell, usable, lat, cfg, body)
     deps = find_depressions(mg.dem, in_cell, mg.res_m, p)
 
     info = {"keep": True, "reason": "", "n_depressions": len(deps)}

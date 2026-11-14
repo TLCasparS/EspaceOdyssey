@@ -16,6 +16,18 @@
     },
     "window": "15 km square centred on the crater low point, found from the data (largest depth x width depression within 15 km of the pole)",
     "criteria": {
+      "c5_sky_view": {
+        "label": "5 Sky-view factor",
+        "unit": "share of sky hemisphere",
+        "definition": "median over the floor zone (bowl pixels < 10 deg connected to the low point) of 1 - mean_az sin(max(horizon, 0)); horizons out to 2 x bowl radius",
+        "value": 0.6304,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-25 km window around the pole read via /vsicurl/",
+        "verified": true,
+        "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
+        "zone": "floor zone (5997 px: bowl pixels < 10 deg connected to the low point); horizons out to 19.03 km (= 2 x r). The window ends ~15 km east of the low point: terrain beyond counts as invisible (rim at ~10.5 km is inside)",
+        "stat": "median of 1 - mean_az sin(max(horizon, 0)), 72 azimuths, Moon radius, no refraction",
+        "date": "2026-11-14"
+      },
       "c7_bowl": {
         "label": "7 Bowl shape",
         "unit": "depth/width",

@@ -88,7 +88,7 @@ def main():
     h = cfg["grid"]["cell_km"] * 500
     in_cell = (np.abs(X - lx) <= h) & (np.abs(Y - ly) <= h)
     usable = np.ones_like(in_cell)
-    cell = _Cell(mg, in_cell, usable, lat, cfg)
+    cell = _Cell(mg, in_cell, usable, lat, cfg, body="moon")   # Moon radius, no refraction for horizons
     place = cell.place(low, dep)
     base = (place["base_row"], place["base_col"])
 
@@ -102,6 +102,12 @@ def main():
     ring = f"{place['wall_ring_km'][0]}-{place['wall_ring_km'][1]} km"
     # name: (value, DEM, zone, stat)
     values = {
+        "c5_sky_view": (place["c5_sky_view"], win_dem,
+                        f"floor zone ({place['c5_floor_px']} px: bowl pixels < {cfg['light']['floor_max_slope_deg']:g} "
+                        f"deg connected to the low point); horizons out to {place['c5_horizon_km']} km "
+                        f"(= {cfg['light']['horizon_rel']:g} x r). The window ends ~15 km east of the low point: "
+                        "terrain beyond counts as invisible (rim at ~10.5 km is inside)",
+                        "median of 1 - mean_az sin(max(horizon, 0)), 72 azimuths, Moon radius, no refraction"),
         "c7_bowl": (place["c7_bowl"], win_dem, "whole crater = filled closed depression (cyan outline)",
                     "spill depth / equivalent diameter"),
         "c9_relief": (place["c9_relief"], win_dem,

@@ -11,6 +11,7 @@ import numpy as np
 
 EARTH_RADIUS_M = 6_371_000.0
 REFRACTION_K = 0.13  # standard terrestrial refraction coefficient
+MOON_RADIUS_M = 1_737_400.0  # LOLA reference sphere; no atmosphere -> refraction_k = 0
 
 
 def _distances(step_m: float, max_dist_m: float, growth: float) -> np.ndarray:
@@ -23,12 +24,15 @@ def _distances(step_m: float, max_dist_m: float, growth: float) -> np.ndarray:
 
 def horizon_angles(dem: np.ndarray, window: tuple[int, int, int, int], dx_m: float, dy_m: float,
                    n_azimuths: int = 72, max_dist_m: float = 20_000.0, growth: float = 1.05,
-                   curvature: bool = True) -> tuple[np.ndarray, np.ndarray]:
+                   curvature: bool = True, radius_m: float = EARTH_RADIUS_M,
+                   refraction_k: float = REFRACTION_K) -> tuple[np.ndarray, np.ndarray]:
     """Horizon elevation angle (deg) for each azimuth sector and window cell.
 
-    dem     : 2-D array, north-up (row 0 = north), metres. NaN = unknown.
+    dem     : 2-D array, row 0 at the top, metres. NaN = unknown. Azimuths are measured from the
+              grid's "up" direction (= true north only on north-up grids; convert for the Sun).
     window  : (row0, row1, col0, col1) of the cells to evaluate.
     dx_m/dy_m : pixel size east-west / north-south in metres.
+    radius_m / refraction_k : body for the curvature drop (Earth defaults; Moon: MOON_RADIUS_M, 0).
     Returns (azimuths_deg [n_az], horizon_deg [n_az, rows, cols]).
     Terrain outside the DEM counts as invisible, so give the DEM a buffer of
     at least max_dist_m around the window.
@@ -59,7 +63,7 @@ def horizon_angles(dem: np.ndarray, window: tuple[int, int, int, int], dx_m: flo
             seen.add((dr, dc))
             dist = np.hypot(dr * dy_m, dc * dx_m)
             zs = z[r0p + dr:r0p + dr + h, c0p + dc:c0p + dc + w]
-            drop = dist ** 2 * (1 - REFRACTION_K) / (2 * EARTH_RADIUS_M) if curvature else 0.0
+            drop = dist ** 2 * (1 - refraction_k) / (2 * radius_m) if curvature else 0.0
             ang = np.degrees(np.arctan((zs - z0 - drop) / dist))
             np.fmax(best, ang, out=best)  # NaN (no data) never wins
     return azimuths, horizon

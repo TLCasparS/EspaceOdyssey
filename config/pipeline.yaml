@@ -78,9 +78,22 @@ polar:
   # as similar. Size-dependent c9 gets a deliberately large tolerance (scale decision 14 Nov).
   # Weights: (team start value) all equal; adjustable for the jury demo.
   criteria:
+    c5_sky_view:   {weight: 1.0, direction: lower, tolerance: 0.05}   # share of sky visible from the floor (light section below)
     c7_bowl:       {weight: 1.0, direction: higher, tolerance: 0.05}  # depth / width of closed depression
     c9_relief:     {weight: 0.0, direction: higher, tolerance: 1500}  # m, rim-to-floor depth of the bowl. DISPLAY ONLY (team choice 14 Nov: size-dependent)
     c10_flat_base: {weight: 1.0, direction: lower, scale: [0, 15], tolerance: 3}  # deg, flattest usable pad on the rim
     c11_walls:     {weight: 1.0, direction: higher, tolerance: 5}     # deg, mean slope in ring 0.5-1.0 x bowl radius
     c13_roughness: {weight: 1.0, direction: target, tolerance: 10}    # m, median std of elevation over bowl + rim ring
     c14_aspect:    {weight: 0.0, direction: higher, scale: [0, 1], tolerance: 0.15}  # share of steep pixels facing the nearer pole. DISPLAY ONLY (team choice 14 Nov: "toward the pole" is no fixed direction at Shackleton)
+
+# --- Light criteria 1-5 (src/pipeline/light.py), on the same grid and zones as the terrain ---------
+# Build step 1 (14 Nov): criterion 5 only (sky-view factor), needs no Sun.
+light:
+  floor_max_slope_deg: 10     # (interpreted) floor zone = bowl pixels flatter than this, connected to the low point
+  horizon_rel: 2.0            # (interpreted) look-out distance for horizons = 2 x bowl radius r (relative,
+                              # like the other zones). Earth: bowls with r > ~2.7 km near the cell edge
+                              # reach past polar.buffer_m -> terrain there counts as invisible (SVF a bit high)
+  n_azimuths: 72              # horizon sectors (every 5 deg), as in shadowsim
+  bodies:                     # curvature drop of distant terrain: d^2 (1 - k) / (2 R)
+    earth: {radius_m: 6371000, refraction_k: 0.13}   # shadowsim values (standard terrestrial refraction)
+    moon:  {radius_m: 1737400, refraction_k: 0.0}    # LOLA reference sphere; no atmosphere
