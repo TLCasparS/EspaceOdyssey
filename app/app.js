@@ -1037,13 +1037,15 @@ function terrainValuesHTML(s) {
       : 'Not scored yet: our pipeline hasn’t searched this region.';
     return head + `<p class="tv-note">${esc(why)} See the card for details.</p>`;
   }
-  const row = d => `<li class="tv-row${d.counts ? '' : ' is-display'}" title="${esc(chipTitle(d))}${d.counts ? '' : ' · not in score'}">
+  const row = d => `<li class="tv-row" title="${esc(chipTitle(d))}">
       <span class="tv-label">${esc(d.label)}</span>
       <span class="tv-val">${esc(vsText(d))}</span>
       <span class="tv-bar" aria-hidden="true"><i style="width:${Math.round(d.sim * 100)}%"></i></span>
     </li>`;
   const group = (title, ds) => (ds.length ? `<p class="tv-group">${title}</p><ul>${ds.map(row).join('')}</ul>` : '');
-  const withVal = s.details.filter(d => d.sim != null);
+  // Only the criteria that count: the display-only ones (Grazing sun, Relief, ...) stay on the card, with their reasons.
+  const withVal = s.details.filter(d => d.counts && d.sim != null);
+  const extra = s.details.filter(d => !d.counts && d.sim != null).length;
   const raw = s.raw ?? {};
   const ground = groundCriteria().filter(c => meta(c.key).kind === 'more is better' && s[c.key] != null);
   const groundRows = ground.map(c => `<li class="tv-row"><span class="tv-label">${esc(c.label)}</span>
@@ -1056,7 +1058,7 @@ function terrainValuesHTML(s) {
     ${group('Shape', withVal.filter(d => d.group === 'terrain'))}
     ${group('Other', withVal.filter(d => d.group !== 'light' && d.group !== 'terrain'))}
     ${groundRows || impact ? `<p class="tv-group">On the ground</p><ul>${groundRows}${impact}</ul>` : ''}
-    <p class="tv-note">${isPipeline() ? 'Earth vs Moon. ' : ''}Bar = match with the Moon. Faded rows are shown but not in the score.</p>
+    <p class="tv-note">${isPipeline() ? 'Earth vs Moon. ' : ''}Bar = match with the Moon.${extra ? ` ${extra} more value${extra > 1 ? 's' : ''} compared on the card, not in the score.` : ''}</p>
   </div>`;
 }
 

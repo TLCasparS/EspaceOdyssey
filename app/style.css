@@ -129,7 +129,6 @@ a { color: var(--earth); }
 .tv-bar { grid-column: 1 / -1; height: 4px; margin-top: 3px; border-radius: 2px; background: rgba(255,255,255,.1); overflow: hidden; }
 .tv-bar i { display: block; height: 100%; background: var(--signal); border-radius: 2px; }
 .tv-bar.is-plain i { background: var(--muted); }
-.tv-row.is-display { opacity: .6; }
 .tv-note { margin: 8px 0 0; font-size: 11px; line-height: 1.4; }
 /* Narrow map: sit under the Back/Moon buttons; while open, hide the help caption to make room */
 .globe-wrap { container-type: inline-size; }
