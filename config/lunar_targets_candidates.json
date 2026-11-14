@@ -1,0 +1,1887 @@
+{
+  "_readme": "Candidate lunar targets (night Task 5, 14 Nov 2026). ALL verified: false - a person checks the preview (figures/moon/targets/) and flips verified per target and per criterion. Polar: src/compute_polar_candidates.py (one per Artemis III 2022 region, same method as Shackleton); Mare: src/compute_mare_candidates.py (per-mare split of config/lunar_targets.json mare.cells). Entries with skipped: true have no criteria (reason in skip_reason). Per-criterion shape as config/lunar_targets.json: value, source, date, verified (+ tolerance for Mare). Polar entries carry no tolerance: use config/pipeline.yaml polar tolerances. Report: docs/NEW_TARGETS_REPORT.md",
+  "targets": [
+    {
+      "name": "polar_site01",
+      "label": "Polar · Connecting Ridge (Artemis III 2022 region)",
+      "base_type": "polar",
+      "region": "Connecting Ridge",
+      "pgda_site": "Site01",
+      "pgda_label": "Connecting ridge",
+      "region_centre_xy_m": [
+        -11000,
+        -12000
+      ],
+      "region_centre_lat_lon": [
+        -89.463,
+        222.51
+      ],
+      "region_centre_source": "centre of the 16 km extent of https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/Site01/Site01_final_adj_5mpp_surf.tif (https://pgda.gsfc.nasa.gov/products/78)",
+      "region_list_source": "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/ (RELEASE22-089, 19 Aug 2022; 'each region is approximately 15 by 15 kilometers')",
+      "n_depressions": 4,
+      "n_valid": 4,
+      "skipped": false,
+      "criteria": {
+        "c1_sunny_ridge": {
+          "value": 0.9023,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c2_dark_floor": {
+          "value": 1.0,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c3_light_dark": {
+          "value": 1.0477,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c4_grazing_sun": {
+          "value": 1.9528,
+          "source": "geometry: low-point latitude + light.MOON_EQUATOR_TILT_DEG",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c5_sky_view": {
+          "value": 0.8788,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c7_bowl": {
+          "value": 0.0508,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c9_relief": {
+          "value": 152.0321,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c10_flat_base": {
+          "value": 1.0539,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c11_walls": {
+          "value": 8.8938,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c13_roughness": {
+          "value": 7.9067,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c14_aspect": {
+          "value": 0.0,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        }
+      },
+      "date": "2026-11-14",
+      "verified": false,
+      "light_note": null,
+      "place": {
+        "low_point_xy_m": [
+          -4210,
+          -11950
+        ],
+        "low_point_lat_lon": [
+          -89.582,
+          199.41
+        ],
+        "low_to_region_centre_km": 6.79,
+        "low_elev_m": 1129.9,
+        "spill_depth_m": 111.9,
+        "equiv_diameter_m": 2203.0,
+        "elongation": 1.34,
+        "extends_outside_region": true,
+        "rim_crest_diameter_m": 2700.0,
+        "rim_to_floor_depth_m": 152.0,
+        "inner_wall_mean_slope_deg": 13.8,
+        "wall_ring_km": [
+          0.55,
+          1.1
+        ],
+        "c11_ring_covered": 1.002,
+        "base_xy_m": [
+          -4150,
+          -13270
+        ],
+        "base_to_bowl_km": 0.06,
+        "c5_horizon_km": 2.2,
+        "window_edge_km": 28.2,
+        "lpsr_share_of_floor": 0.6261
+      },
+      "preview": "figures/moon/targets/polar_site01.png",
+      "git_commit": "df8b4e9"
+    },
+    {
+      "name": "polar_site07",
+      "label": "Polar · Peak Near Shackleton (Artemis III 2022 region)",
+      "base_type": "polar",
+      "region": "Peak Near Shackleton",
+      "pgda_site": "Site07",
+      "pgda_label": "Peak near Shackleton",
+      "region_centre_xy_m": [
+        30000,
+        -20000
+      ],
+      "region_centre_lat_lon": [
+        -88.811,
+        123.69
+      ],
+      "region_centre_source": "centre of the 16 km extent of https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/Site07/Site07_final_adj_5mpp_surf.tif (https://pgda.gsfc.nasa.gov/products/78)",
+      "region_list_source": "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/ (RELEASE22-089, 19 Aug 2022; 'each region is approximately 15 by 15 kilometers')",
+      "n_depressions": 1,
+      "n_valid": 1,
+      "skipped": false,
+      "criteria": {
+        "c1_sunny_ridge": {
+          "value": 0.975,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c2_dark_floor": {
+          "value": 1.0,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c3_light_dark": {
+          "value": 0.6042,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c4_grazing_sun": {
+          "value": 2.5708,
+          "source": "geometry: low-point latitude + light.MOON_EQUATOR_TILT_DEG",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c5_sky_view": {
+          "value": 0.898,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c7_bowl": {
+          "value": 0.0385,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c9_relief": {
+          "value": 176.7524,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c10_flat_base": {
+          "value": 1.0219,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c11_walls": {
+          "value": 7.5469,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c13_roughness": {
+          "value": 7.019,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c14_aspect": {
+          "value": 0.0,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        }
+      },
+      "date": "2026-11-14",
+      "verified": false,
+      "light_note": null,
+      "place": {
+        "low_point_xy_m": [
+          23650,
+          -20670
+        ],
+        "low_point_lat_lon": [
+          -88.964,
+          131.15
+        ],
+        "low_to_region_centre_km": 6.39,
+        "low_elev_m": 948.8,
+        "spill_depth_m": 131.6,
+        "equiv_diameter_m": 3417.0,
+        "elongation": 1.25,
+        "extends_outside_region": false,
+        "rim_crest_diameter_m": 4240.0,
+        "rim_to_floor_depth_m": 177.0,
+        "inner_wall_mean_slope_deg": 11.9,
+        "wall_ring_km": [
+          0.85,
+          1.71
+        ],
+        "c11_ring_covered": 1.005,
+        "base_xy_m": [
+          22510,
+          -19650
+        ],
+        "base_to_bowl_km": 0.06,
+        "c5_horizon_km": 3.42,
+        "window_edge_km": 28.6,
+        "lpsr_share_of_floor": 0.7338
+      },
+      "preview": "figures/moon/targets/polar_site07.png",
+      "git_commit": "df8b4e9"
+    },
+    {
+      "name": "polar_site11",
+      "label": "Polar · de Gerlache Rim 1 (Artemis III 2022 region)",
+      "base_type": "polar",
+      "region": "de Gerlache Rim 1",
+      "pgda_site": "Site11",
+      "pgda_label": "de Gerlache rim",
+      "region_centre_xy_m": [
+        -37000,
+        15000
+      ],
+      "region_centre_lat_lon": [
+        -88.683,
+        292.07
+      ],
+      "region_centre_source": "centre of the 16 km extent of https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/Site11/Site11_final_adj_5mpp_surf.tif (https://pgda.gsfc.nasa.gov/products/78)",
+      "region_list_source": "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/ (RELEASE22-089, 19 Aug 2022; 'each region is approximately 15 by 15 kilometers')",
+      "mapping_note": "UNVERIFIED: PGDA labels both Site11 and SL2 'de Gerlache rim'; Rim 1 = Site11 and Rim 2 = SL2 is our assumption (SL2 = later site list)",
+      "n_depressions": 1,
+      "n_valid": 1,
+      "skipped": false,
+      "criteria": {
+        "c1_sunny_ridge": {
+          "value": 0.7822,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c2_dark_floor": {
+          "value": 1.0,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c3_light_dark": {
+          "value": 1.8881,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c4_grazing_sun": {
+          "value": 3.0471,
+          "source": "geometry: low-point latitude + light.MOON_EQUATOR_TILT_DEG",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c5_sky_view": {
+          "value": 0.8997,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c7_bowl": {
+          "value": 0.0405,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c9_relief": {
+          "value": 62.3514,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c10_flat_base": {
+          "value": 1.3348,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c11_walls": {
+          "value": 7.753,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c13_roughness": {
+          "value": 6.2155,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c14_aspect": {
+          "value": 0.0,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        }
+      },
+      "date": "2026-11-14",
+      "verified": false,
+      "light_note": null,
+      "place": {
+        "low_point_xy_m": [
+          -41250,
+          20030
+        ],
+        "low_point_lat_lon": [
+          -88.488,
+          295.9
+        ],
+        "low_to_region_centre_km": 6.59,
+        "low_elev_m": 843.2,
+        "spill_depth_m": 52.9,
+        "equiv_diameter_m": 1304.0,
+        "elongation": 1.14,
+        "extends_outside_region": false,
+        "rim_crest_diameter_m": 1460.0,
+        "rim_to_floor_depth_m": 62.0,
+        "inner_wall_mean_slope_deg": 11.2,
+        "wall_ring_km": [
+          0.33,
+          0.65
+        ],
+        "c11_ring_covered": 0.992,
+        "base_xy_m": [
+          -40410,
+          20510
+        ],
+        "base_to_bowl_km": 0.06,
+        "c5_horizon_km": 1.3,
+        "window_edge_km": 29.9,
+        "lpsr_share_of_floor": 0.6763
+      },
+      "preview": "figures/moon/targets/polar_site11.png",
+      "git_commit": "df8b4e9"
+    },
+    {
+      "name": "polar_sl2",
+      "label": "Polar · de Gerlache Rim 2 (Artemis III 2022 region)",
+      "base_type": "polar",
+      "region": "de Gerlache Rim 2",
+      "pgda_site": "SL2",
+      "pgda_label": "de Gerlache rim",
+      "region_centre_xy_m": [
+        -48500,
+        23000
+      ],
+      "region_centre_lat_lon": [
+        -88.23,
+        295.37
+      ],
+      "region_centre_source": "centre of the 20 km extent of https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/SL2/SL2_final_adj_5mpp_surf.tif (https://pgda.gsfc.nasa.gov/products/78)",
+      "region_list_source": "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/ (RELEASE22-089, 19 Aug 2022; 'each region is approximately 15 by 15 kilometers')",
+      "mapping_note": "UNVERIFIED: see Site11",
+      "n_depressions": 1,
+      "n_valid": 1,
+      "skipped": false,
+      "criteria": {
+        "c1_sunny_ridge": {
+          "value": 0.7661,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c2_dark_floor": {
+          "value": 1.0,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c3_light_dark": {
+          "value": 1.8241,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c4_grazing_sun": {
+          "value": 3.0486,
+          "source": "geometry: low-point latitude + light.MOON_EQUATOR_TILT_DEG",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c5_sky_view": {
+          "value": 0.9004,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c7_bowl": {
+          "value": 0.0408,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c9_relief": {
+          "value": 63.8128,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c10_flat_base": {
+          "value": 1.2764,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c11_walls": {
+          "value": 7.7999,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c13_roughness": {
+          "value": 6.4467,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c14_aspect": {
+          "value": 0.0,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        }
+      },
+      "date": "2026-11-14",
+      "verified": false,
+      "light_note": null,
+      "place": {
+        "low_point_xy_m": [
+          -41290,
+          20050
+        ],
+        "low_point_lat_lon": [
+          -88.486,
+          295.9
+        ],
+        "low_to_region_centre_km": 7.79,
+        "low_elev_m": 843.1,
+        "spill_depth_m": 53.3,
+        "equiv_diameter_m": 1306.0,
+        "elongation": 1.14,
+        "extends_outside_region": true,
+        "rim_crest_diameter_m": 1460.0,
+        "rim_to_floor_depth_m": 64.0,
+        "inner_wall_mean_slope_deg": 11.2,
+        "wall_ring_km": [
+          0.33,
+          0.65
+        ],
+        "c11_ring_covered": 0.989,
+        "base_xy_m": [
+          -40450,
+          20530
+        ],
+        "base_to_bowl_km": 0.06,
+        "c5_horizon_km": 1.31,
+        "window_edge_km": 27.8,
+        "lpsr_share_of_floor": 0.6819
+      },
+      "preview": "figures/moon/targets/polar_sl2.png",
+      "git_commit": "df8b4e9"
+    },
+    {
+      "name": "polar_site23",
+      "label": "Polar · Malapert Massif (Artemis III 2022 region)",
+      "base_type": "polar",
+      "region": "Malapert Massif",
+      "pgda_site": "Site23",
+      "pgda_label": "Malapert massif",
+      "region_centre_xy_m": [
+        -500,
+        121500
+      ],
+      "region_centre_lat_lon": [
+        -85.995,
+        359.76
+      ],
+      "region_centre_source": "centre of the 21 km extent of https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/Site23/Site23_final_adj_5mpp_surf.tif (https://pgda.gsfc.nasa.gov/products/78)",
+      "region_list_source": "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/ (RELEASE22-089, 19 Aug 2022; 'each region is approximately 15 by 15 kilometers')",
+      "n_depressions": 0,
+      "n_valid": 0,
+      "skipped": true,
+      "skip_reason": "no closed depression >= 50 m deep, >= 1000 m wide, elongation <= 2 with low point in the 15 km region",
+      "preview": "figures/moon/targets/polar_site23.png",
+      "git_commit": "df8b4e9"
+    },
+    {
+      "name": "polar_site06",
+      "label": "Polar · Nobile Rim 1 (Artemis III 2022 region)",
+      "base_type": "polar",
+      "region": "Nobile Rim 1",
+      "pgda_site": "Site06",
+      "pgda_label": "Nobile rim 1",
+      "region_centre_xy_m": [
+        84000,
+        110000
+      ],
+      "region_centre_lat_lon": [
+        -85.438,
+        37.37
+      ],
+      "region_centre_source": "centre of the 20 km extent of https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/Site06/Site06_final_adj_5mpp_surf.tif (https://pgda.gsfc.nasa.gov/products/78)",
+      "region_list_source": "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/ (RELEASE22-089, 19 Aug 2022; 'each region is approximately 15 by 15 kilometers')",
+      "n_depressions": 0,
+      "n_valid": 0,
+      "skipped": true,
+      "skip_reason": "no closed depression >= 50 m deep, >= 1000 m wide, elongation <= 2 with low point in the 15 km region",
+      "preview": "figures/moon/targets/polar_site06.png",
+      "git_commit": "df8b4e9"
+    },
+    {
+      "name": "polar_dm2",
+      "label": "Polar · Nobile Rim 2 (Artemis III 2022 region)",
+      "base_type": "polar",
+      "region": "Nobile Rim 2",
+      "pgda_site": "DM2",
+      "pgda_label": "Nobile rim 2",
+      "region_centre_xy_m": [
+        157000,
+        95000
+      ],
+      "region_centre_lat_lon": [
+        -83.954,
+        58.82
+      ],
+      "region_centre_source": "centre of the 20 km extent of https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/DM2/DM2_final_adj_5mpp_surf.tif (https://pgda.gsfc.nasa.gov/products/78)",
+      "region_list_source": "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/ (RELEASE22-089, 19 Aug 2022; 'each region is approximately 15 by 15 kilometers')",
+      "n_depressions": 1,
+      "n_valid": 1,
+      "skipped": false,
+      "criteria": {
+        "c1_sunny_ridge": {
+          "value": null,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c2_dark_floor": {
+          "value": null,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c3_light_dark": {
+          "value": null,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c4_grazing_sun": {
+          "value": 7.7006,
+          "source": "geometry: low-point latitude + light.MOON_EQUATOR_TILT_DEG",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c5_sky_view": {
+          "value": 0.7551,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c7_bowl": {
+          "value": 0.0633,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c9_relief": {
+          "value": 679.176,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c10_flat_base": {
+          "value": 0.327,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c11_walls": {
+          "value": 6.074,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c13_roughness": {
+          "value": 5.8186,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c14_aspect": {
+          "value": 0.2109,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        }
+      },
+      "date": "2026-11-14",
+      "verified": false,
+      "light_note": "no lit data in the floor zone (PGDA 85S map ends at 85 S)",
+      "place": {
+        "low_point_xy_m": [
+          157130,
+          101650
+        ],
+        "low_point_lat_lon": [
+          -83.834,
+          57.1
+        ],
+        "low_to_region_centre_km": 6.65,
+        "low_elev_m": 320.5,
+        "spill_depth_m": 593.4,
+        "equiv_diameter_m": 9372.0,
+        "elongation": 1.39,
+        "extends_outside_region": true,
+        "rim_crest_diameter_m": 12100.0,
+        "rim_to_floor_depth_m": 679.0,
+        "inner_wall_mean_slope_deg": 8.7,
+        "wall_ring_km": [
+          2.34,
+          4.69
+        ],
+        "c11_ring_covered": 1.0,
+        "base_xy_m": [
+          158930,
+          107170
+        ],
+        "base_to_bowl_km": 2.81,
+        "c5_horizon_km": 9.37,
+        "window_edge_km": 28.3,
+        "lpsr_share_of_floor": null
+      },
+      "preview": "figures/moon/targets/polar_dm2.png",
+      "git_commit": "df8b4e9"
+    },
+    {
+      "name": "polar_sl3",
+      "label": "Polar · Connecting Ridge Extension (Artemis III 2022 region)",
+      "base_type": "polar",
+      "region": "Connecting Ridge Extension",
+      "pgda_site": "SL3",
+      "pgda_label": "Connecting ridge extension",
+      "region_centre_xy_m": [
+        -28700,
+        -6100
+      ],
+      "region_centre_lat_lon": [
+        -89.032,
+        258.0
+      ],
+      "region_centre_source": "centre of the 20 km extent of https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/SL3/SL3_final_adj_5mpp_surf.tif (https://pgda.gsfc.nasa.gov/products/78)",
+      "region_list_source": "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/ (RELEASE22-089, 19 Aug 2022; 'each region is approximately 15 by 15 kilometers')",
+      "n_depressions": 0,
+      "n_valid": 0,
+      "skipped": true,
+      "skip_reason": "no closed depression >= 50 m deep, >= 1000 m wide, elongation <= 2 with low point in the 15 km region",
+      "preview": "figures/moon/targets/polar_sl3.png",
+      "git_commit": "df8b4e9"
+    },
+    {
+      "name": "polar_site42",
+      "label": "Polar · de Gerlache-Kocher Massif (Artemis III 2022 region)",
+      "base_type": "polar",
+      "region": "de Gerlache-Kocher Massif",
+      "pgda_site": "Site42",
+      "pgda_label": "de Gerlache-Kocher massif",
+      "region_centre_xy_m": [
+        -113400,
+        -56100
+      ],
+      "region_centre_lat_lon": [
+        -85.83,
+        243.68
+      ],
+      "region_centre_source": "centre of the 20 km extent of https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/Site42/Site42_final_adj_5mpp_surf.tif (https://pgda.gsfc.nasa.gov/products/78)",
+      "region_list_source": "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/ (RELEASE22-089, 19 Aug 2022; 'each region is approximately 15 by 15 kilometers')",
+      "n_depressions": 1,
+      "n_valid": 1,
+      "skipped": false,
+      "criteria": {
+        "c1_sunny_ridge": {
+          "value": 0.6782,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c2_dark_floor": {
+          "value": 1.0,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c3_light_dark": {
+          "value": 1.3657,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c4_grazing_sun": {
+          "value": 5.8242,
+          "source": "geometry: low-point latitude + light.MOON_EQUATOR_TILT_DEG",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c5_sky_view": {
+          "value": 0.8849,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c7_bowl": {
+          "value": 0.074,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c9_relief": {
+          "value": 147.6111,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c10_flat_base": {
+          "value": 1.3096,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c11_walls": {
+          "value": 12.2439,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c13_roughness": {
+          "value": 9.7824,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c14_aspect": {
+          "value": 0.0,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        }
+      },
+      "date": "2026-11-14",
+      "verified": false,
+      "light_note": null,
+      "place": {
+        "low_point_xy_m": [
+          -118550,
+          -53650
+        ],
+        "low_point_lat_lon": [
+          -85.711,
+          245.65
+        ],
+        "low_to_region_centre_km": 5.7,
+        "low_elev_m": 1635.6,
+        "spill_depth_m": 116.3,
+        "equiv_diameter_m": 1572.0,
+        "elongation": 1.27,
+        "extends_outside_region": false,
+        "rim_crest_diameter_m": 1830.0,
+        "rim_to_floor_depth_m": 148.0,
+        "inner_wall_mean_slope_deg": 12.7,
+        "wall_ring_km": [
+          0.39,
+          0.79
+        ],
+        "c11_ring_covered": 1.009,
+        "base_xy_m": [
+          -118850,
+          -52510
+        ],
+        "base_to_bowl_km": 0.17,
+        "c5_horizon_km": 1.57,
+        "window_edge_km": 29.8,
+        "lpsr_share_of_floor": 0.4765
+      },
+      "preview": "figures/moon/targets/polar_site42.png",
+      "git_commit": "df8b4e9"
+    },
+    {
+      "name": "polar_haworth",
+      "label": "Polar · Haworth (Artemis III 2022 region)",
+      "base_type": "polar",
+      "region": "Haworth",
+      "pgda_site": "Haworth",
+      "pgda_label": "Haworth",
+      "region_centre_xy_m": [
+        -38000,
+        90500
+      ],
+      "region_centre_lat_lon": [
+        -86.764,
+        337.22
+      ],
+      "region_centre_source": "centre of the 29.8 km extent of https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/Haworth/Haworth_final_adj_5mpp_surf.tif (https://pgda.gsfc.nasa.gov/products/78)",
+      "region_list_source": "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/ (RELEASE22-089, 19 Aug 2022; 'each region is approximately 15 by 15 kilometers')",
+      "n_depressions": 1,
+      "n_valid": 1,
+      "skipped": false,
+      "criteria": {
+        "c1_sunny_ridge": {
+          "value": 0.8666,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c2_dark_floor": {
+          "value": 1.0,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c3_light_dark": {
+          "value": 1.1199,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c4_grazing_sun": {
+          "value": 4.808,
+          "source": "geometry: low-point latitude + light.MOON_EQUATOR_TILT_DEG",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c5_sky_view": {
+          "value": 0.8756,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c7_bowl": {
+          "value": 0.0613,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c9_relief": {
+          "value": 281.0165,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c10_flat_base": {
+          "value": 1.1417,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c11_walls": {
+          "value": 10.8338,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c13_roughness": {
+          "value": 9.007,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c14_aspect": {
+          "value": 0.0,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        }
+      },
+      "date": "2026-11-14",
+      "verified": false,
+      "light_note": null,
+      "place": {
+        "low_point_xy_m": [
+          -37030,
+          92110
+        ],
+        "low_point_lat_lon": [
+          -86.727,
+          338.1
+        ],
+        "low_to_region_centre_km": 1.88,
+        "low_elev_m": 1435.3,
+        "spill_depth_m": 189.6,
+        "equiv_diameter_m": 3091.0,
+        "elongation": 1.27,
+        "extends_outside_region": false,
+        "rim_crest_diameter_m": 3910.0,
+        "rim_to_floor_depth_m": 281.0,
+        "inner_wall_mean_slope_deg": 11.5,
+        "wall_ring_km": [
+          0.77,
+          1.55
+        ],
+        "c11_ring_covered": 1.003,
+        "base_xy_m": [
+          -38530,
+          94090
+        ],
+        "base_to_bowl_km": 0.85,
+        "c5_horizon_km": 3.09,
+        "window_edge_km": 33.4,
+        "lpsr_share_of_floor": 0.5337
+      },
+      "preview": "figures/moon/targets/polar_haworth.png",
+      "git_commit": "df8b4e9"
+    },
+    {
+      "name": "polar_site20",
+      "label": "Polar · Leibnitz Beta Plateau (Artemis III 2022 region)",
+      "base_type": "polar",
+      "region": "Leibnitz Beta Plateau",
+      "pgda_site": "Site20",
+      "pgda_label": "Leibnitz beta plateau",
+      "region_centre_xy_m": [
+        73000,
+        118000
+      ],
+      "region_centre_lat_lon": [
+        -85.427,
+        31.74
+      ],
+      "region_centre_source": "centre of the 16 km extent of https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/Site20/Site20_final_adj_5mpp_surf.tif (https://pgda.gsfc.nasa.gov/products/78)",
+      "region_list_source": "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/ (RELEASE22-089, 19 Aug 2022; 'each region is approximately 15 by 15 kilometers')",
+      "n_depressions": 2,
+      "n_valid": 2,
+      "skipped": false,
+      "criteria": {
+        "c1_sunny_ridge": {
+          "value": 0.5538,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c2_dark_floor": {
+          "value": 1.0,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c3_light_dark": {
+          "value": 1.0376,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c4_grazing_sun": {
+          "value": 6.2427,
+          "source": "geometry: low-point latitude + light.MOON_EQUATOR_TILT_DEG",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c5_sky_view": {
+          "value": 0.8537,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c7_bowl": {
+          "value": 0.0479,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c9_relief": {
+          "value": 284.5942,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c10_flat_base": {
+          "value": 1.2684,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c11_walls": {
+          "value": 11.9881,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c13_roughness": {
+          "value": 9.5785,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c14_aspect": {
+          "value": 0.0,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        }
+      },
+      "date": "2026-11-14",
+      "verified": false,
+      "light_note": null,
+      "place": {
+        "low_point_xy_m": [
+          79610,
+          118590
+        ],
+        "low_point_lat_lon": [
+          -85.292,
+          33.87
+        ],
+        "low_to_region_centre_km": 6.64,
+        "low_elev_m": 5534.7,
+        "spill_depth_m": 173.9,
+        "equiv_diameter_m": 3630.0,
+        "elongation": 1.43,
+        "extends_outside_region": true,
+        "rim_crest_diameter_m": 4630.0,
+        "rim_to_floor_depth_m": 285.0,
+        "inner_wall_mean_slope_deg": 13.1,
+        "wall_ring_km": [
+          0.91,
+          1.81
+        ],
+        "c11_ring_covered": 1.002,
+        "base_xy_m": [
+          79370,
+          115950
+        ],
+        "base_to_bowl_km": 0.06,
+        "c5_horizon_km": 3.63,
+        "window_edge_km": 28.4,
+        "lpsr_share_of_floor": 0.3739
+      },
+      "preview": "figures/moon/targets/polar_site20.png",
+      "git_commit": "df8b4e9"
+    },
+    {
+      "name": "polar_dm1",
+      "label": "Polar · Amundsen Rim (Artemis III 2022 region)",
+      "base_type": "polar",
+      "region": "Amundsen Rim",
+      "pgda_site": "DM1",
+      "pgda_label": "Amundsen rim",
+      "region_centre_xy_m": [
+        164000,
+        61500
+      ],
+      "region_centre_lat_lon": [
+        -84.229,
+        69.44
+      ],
+      "region_centre_source": "centre of the 20 km extent of https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/DM1/DM1_final_adj_5mpp_surf.tif (https://pgda.gsfc.nasa.gov/products/78)",
+      "region_list_source": "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/ (RELEASE22-089, 19 Aug 2022; 'each region is approximately 15 by 15 kilometers')",
+      "n_depressions": 5,
+      "n_valid": 5,
+      "skipped": false,
+      "criteria": {
+        "c1_sunny_ridge": {
+          "value": null,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c2_dark_floor": {
+          "value": null,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c3_light_dark": {
+          "value": null,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c4_grazing_sun": {
+          "value": 7.3986,
+          "source": "geometry: low-point latitude + light.MOON_EQUATOR_TILT_DEG",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c5_sky_view": {
+          "value": 0.7548,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c7_bowl": {
+          "value": 0.0739,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c9_relief": {
+          "value": 233.2119,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c10_flat_base": {
+          "value": 1.0958,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c11_walls": {
+          "value": 12.1597,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c13_roughness": {
+          "value": 8.782,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c14_aspect": {
+          "value": 0.0,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        }
+      },
+      "date": "2026-11-14",
+      "verified": false,
+      "light_note": "no lit data in the floor zone (PGDA 85S map ends at 85 S)",
+      "place": {
+        "low_point_xy_m": [
+          165390,
+          65690
+        ],
+        "low_point_lat_lon": [
+          -84.136,
+          68.34
+        ],
+        "low_to_region_centre_km": 4.41,
+        "low_elev_m": -452.2,
+        "spill_depth_m": 171.3,
+        "equiv_diameter_m": 2317.0,
+        "elongation": 1.58,
+        "extends_outside_region": false,
+        "rim_crest_diameter_m": 2810.0,
+        "rim_to_floor_depth_m": 233.0,
+        "inner_wall_mean_slope_deg": 11.5,
+        "wall_ring_km": [
+          0.58,
+          1.16
+        ],
+        "c11_ring_covered": 1.007,
+        "base_xy_m": [
+          167070,
+          65990
+        ],
+        "base_to_bowl_km": 0.9,
+        "c5_horizon_km": 2.32,
+        "window_edge_km": 30.8,
+        "lpsr_share_of_floor": null
+      },
+      "preview": "figures/moon/targets/polar_dm1.png",
+      "git_commit": "df8b4e9"
+    },
+    {
+      "name": "polar_lm7",
+      "label": "Polar · Faustini Rim A (Artemis III 2022 region)",
+      "base_type": "polar",
+      "region": "Faustini Rim A",
+      "pgda_site": "LM7",
+      "pgda_label": "Faustini Rim A",
+      "region_centre_xy_m": [
+        64000,
+        0
+      ],
+      "region_centre_lat_lon": [
+        -87.89,
+        90.0
+      ],
+      "region_centre_source": "centre of the 20 km extent of https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/LM7/LM7_final_adj_5mpp_surf.tif (https://pgda.gsfc.nasa.gov/products/78)",
+      "region_list_source": "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/ (RELEASE22-089, 19 Aug 2022; 'each region is approximately 15 by 15 kilometers')",
+      "n_depressions": 2,
+      "n_valid": 2,
+      "skipped": false,
+      "criteria": {
+        "c1_sunny_ridge": {
+          "value": 0.5262,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c2_dark_floor": {
+          "value": 1.0,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c3_light_dark": {
+          "value": 1.0913,
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c4_grazing_sun": {
+          "value": 3.4758,
+          "source": "geometry: low-point latitude + light.MOON_EQUATOR_TILT_DEG",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c5_sky_view": {
+          "value": 0.6797,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c7_bowl": {
+          "value": 0.1637,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c9_relief": {
+          "value": 422.2024,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c10_flat_base": {
+          "value": 0.8383,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c11_walls": {
+          "value": 21.9226,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c13_roughness": {
+          "value": 18.3042,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        },
+        "c14_aspect": {
+          "value": 0.2847,
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
+          "date": "2026-11-14",
+          "verified": false
+        }
+      },
+      "date": "2026-11-14",
+      "verified": false,
+      "light_note": null,
+      "place": {
+        "low_point_xy_m": [
+          58850,
+          890
+        ],
+        "low_point_lat_lon": [
+          -88.059,
+          89.13
+        ],
+        "low_to_region_centre_km": 5.23,
+        "low_elev_m": -751.5,
+        "spill_depth_m": 364.0,
+        "equiv_diameter_m": 2224.0,
+        "elongation": 1.06,
+        "extends_outside_region": false,
+        "rim_crest_diameter_m": 2650.0,
+        "rim_to_floor_depth_m": 422.0,
+        "inner_wall_mean_slope_deg": 21.2,
+        "wall_ring_km": [
+          0.56,
+          1.11
+        ],
+        "c11_ring_covered": 0.998,
+        "base_xy_m": [
+          58070,
+          -670
+        ],
+        "base_to_bowl_km": 0.7,
+        "c5_horizon_km": 2.22,
+        "window_edge_km": 29.8,
+        "lpsr_share_of_floor": 1.0
+      },
+      "preview": "figures/moon/targets/polar_lm7.png",
+      "git_commit": "df8b4e9"
+    },
+    {
+      "name": "mare_tranquillitatis",
+      "label": "Mare · Mare Tranquillitatis (5 cells)",
+      "base_type": "mare",
+      "mare": "Tranquillitatis",
+      "n_cells": 5,
+      "has_bowl_cells": 5,
+      "cells_lat_lon": [
+        [
+          2.91378,
+          29.20104
+        ],
+        [
+          5.07666,
+          28.18279
+        ],
+        [
+          14.15291,
+          37.70261
+        ],
+        [
+          5.48113,
+          23.73582
+        ],
+        [
+          6.86573,
+          24.89405
+        ]
+      ],
+      "criteria": {
+        "c9_relief": {
+          "value": 241.1616,
+          "iqr": 101.3036,
+          "tolerance": 101.3036,
+          "tolerance_rule": "max(IQR, floor 20)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "tranquillitatis_01",
+            "tranquillitatis_02",
+            "tranquillitatis_03",
+            "tranquillitatis_04",
+            "tranquillitatis_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            411.8534,
+            126.4424,
+            171.8911,
+            241.1616,
+            273.1947
+          ]
+        },
+        "c10_flat_base": {
+          "value": 0.2668,
+          "iqr": 0.0561,
+          "tolerance": 0.5,
+          "tolerance_rule": "max(IQR, floor 0.5)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "tranquillitatis_01",
+            "tranquillitatis_02",
+            "tranquillitatis_03",
+            "tranquillitatis_04",
+            "tranquillitatis_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            0.2179,
+            0.2492,
+            0.3053,
+            0.2668,
+            0.3846
+          ]
+        },
+        "c12_drivable": {
+          "value": 0.9875,
+          "iqr": 0.0126,
+          "tolerance": 0.05,
+          "tolerance_rule": "max(IQR, floor 0.05)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "tranquillitatis_01",
+            "tranquillitatis_02",
+            "tranquillitatis_03",
+            "tranquillitatis_04",
+            "tranquillitatis_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            0.9532,
+            0.9996,
+            0.9885,
+            0.9875,
+            0.9759
+          ]
+        },
+        "c13_roughness": {
+          "value": 1.9379,
+          "iqr": 0.1588,
+          "tolerance": 1.0,
+          "tolerance_rule": "max(IQR, floor 1)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "tranquillitatis_01",
+            "tranquillitatis_02",
+            "tranquillitatis_03",
+            "tranquillitatis_04",
+            "tranquillitatis_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            2.0095,
+            1.9379,
+            1.8507,
+            1.6737,
+            2.0424
+          ]
+        }
+      },
+      "date": "2026-11-14",
+      "git_commit": "df8b4e9",
+      "verified": false,
+      "note": "only 5 cells: the IQR of so few values is a rough spread estimate",
+      "preview": "figures/moon/targets/mare_per_mare.png"
+    },
+    {
+      "name": "mare_serenitatis",
+      "label": "Mare · Mare Serenitatis (5 cells)",
+      "base_type": "mare",
+      "mare": "Serenitatis",
+      "n_cells": 5,
+      "has_bowl_cells": 0,
+      "cells_lat_lon": [
+        [
+          23.30874,
+          19.43911
+        ],
+        [
+          22.86338,
+          21.29737
+        ],
+        [
+          24.62871,
+          23.77176
+        ],
+        [
+          27.98163,
+          17.47949
+        ],
+        [
+          32.55038,
+          21.8485
+        ]
+      ],
+      "criteria": {
+        "c9_relief": {
+          "value": 118.0635,
+          "iqr": 47.7364,
+          "tolerance": 47.7364,
+          "tolerance_rule": "max(IQR, floor 20)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "serenitatis_01",
+            "serenitatis_02",
+            "serenitatis_03",
+            "serenitatis_04",
+            "serenitatis_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            118.0635,
+            65.3367,
+            78.5732,
+            126.3096,
+            288.3035
+          ]
+        },
+        "c10_flat_base": {
+          "value": 0.2293,
+          "iqr": 0.0176,
+          "tolerance": 0.5,
+          "tolerance_rule": "max(IQR, floor 0.5)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "serenitatis_01",
+            "serenitatis_02",
+            "serenitatis_03",
+            "serenitatis_04",
+            "serenitatis_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            0.2293,
+            0.2329,
+            0.2671,
+            0.1814,
+            0.2153
+          ]
+        },
+        "c12_drivable": {
+          "value": 0.9948,
+          "iqr": 0.006,
+          "tolerance": 0.05,
+          "tolerance_rule": "max(IQR, floor 0.05)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "serenitatis_01",
+            "serenitatis_02",
+            "serenitatis_03",
+            "serenitatis_04",
+            "serenitatis_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            0.9937,
+            0.9997,
+            0.9998,
+            0.9948,
+            0.9862
+          ]
+        },
+        "c13_roughness": {
+          "value": 1.2873,
+          "iqr": 0.17,
+          "tolerance": 1.0,
+          "tolerance_rule": "max(IQR, floor 1)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "serenitatis_01",
+            "serenitatis_02",
+            "serenitatis_03",
+            "serenitatis_04",
+            "serenitatis_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            1.4148,
+            1.2873,
+            1.2002,
+            1.0336,
+            1.3702
+          ]
+        }
+      },
+      "date": "2026-11-14",
+      "git_commit": "df8b4e9",
+      "verified": false,
+      "note": "only 5 cells: the IQR of so few values is a rough spread estimate",
+      "preview": "figures/moon/targets/mare_per_mare.png"
+    },
+    {
+      "name": "mare_imbrium",
+      "label": "Mare · Mare Imbrium (5 cells)",
+      "base_type": "mare",
+      "mare": "Imbrium",
+      "n_cells": 5,
+      "has_bowl_cells": 4,
+      "cells_lat_lon": [
+        [
+          29.82639,
+          -28.91042
+        ],
+        [
+          30.87675,
+          -30.85179
+        ],
+        [
+          43.54026,
+          -30.02766
+        ],
+        [
+          45.25545,
+          -10.19042
+        ],
+        [
+          42.06271,
+          -26.43704
+        ]
+      ],
+      "criteria": {
+        "c9_relief": {
+          "value": 121.272,
+          "iqr": 42.1821,
+          "tolerance": 42.1821,
+          "tolerance_rule": "max(IQR, floor 20)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "imbrium_01",
+            "imbrium_02",
+            "imbrium_03",
+            "imbrium_04",
+            "imbrium_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            91.8859,
+            98.3252,
+            167.5488,
+            140.5073,
+            121.272
+          ]
+        },
+        "c10_flat_base": {
+          "value": 0.2314,
+          "iqr": 0.0321,
+          "tolerance": 0.5,
+          "tolerance_rule": "max(IQR, floor 0.5)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "imbrium_01",
+            "imbrium_02",
+            "imbrium_03",
+            "imbrium_04",
+            "imbrium_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            0.19,
+            0.2107,
+            0.2599,
+            0.2314,
+            0.2428
+          ]
+        },
+        "c12_drivable": {
+          "value": 0.9979,
+          "iqr": 0.0019,
+          "tolerance": 0.05,
+          "tolerance_rule": "max(IQR, floor 0.05)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "imbrium_01",
+            "imbrium_02",
+            "imbrium_03",
+            "imbrium_04",
+            "imbrium_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            0.9993,
+            0.9995,
+            0.9902,
+            0.9979,
+            0.9974
+          ]
+        },
+        "c13_roughness": {
+          "value": 1.6924,
+          "iqr": 0.1814,
+          "tolerance": 1.0,
+          "tolerance_rule": "max(IQR, floor 1)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "imbrium_01",
+            "imbrium_02",
+            "imbrium_03",
+            "imbrium_04",
+            "imbrium_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            1.5441,
+            1.6924,
+            1.8553,
+            1.6139,
+            1.7953
+          ]
+        }
+      },
+      "date": "2026-11-14",
+      "git_commit": "df8b4e9",
+      "verified": false,
+      "note": "only 5 cells: the IQR of so few values is a rough spread estimate",
+      "preview": "figures/moon/targets/mare_per_mare.png"
+    },
+    {
+      "name": "mare_crisium",
+      "label": "Mare · Mare Crisium (5 cells)",
+      "base_type": "mare",
+      "mare": "Crisium",
+      "n_cells": 5,
+      "has_bowl_cells": 5,
+      "cells_lat_lon": [
+        [
+          14.05103,
+          63.32925
+        ],
+        [
+          15.42118,
+          58.21485
+        ],
+        [
+          14.13345,
+          60.30586
+        ],
+        [
+          22.09702,
+          57.61607
+        ],
+        [
+          13.17469,
+          61.7532
+        ]
+      ],
+      "criteria": {
+        "c9_relief": {
+          "value": 285.5308,
+          "iqr": 116.3284,
+          "tolerance": 116.3284,
+          "tolerance_rule": "max(IQR, floor 20)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "crisium_01",
+            "crisium_02",
+            "crisium_03",
+            "crisium_04",
+            "crisium_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            294.6208,
+            285.5308,
+            67.408,
+            174.0024,
+            290.3308
+          ]
+        },
+        "c10_flat_base": {
+          "value": 0.2472,
+          "iqr": 0.0507,
+          "tolerance": 0.5,
+          "tolerance_rule": "max(IQR, floor 0.5)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "crisium_01",
+            "crisium_02",
+            "crisium_03",
+            "crisium_04",
+            "crisium_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            0.1736,
+            0.2829,
+            0.2255,
+            0.2762,
+            0.2472
+          ]
+        },
+        "c12_drivable": {
+          "value": 0.9901,
+          "iqr": 0.0029,
+          "tolerance": 0.05,
+          "tolerance_rule": "max(IQR, floor 0.05)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "crisium_01",
+            "crisium_02",
+            "crisium_03",
+            "crisium_04",
+            "crisium_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            0.9899,
+            0.9845,
+            1.0,
+            0.9901,
+            0.9928
+          ]
+        },
+        "c13_roughness": {
+          "value": 2.0204,
+          "iqr": 0.3486,
+          "tolerance": 1.0,
+          "tolerance_rule": "max(IQR, floor 1)",
+          "n_cells": 5,
+          "seed": 20261114,
+          "cells": [
+            "crisium_01",
+            "crisium_02",
+            "crisium_03",
+            "crisium_04",
+            "crisium_05"
+          ],
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
+          "date": "2026-11-14",
+          "verified": false,
+          "cell_values": [
+            2.0333,
+            2.0204,
+            1.6847,
+            1.6722,
+            2.1284
+          ]
+        }
+      },
+      "date": "2026-11-14",
+      "git_commit": "df8b4e9",
+      "verified": false,
+      "note": "only 5 cells: the IQR of so few values is a rough spread estimate",
+      "preview": "figures/moon/targets/mare_per_mare.png"
+    }
+  ]
+}
