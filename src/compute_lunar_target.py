@@ -1,7 +1,7 @@
 """Compute the Polar lunar target (Shackleton) with the SAME code as the Earth cells and write it
 into config/lunar_targets.json, plus a preview figure.
 
-    python src/fetch_lola_window.py          # once: data/moon/shackleton_20m_window.tif (20 m, +-25 km)
+    python src/fetch_lola_window.py          # once, --half-km 35: data/moon/shackleton_20m_window.tif (20 m, +-35 km)
     python src/compute_lunar_target.py       # -> config/lunar_targets.json, figures/shackleton_target.png
 
 Sources per criterion:
@@ -49,7 +49,7 @@ DEFINITIONS = {
                                  "nearer pole (+-45 deg)"},
 }
 SRC_WINDOW = ("LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), "
-              "+-25 km window around the pole read via /vsicurl/")
+              "+-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)")
 
 
 def load_grid(path, cfg):
@@ -92,6 +92,9 @@ def main():
     place = cell.place(low, dep)
     base = (place["base_row"], place["base_col"])
 
+    # distance from the low point to the nearest window edge (c5 look-out check)
+    edge_km = min(lx - X.min(), X.max() - lx, ly - Y.min(), Y.max() - ly) / 1000
+
     # 3. display zones from the data: floor, walls, rim crest (not used in scoring)
     zones = crater_zones(mg, X, Y, dep, low, cell.t.slope_deg)
 
@@ -105,8 +108,9 @@ def main():
         "c5_sky_view": (place["c5_sky_view"], win_dem,
                         f"floor zone ({place['c5_floor_px']} px: bowl pixels < {cfg['light']['floor_max_slope_deg']:g} "
                         f"deg connected to the low point); horizons out to {place['c5_horizon_km']} km "
-                        f"(= {cfg['light']['horizon_rel']:g} x r). The window ends ~15 km east of the low point: "
-                        "terrain beyond counts as invisible (rim at ~10.5 km is inside)",
+                        f"(= {cfg['light']['horizon_rel']:g} x r); nearest window edge {edge_km:.1f} km from the low point "
+                        + ("(covers the full look-out distance)" if edge_km >= place["c5_horizon_km"] else
+                           "(SHORTER than the look-out distance: terrain beyond counts as invisible, c5 may be high)"),
                         "median of 1 - mean_az sin(max(horizon, 0)), 72 azimuths, Moon radius, no refraction"),
         "c7_bowl": (place["c7_bowl"], win_dem, "whole crater = filled closed depression (cyan outline)",
                     "spill depth / equivalent diameter"),

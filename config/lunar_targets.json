@@ -56,11 +56,11 @@
         "label": "5 Sky-view factor",
         "unit": "share of sky hemisphere",
         "definition": "median over the floor zone (bowl pixels < 10 deg connected to the low point) of 1 - mean_az sin(max(horizon, 0)); horizons out to 2 x bowl radius",
-        "value": 0.6304,
-        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-25 km window around the pole read via /vsicurl/",
+        "value": 0.6306,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
         "verified": true,
         "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
-        "zone": "floor zone (5997 px: bowl pixels < 10 deg connected to the low point); horizons out to 19.03 km (= 2 x r). The window ends ~15 km east of the low point: terrain beyond counts as invisible (rim at ~10.5 km is inside)",
+        "zone": "floor zone (6103 px: bowl pixels < 10 deg connected to the low point); horizons out to 19.02 km (= 2 x r); nearest window edge 25.0 km from the low point (covers the full look-out distance)",
         "stat": "median of 1 - mean_az sin(max(horizon, 0)), 72 azimuths, Moon radius, no refraction",
         "date": "2026-11-14"
       },
@@ -68,8 +68,8 @@
         "label": "7 Bowl shape",
         "unit": "depth/width",
         "definition": "candidate places = closed depressions >= 50 m deep and >= 1000 m wide whose low point is in the window (searched with a 5 km margin); value = spill depth / equivalent diameter of the chosen place",
-        "value": 0.1972,
-        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-25 km window around the pole read via /vsicurl/",
+        "value": 0.1973,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
         "verified": true,
         "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
         "zone": "whole crater = filled closed depression (cyan outline)",
@@ -80,8 +80,8 @@
         "label": "9 Rim-to-floor depth",
         "unit": "m",
         "definition": "median over 1-deg azimuth sectors of the highest elevation within rim_search_rel x bowl radius of the low point, minus the low point; no bowl -> 0",
-        "value": 4073.2375,
-        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-25 km window around the pole read via /vsicurl/",
+        "value": 4077.2251,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
         "verified": true,
         "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
         "zone": "whole bowl: rim crest within 1.3 x bowl radius of the floor low point",
@@ -92,8 +92,8 @@
         "label": "10 Flat base spot",
         "unit": "deg",
         "definition": "mean slope of the flattest ~200 m pad (3x3 px at 60 m) outside the bowl whose centre is at most max_base_to_bowl_km outside the bowl edge",
-        "value": 0.5961,
-        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-25 km window around the pole read via /vsicurl/",
+        "value": 0.664,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
         "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
         "verified": true,
         "zone": "rim: outside the bowl, pad centre at most 1 km outside the bowl edge",
@@ -104,8 +104,8 @@
         "label": "11 Steep walls",
         "unit": "deg",
         "definition": "mean slope in a ring of wall_ring_rel x r around the low point, r = equivalent radius of the filled depression (inner walls only)",
-        "value": 27.1242,
-        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-25 km window around the pole read via /vsicurl/",
+        "value": 27.2221,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
         "verified": true,
         "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
         "zone": "inner wall: ring 4.76-9.51 km around the low point (= 0.5-1.0 x bowl radius, r = equivalent radius of the filled depression)",
@@ -116,8 +116,8 @@
         "label": "13 Roughness",
         "unit": "m",
         "definition": "median std of elevation in 3x3 px windows over the bowl + rim ring (bowl plus everything within rim_search_rel x r of the low point)",
-        "value": 24.5085,
-        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-25 km window around the pole read via /vsicurl/",
+        "value": 24.5428,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
         "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
         "verified": true,
         "zone": "bowl + rim ring: the bowl plus everything within 1.3 x bowl radius of the low point (same zone as on Earth)",
@@ -128,8 +128,8 @@
         "label": "14 Pole-facing slopes",
         "unit": "share",
         "definition": "share of steep pixels (> 20 deg) within the wall ring's outer radius facing the nearer pole (+-45 deg)",
-        "value": 0.407,
-        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-25 km window around the pole read via /vsicurl/",
+        "value": 0.3979,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
         "verified": true,
         "dem": "data/moon/shackleton_20m_window.tif, bilinear to 60 m (dem.grid.reproject_dem)",
         "zone": "within 9.51 km (ring outer radius) of the low point",
@@ -165,12 +165,12 @@
     },
     "draft_reference": {
       "relief_rim_floor": {
-        "value": 4073,
+        "value": 4077,
         "unit": "m",
         "zone": "rim crest per 1-deg azimuth to the lowest floor point",
-        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/compute_lunar_target.py (20 m -> 60 m): median over 1-deg azimuth sectors of the highest elevation within 1.3 x bowl radius (rim crest, median 1205 m), minus the floor low point (-2869 m)",
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (+-35 km window) via src/compute_lunar_target.py (20 m -> 60 m): median over 1-deg azimuth sectors of the highest elevation within 1.3 x bowl radius (rim crest, median 1207 m), minus the floor low point (-2870 m)",
         "verified": true,
-        "note": "Same quantity as criterion c9 since 14 Nov (display only, weight 0). Replaces a 4100 m placeholder from a chat example. Mateo's src/moon_dem.py gives 3987 m from the same file: rim median 1115 m on a ring around a crater centre fitted to the rim crest, 30 m grid, minus floor min -2872 m. The ~86 m difference comes from the rim definition (per-azimuth highest point vs median on a fixed ring, which also samples lower parts of the rim) and the grid (60 vs 30 m). Spill depth (lowest rim saddle to floor) is 3753 m."
+        "note": "Same quantity as criterion c9 since 14 Nov (display only, weight 0). Replaces a 4100 m placeholder from a chat example. Mateo's src/moon_dem.py gives 3987 m from the same file: rim median 1115 m on a ring around a crater centre fitted to the rim crest, 30 m grid, minus floor min -2872 m. The ~90 m difference comes from the rim definition (per-azimuth highest point vs median on a fixed ring, which also samples lower parts of the rim) and the grid (60 vs 30 m). Spill depth (lowest rim saddle to floor) is 3753 m. With the +-25 km window the same method gave 4073 m (60 m grid shifted by ~20 m)."
       },
       "bare_ground": {
         "why_unused": "land cover is a hard filter in the Earth pipeline (config filter), not a scored criterion"
@@ -193,20 +193,20 @@
     "place": {
       "_note": "display values, not scored (scale decision 14 Nov: size-dependent)",
       "low_point_xy_m": [
-        10010,
-        -5450
+        9970,
+        -5470
       ],
       "low_point_lat_lon": [
-        -89.624,
-        118.6
+        -89.625,
+        118.8
       ],
-      "low_elev_m": -2868.7,
-      "spill_depth_m": 3752.9,
-      "equiv_diameter_m": 19030.0,
+      "low_elev_m": -2869.9,
+      "spill_depth_m": 3753.2,
+      "equiv_diameter_m": 19023.0,
       "elongation": 1.03,
-      "rim_crest_median_elev_m": 1205.0,
-      "rim_crest_diameter_m": 20900.0,
-      "rim_to_floor_depth_m": 4073.0,
+      "rim_crest_median_elev_m": 1207.0,
+      "rim_crest_diameter_m": 20910.0,
+      "rim_to_floor_depth_m": 4077.0,
       "floor_equiv_diameter_m": 5240.0,
       "inner_wall_mean_slope_deg": 29.0,
       "wall_ring_km": [
@@ -215,11 +215,11 @@
       ],
       "c11_ring_covered": 1.0,
       "base_xy_m": [
-        8930,
-        -16850
+        8950,
+        -16870
       ],
-      "base_elev_m": 1030.7,
-      "base_to_bowl_km": 0.54,
+      "base_elev_m": 1030.9,
+      "base_to_bowl_km": 0.55,
       "base_to_low_km": 11.45,
       "zones_how": "floor = bowl pixels < 10 deg connected to the low point; inner wall = bowl pixels between floor and rim crest; rim crest = highest point within 1.3 x bowl radius per 1 deg azimuth"
     },
