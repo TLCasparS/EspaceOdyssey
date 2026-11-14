@@ -72,10 +72,11 @@
       "sunny_ridge": {
         "unit": "fraction of time lit",
         "zone": "rim",
-        "value": 0.85,
-        "source": "LROC illumination map (as stated in the draft)",
+        "value": null,
+        "source": null,
         "verified": false,
-        "pipeline": "light criteria 1-5 via src/shadowsim, not wired into run_pipeline yet"
+        "pipeline": "light criteria 1-5 via src/shadowsim, not wired into run_pipeline yet",
+        "note": "0.85 was an illustrative placeholder from a chat format example, not a measurement. TODO: compute rim lit fraction (step 3, illumination)."
       },
       "dark_floor": {
         "unit": "TODO",
@@ -95,12 +96,13 @@
     },
     "draft_reference": {
       "relief_rim_floor": {
-        "value": 4100,
+        "value": 3987,
         "unit": "m",
-        "zone": "rim+floor",
-        "source": "LOLA Shackleton DEM (as stated in the draft)",
+        "zone": "median rim to floor minimum",
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_dem.py (30 m crop): rim median 1115 m, floor min -2872 m (data/results/moon_dem_summary.json)",
         "verified": false,
-        "why_unused": "crater rim-to-floor depth, not c9 (5 km window at the low point); recompute c9 from LOLA"
+        "why_unused": "crater rim-to-floor depth, not c9 (5 km window at the low point); recompute c9 from LOLA",
+        "note": "replaces a 4100 m placeholder from a chat format example. Spill depth (lowest rim saddle to floor) is 3752.5 m, see polar.computed.spill_depth_m."
       },
       "bare_ground": {
         "why_unused": "land cover is a hard filter in the Earth pipeline (config filter), not a scored criterion"
