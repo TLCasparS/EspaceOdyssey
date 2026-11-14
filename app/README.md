@@ -64,7 +64,7 @@ shows as greyed out in the filters. Only the `polar` base type has pipeline data
   and Mateo's notes): Polar = Shackleton crater (89.625°S, 118.8°E), Mare = Apollo 11 site (0.674°N, 23.473°E;
   "typical lunar mare plain").
 - Clicking a marker (or its button under the Moon) picks that base type: the Earth list, heatmap and cards are
-  re-ranked against it. It stays in sync with the "Base type" buttons in the filter bar.
+  re-ranked against it. This is the only base-type selector (the old "Base type" buttons are gone).
 - A base can be picked once `outputs/targets.json` has its values; until then it says "Earth twins coming".
 - Mare: the Moon card already shows Mateo's final target (median of 20 sample areas in 4 maria: relief 154 m,
   landing pad 0.24°, drivable 99.3%, roughness 1.7 m), the day–night swing fact (≈ 290–300 K, LRO Diviner,
@@ -79,7 +79,6 @@ shows as greyed out in the filters. Only the `polar` base type has pipeline data
 
 ## Filters
 
-- **Base type** switches the lunar target (only Polar with real data; Lava tube and Mare in `?sample`).
 - **Filter by** opens a group; pick criteria to keep only sites that match the Moon on them
   by at least the minimum match (default 70 %). Practical criteria filter on their own score.
 

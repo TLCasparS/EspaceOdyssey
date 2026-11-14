@@ -307,10 +307,6 @@ const baseLabel = () => BASES.find(b => b.id === state.base)?.label ?? state.bas
 /* ---------- Filter bar ---------- */
 
 function renderFilters() {
-  // Base type
-  document.getElementById('baseSeg').innerHTML = BASES.filter(b => state.targets[b.id]).map(b =>
-    `<button type="button" data-base="${b.id}" aria-pressed="${b.id === state.base}">${esc(b.label)}</button>`).join('');
-
   // Group tabs, with a count of active criteria per group
   const counts = {};
   state.active.forEach(k => { const g = byKey[k].group; counts[g] = (counts[g] ?? 0) + 1; });
@@ -346,7 +342,7 @@ function renderFilters() {
   document.getElementById('thresholdOut').textContent = Math.round(state.threshold * 100) + '%';
 }
 
-// Pick a lunar base type (from the filter bar or the Moon globe): Earth sites are re-ranked against it.
+// Pick a lunar base type (on the Moon globe or its buttons): Earth sites are re-ranked against it.
 function setBase(id, fly) {
   if (!state.targets[id]) { state.moonInfo = id; renderMoonInfo(); updateMoon(fly); return; }   // no values yet
   state.base = id;
@@ -358,9 +354,6 @@ function setBase(id, fly) {
 }
 
 function wireFilters() {
-  document.getElementById('baseSeg').addEventListener('click', e => {
-    const b = e.target.closest('[data-base]'); if (b) setBase(b.dataset.base, true);
-  });
   document.getElementById('groupTabs').addEventListener('click', e => {
     const t = e.target.closest('[data-group]'); if (!t) return;
     state.group = t.dataset.group;
