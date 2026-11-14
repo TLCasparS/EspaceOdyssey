@@ -50,7 +50,7 @@ const CRITERIA = [
   { key: 'COLD',            group: 'env',      label: 'Cold',                hint: 'very low ground temperature', bases: ['polar'] },
   { key: 'DAY_NIGHT_SWING', group: 'env',      label: 'Day–night swing',     hint: 'big temperature swing', bases: ['mare'] },
   { key: 'DRY',             group: 'env',      label: 'Dry',                 hint: 'no rain, no weathering', bases: ANY },
-  { key: 'GROUND_ICE',      group: 'env',      label: 'Ice in the ground',   hint: 'permafrost or ice cover', bases: ['polar'] },
+  { key: 'GROUND_ICE',      group: 'env',      label: 'Snow & ice',          hint: 'snow or ice cover on the crater floor', bases: ['polar'] },
   { key: 'BARE',            group: 'env',      label: 'Bare ground',         hint: 'no vegetation', bases: ANY },
   { key: 'FINE_SURFACE',    group: 'env',      label: 'Fine, loose surface', hint: 'dust and fine soil', bases: ANY },
   { key: 'NIGHT_DARK',      group: 'env',      label: 'Night darkness',      hint: 'no artificial light', bases: ANY },
@@ -98,7 +98,7 @@ function parseCSV(text) {
   });
   return { head, rows };
 }
-const TEXT_COLUMNS = new Set(['SITE', 'RUN', 'CELL', 'BASE_TYPE']);
+const TEXT_COLUMNS = new Set(['SITE', 'RUN', 'CELL', 'BASE_TYPE', 'IMPACT_NAME', 'IMPACT_SOURCE']);
 
 const getText = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.text(); });
 const getJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.json(); });
@@ -151,6 +151,9 @@ function criteriaMeta(t) {
       moon: c.moon?.value ?? null, unit: c.moon?.unit ?? '', source: c.moon?.source ?? null, earthUnit: c.earth_unit ?? '',
       limitation: c.limitation ?? null,   // e.g. light: Sun disc on the Moon vs Sun centre on Earth
       fact: c.fact ?? null,               // e.g. Grazing sun: no Earth analog possible
+      // 'more is better' (Drivable, Bare, Ground ice), 'fact' (Impact crater 1/0) or 'raw only' (Crater size):
+      // NOT a similarity to the Moon, so never on the radar or in the Moon chips; shown in "On the ground".
+      kind: c.display_kind ?? null,
     }]));
   }
   return Object.fromEntries(Object.entries(t).filter(([k, v]) => k !== 'label' && typeof v === 'number').map(([k, v]) => [k, {
@@ -165,7 +168,10 @@ const meta = key => state.crit[state.base]?.[key];
 const isPractical = c => c.group === 'practical';
 const isPipeline = () => !DATA.isFake;
 // Criteria the Moon target knows for this base (counted, display-only, or still awaiting a lunar value).
-const baseCriteria = () => CRITERIA.filter(c => !isPractical(c) && c.bases.includes(state.base) && meta(c.key));
+const isGroundValue = key => !!meta(key)?.kind;   // display_kind set: not a similarity to the Moon
+const baseCriteria = () => CRITERIA.filter(c => !isPractical(c) && c.bases.includes(state.base) && meta(c.key) && !isGroundValue(c.key));
+// "On the ground": values about the place itself, not compared with the Moon.
+const groundCriteria = () => CRITERIA.filter(c => c.bases.includes(state.base) && isGroundValue(c.key));
 // Criteria that make up the total score.
 const similarityCriteria = () => baseCriteria().filter(c => meta(c.key).counts);
 
@@ -198,6 +204,11 @@ function scoreSite(site) {
 
 const typeOf = site => state.info[site.SITE]?.type ?? 'candidate';
 const nameOf = site => state.info[site.SITE ?? site]?.name ?? site.SITE ?? site;
+// Tuning regions (CLAUDE.md, "do not count for validation"): used to check and set up the method, so a
+// high rank there is partly built in. Screening regions (Al Wahbah, Roter Kamm, ...) are the fair results.
+const TUNING_RUNS = new Set(['meteor_crater', 'pinacate', 'sf_volcanic']);
+const isTuning = site => TUNING_RUNS.has(site.RUN);
+const TUNING_NOTE = 'Tuning site: we used this region to check and set up our method, so its rank is partly built in and does not count as an independent result.';
 
 // Active filters: a site passes when it has data and matches at least the threshold on every selected criterion.
 function passesFilters(site) {
@@ -293,7 +304,7 @@ function renderFilters() {
       const disabled = noData || notForBase;
       const m = meta(c.key);
       const tag = notForBase ? `not for ${baseLabel()}`
-        : noData ? (m?.method === 'rank' ? 'awaiting lunar value' : m?.method === 'not computed' ? 'not computed yet' : 'no data yet')
+        : noData ? (m?.kind === 'raw only' ? 'size shown on the card' : m?.method === 'rank' ? 'awaiting lunar value' : m?.method === 'not computed' ? 'not computed yet' : 'no data yet')
         : m && !m.counts && !isPractical(c) ? 'not in score' : '';
       return `<button type="button" class="crit" data-key="${c.key}" aria-pressed="${state.active.has(c.key)}" ${disabled ? 'disabled' : ''} title="${esc(c.hint)}">${esc(c.label)}${tag ? ` <span class="tag">${esc(tag)}</span>` : ''}</button>`;
     }).join('');
@@ -360,6 +371,7 @@ function renderList() {
             ${s.sim == null ? '<span class="not-scored">Not scored yet</span>' : `<span class="bar"><span style="width:${Math.round(s.sim * 100)}%"></span></span>
             <span class="pct">${pct(s.sim)}</span>`}
             <span>${s.type === 'known' ? 'Known' : 'New'}</span>
+            ${isTuning(s) ? `<span class="tag-tuning" title="${esc(TUNING_NOTE)}">Tuning</span>` : ''}
           </span>
         </span>
       </button>
@@ -369,8 +381,8 @@ function renderList() {
     list.insertAdjacentHTML('beforeend', `<li class="regions known-ref">
       <details ${state.knownOpen || reference.some(s => s.SITE === state.selected) ? 'open' : ''}>
         <summary class="regions-title">Known analog sites <span class="muted">· not scored yet (${reference.length})</span></summary>
-        <p class="regions-hint">Where analog work already happens. Our pipeline hasn't searched these regions yet; click one for its notes.</p>
-        ${reference.map(s => `<button type="button" class="region-btn site-btn-ref${s.SITE === state.selected ? ' is-current' : ''}" data-site="${esc(s.SITE)}">${esc(nameOf(s))}</button>`).join('')}
+        <p class="regions-hint">Where analog work already happens. Our pipeline hasn't scored these; click one for its notes.</p>
+        ${reference.map(s => `<button type="button" class="region-btn site-btn-ref${s.SITE === state.selected ? ' is-current' : ''}" data-site="${esc(s.SITE)}">${esc(nameOf(s))}${state.info[s.SITE]?.validation ? ` <span class="muted">· tested, ${esc(state.info[s.SITE].validation.result)}</span>` : ''}</button>`).join('')}
       </details>
     </li>`);
     list.querySelector('.known-ref details').addEventListener('toggle', e => { state.knownOpen = e.target.open; });
@@ -506,10 +518,16 @@ function renderCard() {
     missing.notcomputed.length && `Not computed yet: ${missing.notcomputed.join(', ')}.`,
   ].filter(Boolean);
   const raw = s.raw ?? {};
+  const width = raw.CRATER_DIAMETER_EQUIV_M ?? raw.DIAMETER_EQUIV_M, depth = raw.CRATER_RIM_TO_FLOOR_M ?? raw.DEPTH_SPILL_M;
   const craterFacts = [
-    raw.DIAMETER_EQUIV_M != null && `about ${(raw.DIAMETER_EQUIV_M / 1000).toFixed(1)} km wide`,
-    raw.DEPTH_SPILL_M != null && `${Math.round(raw.DEPTH_SPILL_M)} m deep`,
+    width != null && `about ${(width / 1000).toFixed(1)} km wide`,
+    depth != null && `${Math.round(depth)} m deep`,
   ].filter(Boolean);
+  // On the ground: shares where more is better (bars), plus the impact-crater fact.
+  const ground = groundCriteria().filter(c => meta(c.key).kind === 'more is better' && s[c.key] != null);
+  const impact = s.IMPACT_CRATER == null ? null : s.IMPACT_CRATER === 1
+    ? `Yes: <b>${esc(raw.IMPACT_NAME || 'confirmed impact structure')}</b>${raw.IMPACT_DIAMETER_KM ? `, ${raw.IMPACT_DIAMETER_KM} km` : ''}${/^https?:/.test(raw.IMPACT_SOURCE ?? '') ? ` (<a href="${esc(raw.IMPACT_SOURCE)}" target="_blank" rel="noopener">list</a>)` : ''}`
+    : 'Not in the list of confirmed impact craters (the list is incomplete)';
 
   el.innerHTML = `
     <div class="card-top">
@@ -520,17 +538,22 @@ function renderCard() {
       </div>
       <div class="score">
         <strong>${pct(s.sim)}</strong>
-        <span>${missed ? 'not found by our<br>pipeline (config-v1)' : unscored ? 'not scored yet' : `similar to the Moon (${esc(baseLabel().toLowerCase())} base)<br>rank ${s.RANK ?? s.rank} of ${scoredCount()}`}</span>
+        <span>${missed ? 'not found by our<br>pipeline (config-v1)' : info.validation ? `validation test:<br>${esc(info.validation.result)}` : unscored ? 'not scored yet' : `similar to the Moon (${esc(baseLabel().toLowerCase())} base)<br>rank ${s.RANK ?? s.rank} of ${scoredCount()}`}</span>
       </div>
     </div>
 
     ${info.why ? `<p class="why">${research(info.why)}</p>` : ''}
+    ${isTuning(s) ? `<p class="tuning-note"><span class="tag-tuning">Tuning site</span> We used this region to check and set up our method, so its high rank is partly built in. The fair test results are the screening regions, such as Al Wahbah and Roter Kamm.</p>` : ''}
 
     <div class="card-body">
     <div class="card-col card-col-a">
     ${missed ? `<div class="radar-box missed-box">
       <h3>Missed by our method</h3>
       <p>Our search covered this crater but found no bowl here. We show it on purpose: a known crater that our method misses is an honest example of its limits, and tells us what to fix next.</p>
+    </div>` : info.validation ? `<div class="radar-box missed-box">
+      <h3>Validation test: ${esc(info.validation.result)}</h3>
+      <p>${research(info.validation.text)}</p>
+      ${sourcesHTML(info.validation.source ? [info.validation.source] : [])}
     </div>` : unscored ? `<div class="radar-box">
       <h3>Not scored yet</h3>
       <p class="nodata">Our pipeline has only searched a few regions so far (${esc(pipelineAreas())}), so this site has no score or fingerprint yet. It stays on the map with our research notes; it gets a score once the pipeline runs on its area.</p>
@@ -545,6 +568,17 @@ function renderCard() {
       ${missingNote.length ? `<p class="nodata">${esc(missingNote.join(' '))} Left out of the score, not counted as zero.</p>` : ''}
       ${hasLightLimit ? `<p class="nodata" title="${esc(meta('SUNNY_RIDGE')?.limitation ?? '')}"><b>Light:</b> ${esc(LIGHT_NOTE)}</p>` : ''}
     </div>`}
+
+    ${ground.length || impact ? `<div class="note-box prac-box">
+      <h3>On the ground</h3>
+      ${ground.length ? `<div class="prac">${ground.map(c => `
+        <span title="${esc(meta(c.key).earthUnit)}">${esc(c.label)}</span>
+        <span class="bar"><span style="width:${Math.round(s[c.key] * 100)}%"></span></span>
+        <span class="pct">${Math.round(s[c.key] * 100)}%</span>`).join('')}
+      </div>` : ''}
+      ${impact ? `<p class="impact-line"><span>Impact crater</span> ${impact}</p>` : ''}
+      <p class="nodata">About the place itself, not compared with the Moon (more is better). Not part of the score.</p>
+    </div>` : ''}
 
     ${practical.length ? `<div class="note-box prac-box">
       <h3>Practical</h3>

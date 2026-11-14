@@ -20,7 +20,15 @@
         "url": "https://www.aerospacetestinginternational.com/features/testing-for-mars-in-the-high-arctic.html"
       }
     ],
-    "zoom": 11
+    "zoom": 11,
+    "validation": {
+      "result": "not found",
+      "text": "Haughton was a validation test: we ran our frozen method (config-v1) on it without tuning anything. It found no crater there. In the whole searched area (65 × 67 km) the elevation data shows no closed bowl, not even one 10 m deep. Haughton is about 20 km wide but heavily eroded, so it is no longer a bowl our method can see. Relief near the site is only 34–368 m.",
+      "source": {
+        "label": "Validation report (config-v1), EspaceOdyssey repo",
+        "url": "https://github.com/TLCasparS/EspaceOdyssey/blob/main/docs/VALIDATION_config-v1.md"
+      }
+    }
   },
   "Atacama (Yungay area)": {
     "type": "known",
@@ -172,7 +180,7 @@
     "type": "candidate",
     "name": "Al Wahbah crater",
     "place": "Harrat Kishb, Makkah Province, Saudi Arabia",
-    "why": "A deep, round volcanic crater (maar) about 2 km wide and 220–250 m deep, with a white salt floor; about 1.1 million years old. Our pipeline measured it at 2.2 km wide and 163 m deep (its spill point).",
+    "why": "A deep, round volcanic crater (maar) about 2 km wide and 220–250 m deep, with a white salt floor; about 1.1 million years old. Our pipeline measured it at 2.2 km wide and 165 m deep from rim to floor.",
     "breaks": "Volcanic maar from a steam explosion, not an impact crater. At 23° N the Sun climbs to the zenith, so there is no low polar light and no lasting shadow on the floor.",
     "helps": "[to write once ranked: what we could test here]",
     "sources": [
@@ -195,7 +203,7 @@
     "type": "candidate",
     "name": "Roter Kamm crater",
     "place": "Namib Desert, ǁKaras Region, Namibia",
-    "why": "A real impact crater, about 2.5 km wide and 4–5 million years old, with a rim about 130 m above its floor. Our pipeline measured it at 2.0 km wide and 70 m deep (its spill point).",
+    "why": "A real impact crater, about 2.5 km wide and 4–5 million years old, with a rim about 130 m above its floor. Our pipeline measured it at 2.0 km wide and 82 m deep from rim to floor.",
     "breaks": "Wind-blown sand fills the floor at least 100 m deep, so it is much shallower than when it formed. Low-latitude desert (28° S): high Sun, no polar light. [check: access, it lies in a restricted diamond-mining area]",
     "helps": "[to write once ranked: what we could test here]",
     "sources": [
