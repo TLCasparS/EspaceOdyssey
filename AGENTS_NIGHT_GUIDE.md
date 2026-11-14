@@ -57,10 +57,34 @@ Key documents (read the ones your task needs):
    folder the night run started from. If you run on Caspar's laptop at all, use a separate clone.
 8. **Small and reviewable:** one task, one branch, small commits with clear messages.
 9. **End with a report** (template in section 4). If you couldn't finish, the report says what's left.
-10. **Hackathon rule on AI use:** add a short line for your work to `AI_USAGE.md` on your branch.
+10. **Hackathon rule on AI use:** write a short note on how AI was used in your task to your own file
+    `docs/ai_usage/task<N>.md` (NOT to `AI_USAGE.md`: several branches editing one file cause merge
+    conflicts; the team combines the notes in the morning).
+11. **Write only the files your task owns** (table in section 2a). If you think another file needs a
+    change, describe it in your report instead of making it.
 
 Stop and write it in your report instead of guessing if: a requirement is ambiguous, a source
 contradicts our documents, a test fails that isn't yours, or a step needs a login or a large download.
+
+### 2a. File ownership (so parallel agents never overwrite each other)
+
+Every agent works on its own branch and writes only its own files. Two branches changing the same file
+is what causes conflicts, so each file below has exactly one owner tonight.
+
+| Task | Branch | May create / change | Must not touch |
+|---|---|---|---|
+| 1 | `agent/submission` | `docs/SUBMISSION_CHECKLIST.md`, `docs/SUBMISSION_DRAFT.md`, `docs/ai_usage/task1.md` | everything else |
+| 2 | `agent/fact-check` | `docs/FACT_CHECK.md`, `docs/ai_usage/task2.md` | everything else (list corrections, don't apply them) |
+| 3 | `agent/multi-target` | new scoring module (e.g. `src/pipeline/multi_target.py`), `src/export_app.py`, new tests, `docs/MULTI_TARGET.md`, `docs/ai_usage/task3.md` | `config/lunar_targets.json`, `config/pipeline.yaml`, existing criterion functions |
+| 4 | `agent/app-scale` | `scripts/make_fake_outputs.py`, `outputs_fake/`, `docs/APP_SCALE_TEST.md`, `docs/ai_usage/task4.md` | `app/app.js` (Sofia decides), `outputs/` |
+| 5 | `agent/lunar-targets` | `config/lunar_targets_candidates.json`, `figures/moon/targets/`, `docs/NEW_TARGETS_REPORT.md`, new helper scripts, `docs/ai_usage/task5.md` | `config/lunar_targets.json`, existing criterion functions |
+| 6 | `agent/pitch` | `docs/PITCH_OUTLINE.md`, `docs/JURY_FAQ.md`, `docs/ai_usage/task6.md` | everything else |
+| nobody | — | — | `CLAUDE.md`, `AI_USAGE.md`, `config/pipeline.yaml`, `config/lunar_targets.json`, `requirements.txt`, `environment.yml`, existing files in `src/pipeline/`, `app/` |
+
+Tasks 3 and 5 connect only through the **format** of `config/lunar_targets_candidates.json` (defined in
+Task 3). Task 5 writes that file; Task 3 reads the format and tests with its own fake data. They never
+edit the same file. Chat agents (Tasks 1, 2, 6) have no repo access: they deliver their files to a person,
+who commits them on the task's branch.
 
 ---
 
@@ -214,6 +238,9 @@ Data downloaded (size):
 
 ## 5. Morning review (for the team)
 
+0. Merge order (each PR touches only its own files, so order barely matters): fact-check and
+   submission/pitch docs first, then `agent/lunar-targets`, then `agent/multi-target`, then
+   `agent/app-scale`. Combine `docs/ai_usage/task*.md` into `AI_USAGE.md` in one commit at the end.
 1. Read each report (top of file / PR description). Target: 10 minutes per agent.
 2. Task 2 first: apply fact-check corrections to slides and docs.
 3. Task 5: check previews and plausibility, then set `verified: true` per target you accept.
