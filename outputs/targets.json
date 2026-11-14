@@ -125,20 +125,6 @@
         }
       },
       {
-        "column": "CRATER_SIZE",
-        "criterion": "c8_crater_size",
-        "label": null,
-        "counts": false,
-        "weight": null,
-        "score_method": "not computed",
-        "in_scores_csv": false,
-        "tolerance": null,
-        "earth_unit": null,
-        "limitation": null,
-        "fact": null,
-        "moon": null
-      },
-      {
         "column": "RELIEF",
         "criterion": "c9_relief",
         "label": "9 Rim-to-floor depth",
@@ -199,20 +185,6 @@
         }
       },
       {
-        "column": "DRIVABLE",
-        "criterion": "c12_drivable",
-        "label": null,
-        "counts": false,
-        "weight": null,
-        "score_method": "not computed",
-        "in_scores_csv": false,
-        "tolerance": null,
-        "earth_unit": null,
-        "limitation": null,
-        "fact": null,
-        "moon": null
-      },
-      {
         "column": "ROUGHNESS",
         "criterion": "c13_roughness",
         "label": "13 Roughness",
@@ -251,6 +223,86 @@
           "zone": "within 9.51 km (ring outer radius) of the low point",
           "note": null
         }
+      },
+      {
+        "column": "DRIVABLE",
+        "criterion": "c12_drivable",
+        "label": null,
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "display_kind": "more is better",
+        "in_scores_csv": true,
+        "tolerance": null,
+        "earth_unit": "share of pixels flatter than display.drivable_slope_deg within display.drivable_radius_km of the base pad",
+        "limitation": null,
+        "fact": null,
+        "moon": null,
+        "note": "Display only, not a similarity to the Moon: environment criteria are 'more is better' (the Moon's values are not reachable or not meaningful as closeness, like c4). Parameters in config/display.yaml, outside the config-v1 freeze."
+      },
+      {
+        "column": "BARE",
+        "criterion": "c19_bare",
+        "label": null,
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "display_kind": "more is better",
+        "in_scores_csv": true,
+        "tolerance": null,
+        "earth_unit": "share of WorldCover bare/sparse (class 60) in floor + rim zone",
+        "limitation": null,
+        "fact": null,
+        "moon": null,
+        "note": "Display only, not a similarity to the Moon: environment criteria are 'more is better' (the Moon's values are not reachable or not meaningful as closeness, like c4). Parameters in config/display.yaml, outside the config-v1 freeze."
+      },
+      {
+        "column": "GROUND_ICE",
+        "criterion": "c18_ground_ice",
+        "label": null,
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "display_kind": "more is better",
+        "in_scores_csv": true,
+        "tolerance": null,
+        "earth_unit": "share of WorldCover snow & ice in the floor zone",
+        "limitation": null,
+        "fact": null,
+        "moon": null,
+        "note": "Display only, not a similarity to the Moon: environment criteria are 'more is better' (the Moon's values are not reachable or not meaningful as closeness, like c4). Parameters in config/display.yaml, outside the config-v1 freeze."
+      },
+      {
+        "column": "IMPACT_CRATER",
+        "criterion": "c24_impact_crater",
+        "label": null,
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "display_kind": "fact",
+        "in_scores_csv": true,
+        "tolerance": null,
+        "earth_unit": "1 = low point lies within max(0.6 x diameter, 1 km) of a confirmed impact structure in data/impact/impact_structures.csv (Wikipedia list, incomplete), 0 = not in that list",
+        "limitation": null,
+        "fact": null,
+        "moon": null,
+        "note": "Display only, not a similarity to the Moon: environment criteria are 'more is better' (the Moon's values are not reachable or not meaningful as closeness, like c4). Parameters in config/display.yaml, outside the config-v1 freeze."
+      },
+      {
+        "column": "CRATER_SIZE",
+        "criterion": "c8_crater_size",
+        "label": null,
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "display_kind": "raw only",
+        "in_scores_csv": false,
+        "tolerance": null,
+        "earth_unit": "size-dependent: diameter and depth in raw_values.csv (CRATER_DIAMETER_EQUIV_M, CRATER_RIM_TO_FLOOR_M); no 0-1 value",
+        "limitation": null,
+        "fact": null,
+        "moon": null,
+        "note": "Display only, not a similarity to the Moon: environment criteria are 'more is better' (the Moon's values are not reachable or not meaningful as closeness, like c4). Parameters in config/display.yaml, outside the config-v1 freeze."
       }
     ]
   }

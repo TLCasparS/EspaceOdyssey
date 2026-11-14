@@ -137,11 +137,12 @@ def rim_to_floor_m(z: np.ndarray, low, search_m: float, res_m: float):
 class _Cell:
     """Arrays shared by all candidates of one cell (computed once)."""
 
-    def __init__(self, mg, in_cell, usable, lat, cfg, body: str = "earth", ice=None):
+    def __init__(self, mg, in_cell, usable, lat, cfg, body: str = "earth", ice=None, landcover=None):
         p = cfg["polar"]
         self.mg, self.in_cell, self.lat, self.cfg, self.p = mg, in_cell, lat, cfg, p
         self.body = body                                    # earth / moon: curvature + refraction for horizons
         self.ice = ice                                      # bool snow/ice mask on the grid (Earth), None = unknown
+        self.lc = landcover                                 # WorldCover class codes on the grid (0 = no data), display only
         self.t = compute_terrain(mg, relief_window_m=p["relief_window_m"],
                                  roughness_window_px=p["roughness_window_px"])
         self.rr, self.cc = np.indices(mg.dem.shape)
@@ -222,10 +223,24 @@ class _Cell:
 
         # ice shares of the floor and rim zones (display); ice floor -> place excluded (DEM = ice surface)
         ice_floor = ice_rim = None
+        fz = floor_zone(dep["mask"], t.slope_deg, low, self.cfg["light"]["floor_max_slope_deg"]) if dep else None
         if self.ice is not None and dep is not None:
-            fz = floor_zone(dep["mask"], t.slope_deg, low, self.cfg["light"]["floor_max_slope_deg"])
             ice_floor = float(self.ice[fz].mean()) if fz.any() else None
             ice_rim = float(self.ice[zone].mean()) if zone.any() else None
+        # display only (config/display.yaml, outside the freeze): c12 drivable share, c19 bare ground share
+        disp = self.cfg.get("display", {})
+        drive_rim = drive_5km = bare = None
+        if disp and dep is not None:
+            thr = disp["drivable_slope_deg"]
+            s_ok = np.isfinite(t.slope_deg)
+            if (zone & s_ok).any():
+                drive_rim = float((t.slope_deg[zone & s_ok] < thr).mean())
+            if base is not None:
+                near = (self.dist_m(base) <= disp["drivable_radius_km"] * 1000) & s_ok
+                drive_5km = float((t.slope_deg[near] < thr).mean()) if near.any() else None
+            if self.lc is not None:
+                fr = (fz | zone) & (self.lc > 0)
+                bare = float(np.isin(self.lc[fr], disp["bare_classes"]).mean()) if fr.any() else None
 
         reasons = []
         if ice_floor is not None and ice_floor > p["max_floor_ice_share"]:
@@ -250,7 +265,10 @@ class _Cell:
                "depression_extends_outside_cell": dep["extends_outside_cell"] if dep else None,
                "c14_n_steep": n_steep, **light_info,
                "ice_floor_share": None if ice_floor is None else round(ice_floor, 3),
-               "ice_rim_share": None if ice_rim is None else round(ice_rim, 3)}
+               "ice_rim_share": None if ice_rim is None else round(ice_rim, 3),
+               "drivable_share_rim": None if drive_rim is None else round(drive_rim, 3),
+               "drivable_share_5km": None if drive_5km is None else round(drive_5km, 3),
+               "bare_share": None if bare is None else round(bare, 3)}
         for name in PLACE_CRITERIA:
             v = raw[name]
             out[name] = None if v is None else round(v, 4)
@@ -260,14 +278,14 @@ class _Cell:
 
 
 def polar_candidates(mg, in_cell: np.ndarray, usable: np.ndarray | None, lat: float, cfg: dict,
-                     body: str = "earth", ice: np.ndarray | None = None):
+                     body: str = "earth", ice: np.ndarray | None = None, landcover: np.ndarray | None = None):
     """(cell-level dict, list of candidate places). Candidates carry raw values and direct
     scores; rank scores are filled later by select_best (per cell or across the whole run)."""
     p = cfg["polar"]
     usable = np.ones_like(in_cell) if usable is None else usable
     if not (in_cell & np.isfinite(mg.dem)).any():
         return {"keep": False, "reason": "no DEM data in cell", "n_depressions": 0}, []
-    cell = _Cell(mg, in_cell, usable, lat, cfg, body, ice)
+    cell = _Cell(mg, in_cell, usable, lat, cfg, body, ice, landcover)
     deps = find_depressions(mg.dem, in_cell, mg.res_m, p)
 
     info = {"keep": True, "reason": "", "n_depressions": len(deps)}

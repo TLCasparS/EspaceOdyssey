@@ -29,11 +29,23 @@ Status counts here: ranked 5, no_bowl 148, ice_floor 0, filtered 75, dropped 0.
 
 ## Which criteria count
 - **Counted (target, weight > 0):** SUNNY_RIDGE, DARK_FLOOR, LIGHT_NEAR_DARK, BOWL_SHAPE, SLOPE_BASE, STEEP_WALLS, ROUGHNESS
-- **Display only (similarity shown, weight 0):** GRAZING_SUN, SKY_VIEW, RELIEF, ASPECT
+- **Display only (similarity shown, weight 0):** GRAZING_SUN, SKY_VIEW, RELIEF, ASPECT, DRIVABLE, BARE, GROUND_ICE, IMPACT_CRATER, CRATER_SIZE
 - **Rank-scored, no lunar value yet** (empty in `scores.csv`, raw value in `raw_values.csv`):
   none (every scored criterion has a lunar value).
-- **Not computed by the pipeline yet:** CRATER_SIZE, DRIVABLE
+- **Not computed by the pipeline yet:** none
 - Only the polar base type exists so far; `cave` and `mare` have no targets yet.
+
+## Display-only columns (weight 0, never in SCORE_TOTAL)
+Parameters in `config/display.yaml` (outside the config-v1 freeze). These are **not** a similarity to the Moon:
+environment criteria are "more is better" shares, because the Moon's values are not reachable or not meaningful
+as closeness (like GRAZING_SUN).
+- **DRIVABLE** (more is better): share of pixels flatter than display.drivable_slope_deg within display.drivable_radius_km of the base pad
+- **BARE** (more is better): share of WorldCover bare/sparse (class 60) in floor + rim zone
+- **GROUND_ICE** (more is better): share of WorldCover snow & ice in the floor zone
+- **IMPACT_CRATER** (fact): 1 = low point lies within max(0.6 x diameter, 1 km) of a confirmed impact structure in data/impact/impact_structures.csv (Wikipedia list, incomplete), 0 = not in that list
+- **CRATER_SIZE** (raw only): size-dependent: diameter and depth in raw_values.csv (CRATER_DIAMETER_EQUIV_M, CRATER_RIM_TO_FLOOR_M); no 0-1 value
+- Impact list: 88 confirmed structures from https://en.wikipedia.org/wiki/List_of_impact_craters_on_Earth?oldid=1381890264
+  (incomplete; "0" means "not in this list"). Matched places: Meteor/Barringer, Roter Kamm.
 
 ## No Earth analog possible: GRAZING_SUN
 No Earth analog possible: the Sun's highest elevation is purely a matter of latitude. On Earth it is at least 23.4 deg (at the poles, from the axial tilt); at Shackleton it is 1.9 deg (1.5 deg at the lunar pole). Shown for information, weight 0. (`targets.json` → `fact`.)
