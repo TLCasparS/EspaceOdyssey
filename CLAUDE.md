@@ -3,7 +3,15 @@
 ## Challenge
 NASA Space Apps Challenge 2026: "Identify Earth Locations that Analog the Permanent Moon Base Locations and Mars".
 Page: https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/
-(TODO: paste the official summary and objectives from that page.)
+Summary (copied from the team brief on branch sofia/setup, 14 Nov 2026): find and characterize new terrestrial
+analogs for future Moon or Mars bases or landing sites.
+
+Selecting landing sites and lunar base locations depends on topography, geology, environment and available resources. Earth places with analogous characteristics (Atacama Desert, Haughton Crater, Death Valley) let mission teams test equipment and methods before flight, but terrestrial analog sites are not well characterized.
+
+Objectives:
+- Use open Earth, Moon and Mars data from NASA and other space agencies.
+- Identify and characterize new terrestrial analogs: deserts, polar regions, volcanic and arid terrain, caves, and other environments that share conditions with the lunar or Martian surface.
+- Present the findings as a map, visualization or other tool.
 
 ## Our question, in one sentence
 DRAFT, not yet agreed: Which places on Earth best stand in for lunar base sites (polar rim, lava tube, mare plain), ranked by measurable similarity from open Earth and Moon data?
@@ -17,7 +25,8 @@ DRAFT, not yet agreed: Which places on Earth best stand in for lunar base sites 
 - **Meteor Crater** (bbox -111.2 34.85 -110.85 35.15, `out/meteor_crater/`) is a **sanity/tuning site** with a known bowl. It is used to check and tune the pipeline and does **not** count for the later validation.
 - **Tuning regions, like Meteor Crater (do not count for validation):** Pinacate volcanic field, Sonora (bbox -113.8 31.6 -113.2 32.1, `out/pinacate/`) and San Francisco Volcanic Field, Arizona (bbox -112.3 35.0 -111.2 35.8, `out/sf_volcanic/`, approximate extent from memory). Used on 14 Nov 2026 for the c5 / c7 / c2 correlation check.
 - **Screening regions (neither tuning nor validation; results count as candidates), first run 14 Nov 2026:** Svalbard Nordenskiöld Land (14.5 77.9 17.5 78.7), Ellesmere Fosheim Peninsula (-87.0 79.3 -82.0 80.3), Greenland Peary Land (-36.0 82.0 -28.0 83.0), Greenland Kangerlussuaq (-51.5 66.8 -49.8 67.2), Al Wahbah Saudi Arabia (40.9 22.7 41.4 23.1), Tenoumer Mauritania (-10.65 22.7 -10.15 23.1), Roter Kamm Namibia (16.05 -27.95 16.55 -27.55). Bboxes chosen from memory, not checked against maps.
-- **Validation regions, keep untouched:** Iceland and Devon Island. Do not run, tune or look at results there until the method and weights are frozen.
+- **Validation regions, keep untouched:** Iceland and Devon Island.
+- **Mare test sites, keep untouched:** Craters of the Moon (Idaho) = Mare **tuning**; Lanzarote = Mare **validation** (run only on mare-v1, nothing tuned there). Do not run, tune or look at results there until the method and weights are frozen.
 - **Mustang** (bbox 83 28 85 30, `out/mustang_polar/`) stays as the example of a region without good analogs (deep valleys, almost no closed bowls).
 
 ## Data we use
@@ -38,9 +47,9 @@ Craters wider than ~20 km don't close inside the Earth DEM window (15 km cell + 
 while the Moon target used ±35 km. Large craters such as Haughton are cut off on Earth. Documented in the
 criteria doc; **not changed in config-v1**. First candidate for config-v2.
 
-## Before any Mare validation
-Tag `mare-v1` and add a freeze guard for the `mare:` config section and the Mare lunar targets, exactly like
-`config-v1` for Polar (`tests/test_config_freeze.py`). Until then Mare floors and weights may still change.
+## Mare freeze
+Tag `mare-v1` (14 Nov 2026): the `mare:` config section and the Mare lunar targets are frozen, guarded by
+`tests/test_mare_freeze.py`. Changes mean mare-v2 and a new Mare validation (Lanzarote).
 
 ## Decisions made
 | Date | Decision | Why |
@@ -66,6 +75,8 @@ Tag `mare-v1` and add a freeze guard for the `mare:` config section and the Mare
 | 14 Nov 2026 | **Freeze: git tag `config-v1`** (commit 9be7be9). No changes to thresholds, weights, tolerances or lunar values after it; `tests/test_config_freeze.py` guards it. Anything that looks wrong is reported, not changed; a change means config-v2 and a new validation | validation (Iceland, Devon Island) must run on an untuned config |
 | 14 Nov 2026 | Display values c8, c12, c18, c19, c24 (weight 0) with parameters in `config/display.yaml`, outside the config-v1 freeze. Environment criteria = "more is better", not closeness to the Moon; practical criteria (26, 29) = app filters, not similarity | the Moon's environment values are unreachable on Earth; display values never change scores |
 | 14 Nov 2026 | Mare base type (`src/pipeline/mare.py`, `run_pipeline.py --base mare`, agreed with Mateo): base spot = flattest ~200 m pad in the cell; c9 relief, c12 drivable (< 15°), c13 roughness within 5 km of it; counting c9, c10, c12, c13; c16 display + "no Earth analog possible"; lunar target = median over Mateo's fixed list of ~20 mare cells (seed, bowls excluded), tolerance = max(IQR, floor); named site Apollo 11 (Tranquillitatis). Own config section, outside config-v1 | Polar path stays frozen and untouched |
+| 14 Nov 2026 | Mare lunar target (Mateo, `src/compute_mare_target.py`): median over 20 cells across 4 maria (seed 20261114), SLDEM2015; tolerance = max(IQR, floor). **No bowl exclusion** (team decision: Earth Mare cells keep their craters; with exclusion 34 of 60 lunar cells were rejected and the target described unusually smooth mare); `has_bowl` recorded per cell for information | mirror the Earth side |
+| 14 Nov 2026 | **Freeze: git tag `mare-v1`** for the Mare config and lunar targets, guarded by `tests/test_mare_freeze.py` | night run and Lanzarote validation run on an untuned Mare config |
 | 14 Nov 2026 | c5 sky-view factor display only (weight 0) | duplicates c7 for simple bowls and overlaps c2 (r −0.91 each over 6 bowl cells); c2 has the lunar comparison |
 
 ## Who does what
