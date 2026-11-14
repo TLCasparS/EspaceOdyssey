@@ -48,6 +48,9 @@ polar:
 
   min_depression_depth_m: 50     # (team start value) criterion 7: shallower depressions are ignored
   min_depression_width_m: 1000   # (team start value) criterion 7: narrower depressions are ignored
+  ice_classes: [70]              # WorldCover snow & ice. Kept by the land-cover filter (polar analogs), but see:
+  max_floor_ice_share: 0.5       # (team choice 14 Nov) place excluded if more than this share of its floor zone is
+                                 # snow/ice: "ice floor, DEM measures ice surface". Floor and rim ice shares are display values
   require_depression: true       # (team choice 14 Nov) true: a cell with no qualifying bowl is dropped.
                                  # (false would score it, anchored at its lowest pixel, with bowl = 0;
                                  #  such bowl-less cells outranked bowls in the Mustang run of 14 Nov)

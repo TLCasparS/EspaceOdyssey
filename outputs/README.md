@@ -1,7 +1,7 @@
 # outputs/ for the app
 
-Written by `src/export_app.py` from: meteor_crater, pinacate. Base type: polar.
-Re-create with `python src/export_app.py out/meteor_crater out/pinacate` (site names need
+Written by `src/export_app.py` from: svalbard_nordenskiold, ellesmere_fosheim, greenland_peary_land, greenland_kangerlussuaq, arid_al_wahbah, arid_tenoumer, arid_roter_kamm, meteor_crater, pinacate. Base type: polar.
+Re-create with `python src/export_app.py out/svalbard_nordenskiold out/ellesmere_fosheim out/greenland_peary_land out/greenland_kangerlussuaq out/arid_al_wahbah out/arid_tenoumer out/arid_roter_kamm out/meteor_crater out/pinacate` (site names need
 `--sites-info` / `--sites-coords`, default `app/sample/site_info.json` and `app/sample/scores.csv` from Sofia's app).
 Known sites matched this time: Meteor Crater.
 
@@ -11,12 +11,12 @@ Known sites matched this time: Meteor Crater.
 | `raw_values.csv` | same rows, raw Earth values (units in `targets.json` → `earth_unit`) plus depth, diameter, base pad, dark days |
 | `targets.json` | per base type: each criterion's column, `counts`, `weight`, `score_method`, raw Moon value + unit + source |
 | `heatmap.json` | `[{lat, lng, weight}]`, one point per ranked cell at the **cell centre**, weight = `SCORE_TOTAL` |
-| `cells.json` | every searched cell of these runs (25): centre, `bbox` [W,S,E,N], `status` (ranked / no_bowl / filtered / dropped) + `reason`, for drawing the searched area |
+| `cells.json` | every searched cell of these runs (228): centre, `bbox` [W,S,E,N], `status` (ranked / no_bowl / ice_floor / filtered / dropped) + `reason`, for drawing the searched area |
 
 **Why bowl-less cells are not in the heatmap with weight 0:** a weighted heatmap adds up the weights, so a
 point with weight 0 adds nothing and would be invisible. To show where we searched and found nothing, draw
 `cells.json` (e.g. faint outlines for `no_bowl` / `filtered`) under the heatmap instead.
-Status counts here: ranked 3, no_bowl 17, filtered 5, dropped 0.
+Status counts here: ranked 5, no_bowl 148, ice_floor 0, filtered 75, dropped 0.
 
 ## How to read the numbers
 - **A 0–1 value in `scores.csv` is already the similarity to the Moon**: exp(−((Earth − Moon) / tolerance)²),

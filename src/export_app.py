@@ -61,7 +61,7 @@ FACTS = {"c4_grazing_sun": ("No Earth analog possible: the Sun's highest elevati
 EXTRA_RAW = {"c7_depth_m": "DEPTH_SPILL_M", "c7_width_m": "DIAMETER_EQUIV_M", "low_elev_m": "LOW_ELEV_M",
              "base_lat": "BASE_LAT", "base_lon": "BASE_LON", "base_elev_m": "BASE_ELEV_M",
              "max_dark_days": "MAX_DARK_DAYS", "near_permanent_shadow_share": "NEAR_PERMANENT_SHADOW_SHARE",
-             "rank_score": "RANK_SCORE_WITHIN_RUN"}
+             "rank_score": "RANK_SCORE_WITHIN_RUN", "ice_floor_share": "ICE_FLOOR_SHARE", "ice_rim_share": "ICE_RIM_SHARE"}
 
 
 def _num(v):
@@ -221,7 +221,7 @@ def main():
             hit = ranked_ids.get((p.name, pr["id"]))
             fr, tr = pr.get("filter_reason") or "", pr.get("terrain_reason") or ""
             status = ("ranked" if hit else "filtered" if fr else "no_bowl" if tr.startswith("no depression")
-                      else "dropped")
+                      else "ice_floor" if "ice floor" in tr else "dropped")
             cells.append({"run": p.name, "cell": pr["id"], "lat": pr.get("lat"), "lng": pr.get("lon"),
                           "bbox": [round(min(lons), 5), round(min(lats), 5), round(max(lons), 5), round(max(lats), 5)],
                           "status": status, "reason": fr or tr or "", "site": hit["SITE"] if hit else None,
@@ -243,12 +243,12 @@ Known sites matched this time: {', '.join(sorted({x['SITE'] for x in rows if not
 | `raw_values.csv` | same rows, raw Earth values (units in `targets.json` → `earth_unit`) plus depth, diameter, base pad, dark days |
 | `targets.json` | per base type: each criterion's column, `counts`, `weight`, `score_method`, raw Moon value + unit + source |
 | `heatmap.json` | `[{{lat, lng, weight}}]`, one point per ranked cell at the **cell centre**, weight = `SCORE_TOTAL` |
-| `cells.json` | every searched cell of these runs ({len(cells)}): centre, `bbox` [W,S,E,N], `status` (ranked / no_bowl / filtered / dropped) + `reason`, for drawing the searched area |
+| `cells.json` | every searched cell of these runs ({len(cells)}): centre, `bbox` [W,S,E,N], `status` (ranked / no_bowl / ice_floor / filtered / dropped) + `reason`, for drawing the searched area |
 
 **Why bowl-less cells are not in the heatmap with weight 0:** a weighted heatmap adds up the weights, so a
 point with weight 0 adds nothing and would be invisible. To show where we searched and found nothing, draw
 `cells.json` (e.g. faint outlines for `no_bowl` / `filtered`) under the heatmap instead.
-Status counts here: {', '.join(f"{s} {sum(c['status'] == s for c in cells)}" for s in ('ranked', 'no_bowl', 'filtered', 'dropped'))}.
+Status counts here: {', '.join(f"{s} {sum(c['status'] == s for c in cells)}" for s in ('ranked', 'no_bowl', 'ice_floor', 'filtered', 'dropped'))}.
 
 ## How to read the numbers
 - **A 0–1 value in `scores.csv` is already the similarity to the Moon**: exp(−((Earth − Moon) / tolerance)²),

@@ -1,5 +1,3253 @@
 [
  {
+  "run": "svalbard_nordenskiold",
+  "cell": "r000c000",
+  "lat": 77.96783,
+  "lng": 14.8232,
+  "bbox": [
+   14.5,
+   77.9,
+   15.14639,
+   78.03566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r000c001",
+  "lat": 77.96783,
+  "lng": 15.46959,
+  "bbox": [
+   15.14639,
+   77.9,
+   15.79278,
+   78.03566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r000c002",
+  "lat": 77.96783,
+  "lng": 16.11597,
+  "bbox": [
+   15.79278,
+   77.9,
+   16.43916,
+   78.03566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r000c003",
+  "lat": 77.96783,
+  "lng": 16.76235,
+  "bbox": [
+   16.43916,
+   77.9,
+   17.08555,
+   78.03566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r000c004",
+  "lat": 77.96783,
+  "lng": 17.29277,
+  "bbox": [
+   17.08555,
+   77.9,
+   17.5,
+   78.03566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r001c000",
+  "lat": 78.10349,
+  "lng": 14.82682,
+  "bbox": [
+   14.5,
+   78.03566,
+   15.15365,
+   78.17131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r001c001",
+  "lat": 78.10349,
+  "lng": 15.48048,
+  "bbox": [
+   15.15365,
+   78.03566,
+   15.8073,
+   78.17131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r001c002",
+  "lat": 78.10349,
+  "lng": 16.13413,
+  "bbox": [
+   15.8073,
+   78.03566,
+   16.46095,
+   78.17131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r001c003",
+  "lat": 78.10349,
+  "lng": 16.78777,
+  "bbox": [
+   16.46095,
+   78.03566,
+   17.1146,
+   78.17131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r001c004",
+  "lat": 78.10349,
+  "lng": 17.3073,
+  "bbox": [
+   17.1146,
+   78.03566,
+   17.5,
+   78.17131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r002c000",
+  "lat": 78.23914,
+  "lng": 14.83054,
+  "bbox": [
+   14.5,
+   78.17131,
+   15.16108,
+   78.30697
+  ],
+  "status": "filtered",
+  "reason": "usable 1%<50%; patch 1.35km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r002c001",
+  "lat": 78.23914,
+  "lng": 15.49162,
+  "bbox": [
+   15.16108,
+   78.17131,
+   15.82216,
+   78.30697
+  ],
+  "status": "filtered",
+  "reason": "usable 44%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r002c002",
+  "lat": 78.23914,
+  "lng": 16.15271,
+  "bbox": [
+   15.82216,
+   78.17131,
+   16.48325,
+   78.30697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r002c003",
+  "lat": 78.23914,
+  "lng": 16.81379,
+  "bbox": [
+   16.48325,
+   78.17131,
+   17.14433,
+   78.30697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r002c004",
+  "lat": 78.23914,
+  "lng": 17.32216,
+  "bbox": [
+   17.14433,
+   78.17131,
+   17.5,
+   78.30697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r003c000",
+  "lat": 78.3748,
+  "lng": 14.83434,
+  "bbox": [
+   14.5,
+   78.30697,
+   15.16869,
+   78.44262
+  ],
+  "status": "filtered",
+  "reason": "usable 0%<50%; patch 0.98km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r003c001",
+  "lat": 78.3748,
+  "lng": 15.50304,
+  "bbox": [
+   15.16869,
+   78.30697,
+   15.83738,
+   78.44262
+  ],
+  "status": "filtered",
+  "reason": "usable 6%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r003c002",
+  "lat": 78.3748,
+  "lng": 16.17173,
+  "bbox": [
+   15.83738,
+   78.30697,
+   16.50607,
+   78.44262
+  ],
+  "status": "filtered",
+  "reason": "usable 30%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r003c003",
+  "lat": 78.3748,
+  "lng": 16.84041,
+  "bbox": [
+   16.50607,
+   78.30697,
+   17.17475,
+   78.44262
+  ],
+  "status": "filtered",
+  "reason": "usable 46%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r003c004",
+  "lat": 78.3748,
+  "lng": 17.33738,
+  "bbox": [
+   17.17475,
+   78.30697,
+   17.5,
+   78.44262
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 49% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r004c000",
+  "lat": 78.51045,
+  "lng": 14.83824,
+  "bbox": [
+   14.5,
+   78.44262,
+   15.17648,
+   78.57828
+  ],
+  "status": "filtered",
+  "reason": "usable 0%<50%; patch 0.28km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r004c001",
+  "lat": 78.51045,
+  "lng": 15.51471,
+  "bbox": [
+   15.17648,
+   78.44262,
+   15.85295,
+   78.57828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r004c002",
+  "lat": 78.51045,
+  "lng": 16.19119,
+  "bbox": [
+   15.85295,
+   78.44262,
+   16.52943,
+   78.57828
+  ],
+  "status": "filtered",
+  "reason": "usable 36%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r004c003",
+  "lat": 78.51045,
+  "lng": 16.86767,
+  "bbox": [
+   16.52943,
+   78.44262,
+   17.2059,
+   78.57828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r004c004",
+  "lat": 78.51045,
+  "lng": 17.35295,
+  "bbox": [
+   17.2059,
+   78.44262,
+   17.5,
+   78.57828
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 43% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r005c000",
+  "lat": 78.63914,
+  "lng": 14.84202,
+  "bbox": [
+   14.5,
+   78.57828,
+   15.18404,
+   78.7
+  ],
+  "status": "filtered",
+  "reason": "usable 29%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r005c001",
+  "lat": 78.63914,
+  "lng": 15.52605,
+  "bbox": [
+   15.18404,
+   78.57828,
+   15.86807,
+   78.7
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r005c002",
+  "lat": 78.63914,
+  "lng": 16.21009,
+  "bbox": [
+   15.86807,
+   78.57828,
+   16.55211,
+   78.7
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r005c003",
+  "lat": 78.63914,
+  "lng": 16.89412,
+  "bbox": [
+   16.55211,
+   78.57828,
+   17.23614,
+   78.7
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "svalbard_nordenskiold",
+  "cell": "r005c004",
+  "lat": 78.63914,
+  "lng": 17.36807,
+  "bbox": [
+   17.23614,
+   78.57828,
+   17.5,
+   78.7
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 35% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r000c000",
+  "lat": 79.36783,
+  "lng": -86.63484,
+  "bbox": [
+   -87.0,
+   79.3,
+   -86.26968,
+   79.43566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r000c001",
+  "lat": 79.36783,
+  "lng": -85.90452,
+  "bbox": [
+   -86.26968,
+   79.3,
+   -85.53936,
+   79.43566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r000c002",
+  "lat": 79.36783,
+  "lng": -85.1742,
+  "bbox": [
+   -85.53936,
+   79.3,
+   -84.80904,
+   79.43566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r000c003",
+  "lat": 79.36783,
+  "lng": -84.44387,
+  "bbox": [
+   -84.80904,
+   79.3,
+   -84.07871,
+   79.43566
+  ],
+  "status": "filtered",
+  "reason": "usable 49%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r000c004",
+  "lat": 79.36783,
+  "lng": -83.71355,
+  "bbox": [
+   -84.07871,
+   79.3,
+   -83.34839,
+   79.43566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r000c005",
+  "lat": 79.36783,
+  "lng": -82.98323,
+  "bbox": [
+   -83.34839,
+   79.3,
+   -82.61807,
+   79.43566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r000c006",
+  "lat": 79.36783,
+  "lng": -82.30903,
+  "bbox": [
+   -82.61807,
+   79.3,
+   -82.0,
+   79.43566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r001c000",
+  "lat": 79.50348,
+  "lng": -86.63018,
+  "bbox": [
+   -87.0,
+   79.43566,
+   -86.26035,
+   79.57131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r001c001",
+  "lat": 79.50348,
+  "lng": -85.89052,
+  "bbox": [
+   -86.26035,
+   79.43566,
+   -85.5207,
+   79.57131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r001c002",
+  "lat": 79.50348,
+  "lng": -85.15087,
+  "bbox": [
+   -85.5207,
+   79.43566,
+   -84.78104,
+   79.57131
+  ],
+  "status": "filtered",
+  "reason": "usable 23%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r001c003",
+  "lat": 79.50348,
+  "lng": -84.41121,
+  "bbox": [
+   -84.78104,
+   79.43566,
+   -84.04139,
+   79.57131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r001c004",
+  "lat": 79.50348,
+  "lng": -83.67157,
+  "bbox": [
+   -84.04139,
+   79.43566,
+   -83.30174,
+   79.57131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r001c005",
+  "lat": 79.50348,
+  "lng": -82.93192,
+  "bbox": [
+   -83.30174,
+   79.43566,
+   -82.56209,
+   79.57131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r001c006",
+  "lat": 79.50348,
+  "lng": -82.28105,
+  "bbox": [
+   -82.56209,
+   79.43566,
+   -82.0,
+   79.57131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r002c000",
+  "lat": 79.63914,
+  "lng": -86.62538,
+  "bbox": [
+   -87.0,
+   79.57131,
+   -86.25077,
+   79.70697
+  ],
+  "status": "filtered",
+  "reason": "usable 45%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r002c001",
+  "lat": 79.63914,
+  "lng": -85.87616,
+  "bbox": [
+   -86.25077,
+   79.57131,
+   -85.50154,
+   79.70697
+  ],
+  "status": "filtered",
+  "reason": "usable 17%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r002c002",
+  "lat": 79.63914,
+  "lng": -85.12692,
+  "bbox": [
+   -85.50154,
+   79.57131,
+   -84.75231,
+   79.70697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r002c003",
+  "lat": 79.63914,
+  "lng": -84.3777,
+  "bbox": [
+   -84.75231,
+   79.57131,
+   -84.00309,
+   79.70697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r002c004",
+  "lat": 79.63914,
+  "lng": -83.62848,
+  "bbox": [
+   -84.00309,
+   79.57131,
+   -83.25386,
+   79.70697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r002c005",
+  "lat": 79.63914,
+  "lng": -82.87924,
+  "bbox": [
+   -83.25386,
+   79.57131,
+   -82.50463,
+   79.70697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r002c006",
+  "lat": 79.63914,
+  "lng": -82.25232,
+  "bbox": [
+   -82.50463,
+   79.57131,
+   -82.0,
+   79.70697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r003c000",
+  "lat": 79.77479,
+  "lng": -86.62047,
+  "bbox": [
+   -87.0,
+   79.70697,
+   -86.24094,
+   79.84262
+  ],
+  "status": "filtered",
+  "reason": "usable 15%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r003c001",
+  "lat": 79.77479,
+  "lng": -85.86141,
+  "bbox": [
+   -86.24094,
+   79.70697,
+   -85.48188,
+   79.84262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r003c002",
+  "lat": 79.77479,
+  "lng": -85.10235,
+  "bbox": [
+   -85.48188,
+   79.70697,
+   -84.72282,
+   79.84262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r003c003",
+  "lat": 79.77479,
+  "lng": -84.34329,
+  "bbox": [
+   -84.72282,
+   79.70697,
+   -83.96376,
+   79.84262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r003c004",
+  "lat": 79.77479,
+  "lng": -83.58423,
+  "bbox": [
+   -83.96376,
+   79.70697,
+   -83.2047,
+   79.84262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r003c005",
+  "lat": 79.77479,
+  "lng": -82.82517,
+  "bbox": [
+   -83.2047,
+   79.70697,
+   -82.44564,
+   79.84262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r003c006",
+  "lat": 79.77479,
+  "lng": -82.22282,
+  "bbox": [
+   -82.44564,
+   79.70697,
+   -82.0,
+   79.84262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r004c000",
+  "lat": 79.91045,
+  "lng": -86.61542,
+  "bbox": [
+   -87.0,
+   79.84262,
+   -86.23084,
+   79.97828
+  ],
+  "status": "filtered",
+  "reason": "usable 25%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r004c001",
+  "lat": 79.91045,
+  "lng": -85.84626,
+  "bbox": [
+   -86.23084,
+   79.84262,
+   -85.46168,
+   79.97828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r004c002",
+  "lat": 79.91045,
+  "lng": -85.0771,
+  "bbox": [
+   -85.46168,
+   79.84262,
+   -84.69252,
+   79.97828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r004c003",
+  "lat": 79.91045,
+  "lng": -84.30795,
+  "bbox": [
+   -84.69252,
+   79.84262,
+   -83.92337,
+   79.97828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r004c004",
+  "lat": 79.91045,
+  "lng": -83.53879,
+  "bbox": [
+   -83.92337,
+   79.84262,
+   -83.15421,
+   79.97828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r004c005",
+  "lat": 79.91045,
+  "lng": -82.76963,
+  "bbox": [
+   -83.15421,
+   79.84262,
+   -82.38505,
+   79.97828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r004c006",
+  "lat": 79.91045,
+  "lng": -82.19253,
+  "bbox": [
+   -82.38505,
+   79.84262,
+   -82.0,
+   79.97828
+  ],
+  "status": "filtered",
+  "reason": "usable 24%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r005c000",
+  "lat": 80.0461,
+  "lng": -86.61024,
+  "bbox": [
+   -87.0,
+   79.97828,
+   -86.22047,
+   80.11393
+  ],
+  "status": "filtered",
+  "reason": "usable 32%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r005c001",
+  "lat": 80.0461,
+  "lng": -85.8307,
+  "bbox": [
+   -86.22047,
+   79.97828,
+   -85.44093,
+   80.11393
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r005c002",
+  "lat": 80.0461,
+  "lng": -85.05116,
+  "bbox": [
+   -85.44093,
+   79.97828,
+   -84.6614,
+   80.11393
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r005c003",
+  "lat": 80.0461,
+  "lng": -84.27164,
+  "bbox": [
+   -84.6614,
+   79.97828,
+   -83.88187,
+   80.11393
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r005c004",
+  "lat": 80.0461,
+  "lng": -83.4921,
+  "bbox": [
+   -83.88187,
+   79.97828,
+   -83.10233,
+   80.11393
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r005c005",
+  "lat": 80.0461,
+  "lng": -82.71256,
+  "bbox": [
+   -83.10233,
+   79.97828,
+   -82.3228,
+   80.11393
+  ],
+  "status": "filtered",
+  "reason": "usable 25%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r005c006",
+  "lat": 80.0461,
+  "lng": -82.1614,
+  "bbox": [
+   -82.3228,
+   79.97828,
+   -82.0,
+   80.11393
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 41% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r006c000",
+  "lat": 80.18176,
+  "lng": -86.6049,
+  "bbox": [
+   -87.0,
+   80.11393,
+   -86.2098,
+   80.24959
+  ],
+  "status": "filtered",
+  "reason": "usable 46%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r006c001",
+  "lat": 80.18176,
+  "lng": -85.81471,
+  "bbox": [
+   -86.2098,
+   80.11393,
+   -85.41961,
+   80.24959
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r006c002",
+  "lat": 80.18176,
+  "lng": -85.02451,
+  "bbox": [
+   -85.41961,
+   80.11393,
+   -84.62941,
+   80.24959
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r006c003",
+  "lat": 80.18176,
+  "lng": -84.23431,
+  "bbox": [
+   -84.62941,
+   80.11393,
+   -83.83922,
+   80.24959
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r006c004",
+  "lat": 80.18176,
+  "lng": -83.44412,
+  "bbox": [
+   -83.83922,
+   80.11393,
+   -83.04902,
+   80.24959
+  ],
+  "status": "filtered",
+  "reason": "usable 42%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r006c005",
+  "lat": 80.18176,
+  "lng": -82.65393,
+  "bbox": [
+   -83.04902,
+   80.11393,
+   -82.25883,
+   80.24959
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r006c006",
+  "lat": 80.18176,
+  "lng": -82.12941,
+  "bbox": [
+   -82.25883,
+   80.11393,
+   -82.0,
+   80.24959
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 33% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r007c000",
+  "lat": 80.27479,
+  "lng": -86.60116,
+  "bbox": [
+   -87.0,
+   80.24959,
+   -86.20232,
+   80.3
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 37% of full size; usable 30%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r007c001",
+  "lat": 80.27479,
+  "lng": -85.80348,
+  "bbox": [
+   -86.20232,
+   80.24959,
+   -85.40464,
+   80.3
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 37% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r007c002",
+  "lat": 80.27479,
+  "lng": -85.0058,
+  "bbox": [
+   -85.40464,
+   80.24959,
+   -84.60696,
+   80.3
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 37% of full size; usable 39%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r007c003",
+  "lat": 80.27479,
+  "lng": -84.20812,
+  "bbox": [
+   -84.60696,
+   80.24959,
+   -83.80928,
+   80.3
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 37% of full size; usable 38%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r007c004",
+  "lat": 80.27479,
+  "lng": -83.41044,
+  "bbox": [
+   -83.80928,
+   80.24959,
+   -83.01159,
+   80.3
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 37% of full size; usable 0%<50%; patch 0.01km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r007c005",
+  "lat": 80.27479,
+  "lng": -82.61275,
+  "bbox": [
+   -83.01159,
+   80.24959,
+   -82.21391,
+   80.3
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 37% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "ellesmere_fosheim",
+  "cell": "r007c006",
+  "lat": 80.27479,
+  "lng": -82.10695,
+  "bbox": [
+   -82.21391,
+   80.24959,
+   -82.0,
+   80.3
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 10% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r000c000",
+  "lat": 82.06783,
+  "lng": -35.51179,
+  "bbox": [
+   -36.0,
+   82.0,
+   -35.02358,
+   82.13566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r000c001",
+  "lat": 82.06783,
+  "lng": -34.53537,
+  "bbox": [
+   -35.02358,
+   82.0,
+   -34.04716,
+   82.13566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r000c002",
+  "lat": 82.06783,
+  "lng": -33.55895,
+  "bbox": [
+   -34.04716,
+   82.0,
+   -33.07074,
+   82.13566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r000c003",
+  "lat": 82.06783,
+  "lng": -32.58253,
+  "bbox": [
+   -33.07074,
+   82.0,
+   -32.09432,
+   82.13566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r000c004",
+  "lat": 82.06783,
+  "lng": -31.60611,
+  "bbox": [
+   -32.09432,
+   82.0,
+   -31.1179,
+   82.13566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r000c005",
+  "lat": 82.06783,
+  "lng": -30.62969,
+  "bbox": [
+   -31.1179,
+   82.0,
+   -30.14148,
+   82.13566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r000c006",
+  "lat": 82.06783,
+  "lng": -29.65327,
+  "bbox": [
+   -30.14148,
+   82.0,
+   -29.16506,
+   82.13566
+  ],
+  "status": "filtered",
+  "reason": "usable 5%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r000c007",
+  "lat": 82.06783,
+  "lng": -28.67685,
+  "bbox": [
+   -29.16506,
+   82.0,
+   -28.18864,
+   82.13566
+  ],
+  "status": "filtered",
+  "reason": "usable 2%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r000c008",
+  "lat": 82.06783,
+  "lng": -28.09432,
+  "bbox": [
+   -28.18864,
+   82.0,
+   -28.0,
+   82.13566
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 19% of full size; usable 13%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r001c000",
+  "lat": 82.20349,
+  "lng": -35.50335,
+  "bbox": [
+   -36.0,
+   82.13566,
+   -35.0067,
+   82.27131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r001c001",
+  "lat": 82.20349,
+  "lng": -34.51005,
+  "bbox": [
+   -35.0067,
+   82.13566,
+   -34.0134,
+   82.27131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r001c002",
+  "lat": 82.20349,
+  "lng": -33.51675,
+  "bbox": [
+   -34.0134,
+   82.13566,
+   -33.02009,
+   82.27131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r001c003",
+  "lat": 82.20349,
+  "lng": -32.52344,
+  "bbox": [
+   -33.02009,
+   82.13566,
+   -32.02679,
+   82.27131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r001c004",
+  "lat": 82.20349,
+  "lng": -31.53014,
+  "bbox": [
+   -32.02679,
+   82.13566,
+   -31.03349,
+   82.27131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r001c005",
+  "lat": 82.20349,
+  "lng": -30.53684,
+  "bbox": [
+   -31.03349,
+   82.13566,
+   -30.04019,
+   82.27131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r001c006",
+  "lat": 82.20349,
+  "lng": -29.54354,
+  "bbox": [
+   -30.04019,
+   82.13566,
+   -29.04689,
+   82.27131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r001c007",
+  "lat": 82.20349,
+  "lng": -28.55024,
+  "bbox": [
+   -29.04689,
+   82.13566,
+   -28.05359,
+   82.27131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r001c008",
+  "lat": 82.20349,
+  "lng": -28.02679,
+  "bbox": [
+   -28.05359,
+   82.13566,
+   -28.0,
+   82.27131
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 5% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r002c000",
+  "lat": 82.33914,
+  "lng": -35.49461,
+  "bbox": [
+   -36.0,
+   82.27131,
+   -34.98922,
+   82.40697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r002c001",
+  "lat": 82.33914,
+  "lng": -34.48383,
+  "bbox": [
+   -34.98922,
+   82.27131,
+   -33.97843,
+   82.40697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r002c002",
+  "lat": 82.33914,
+  "lng": -33.47304,
+  "bbox": [
+   -33.97843,
+   82.27131,
+   -32.96765,
+   82.40697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r002c003",
+  "lat": 82.33914,
+  "lng": -32.46226,
+  "bbox": [
+   -32.96765,
+   82.27131,
+   -31.95687,
+   82.40697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r002c004",
+  "lat": 82.33914,
+  "lng": -31.45147,
+  "bbox": [
+   -31.95687,
+   82.27131,
+   -30.94608,
+   82.40697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r002c005",
+  "lat": 82.33914,
+  "lng": -30.44069,
+  "bbox": [
+   -30.94608,
+   82.27131,
+   -29.9353,
+   82.40697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r002c006",
+  "lat": 82.33914,
+  "lng": -29.42991,
+  "bbox": [
+   -29.9353,
+   82.27131,
+   -28.92452,
+   82.40697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r002c007",
+  "lat": 82.33914,
+  "lng": -28.46226,
+  "bbox": [
+   -28.92452,
+   82.27131,
+   -28.0,
+   82.40697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r003c000",
+  "lat": 82.4748,
+  "lng": -35.48555,
+  "bbox": [
+   -36.0,
+   82.40697,
+   -34.9711,
+   82.54262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r003c001",
+  "lat": 82.4748,
+  "lng": -34.45665,
+  "bbox": [
+   -34.9711,
+   82.40697,
+   -33.94221,
+   82.54262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r003c002",
+  "lat": 82.4748,
+  "lng": -33.42776,
+  "bbox": [
+   -33.94221,
+   82.40697,
+   -32.91331,
+   82.54262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r003c003",
+  "lat": 82.4748,
+  "lng": -32.39886,
+  "bbox": [
+   -32.91331,
+   82.40697,
+   -31.88441,
+   82.54262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r003c004",
+  "lat": 82.4748,
+  "lng": -31.36997,
+  "bbox": [
+   -31.88441,
+   82.40697,
+   -30.85552,
+   82.54262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r003c005",
+  "lat": 82.4748,
+  "lng": -30.34107,
+  "bbox": [
+   -30.85552,
+   82.40697,
+   -29.82662,
+   82.54262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r003c006",
+  "lat": 82.4748,
+  "lng": -29.31217,
+  "bbox": [
+   -29.82662,
+   82.40697,
+   -28.79772,
+   82.54262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r003c007",
+  "lat": 82.4748,
+  "lng": -28.39886,
+  "bbox": [
+   -28.79772,
+   82.40697,
+   -28.0,
+   82.54262
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r004c000",
+  "lat": 82.61045,
+  "lng": -35.47616,
+  "bbox": [
+   -36.0,
+   82.54262,
+   -34.95232,
+   82.67828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r004c001",
+  "lat": 82.61045,
+  "lng": -34.42848,
+  "bbox": [
+   -34.95232,
+   82.54262,
+   -33.90465,
+   82.67828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r004c002",
+  "lat": 82.61045,
+  "lng": -33.38081,
+  "bbox": [
+   -33.90465,
+   82.54262,
+   -32.85697,
+   82.67828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r004c003",
+  "lat": 82.61045,
+  "lng": -32.33313,
+  "bbox": [
+   -32.85697,
+   82.54262,
+   -31.80929,
+   82.67828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r004c004",
+  "lat": 82.61045,
+  "lng": -31.28545,
+  "bbox": [
+   -31.80929,
+   82.54262,
+   -30.76161,
+   82.67828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r004c005",
+  "lat": 82.61045,
+  "lng": -30.23777,
+  "bbox": [
+   -30.76161,
+   82.54262,
+   -29.71394,
+   82.67828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r004c006",
+  "lat": 82.61045,
+  "lng": -29.1901,
+  "bbox": [
+   -29.71394,
+   82.54262,
+   -28.66626,
+   82.67828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r004c007",
+  "lat": 82.61045,
+  "lng": -28.33313,
+  "bbox": [
+   -28.66626,
+   82.54262,
+   -28.0,
+   82.67828
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r005c000",
+  "lat": 82.74611,
+  "lng": -35.46642,
+  "bbox": [
+   -36.0,
+   82.67828,
+   -34.93284,
+   82.81393
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 47%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r005c001",
+  "lat": 82.74611,
+  "lng": -34.39926,
+  "bbox": [
+   -34.93284,
+   82.67828,
+   -33.86568,
+   82.81393
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 47%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r005c002",
+  "lat": 82.74611,
+  "lng": -33.33209,
+  "bbox": [
+   -33.86568,
+   82.67828,
+   -32.79851,
+   82.81393
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 47%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r005c003",
+  "lat": 82.74611,
+  "lng": -32.26493,
+  "bbox": [
+   -32.79851,
+   82.67828,
+   -31.73135,
+   82.81393
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 47%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r005c004",
+  "lat": 82.74611,
+  "lng": -31.19777,
+  "bbox": [
+   -31.73135,
+   82.67828,
+   -30.66419,
+   82.81393
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 47%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r005c005",
+  "lat": 82.74611,
+  "lng": -30.13061,
+  "bbox": [
+   -30.66419,
+   82.67828,
+   -29.59703,
+   82.81393
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 47%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r005c006",
+  "lat": 82.74611,
+  "lng": -29.06345,
+  "bbox": [
+   -29.59703,
+   82.67828,
+   -28.52987,
+   82.81393
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 47%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r005c007",
+  "lat": 82.74611,
+  "lng": -28.26494,
+  "bbox": [
+   -28.52987,
+   82.67828,
+   -28.0,
+   82.81393
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 50% of full size; ocean/no-data 47%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r006c000",
+  "lat": 82.88176,
+  "lng": -35.45631,
+  "bbox": [
+   -36.0,
+   82.81393,
+   -34.91261,
+   82.94959
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r006c001",
+  "lat": 82.88176,
+  "lng": -34.36892,
+  "bbox": [
+   -34.91261,
+   82.81393,
+   -33.82522,
+   82.94959
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r006c002",
+  "lat": 82.88176,
+  "lng": -33.28153,
+  "bbox": [
+   -33.82522,
+   82.81393,
+   -32.73783,
+   82.94959
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r006c003",
+  "lat": 82.88176,
+  "lng": -32.19413,
+  "bbox": [
+   -32.73783,
+   82.81393,
+   -31.65043,
+   82.94959
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r006c004",
+  "lat": 82.88176,
+  "lng": -31.10674,
+  "bbox": [
+   -31.65043,
+   82.81393,
+   -30.56304,
+   82.94959
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r006c005",
+  "lat": 82.88176,
+  "lng": -30.01935,
+  "bbox": [
+   -30.56304,
+   82.81393,
+   -29.47565,
+   82.94959
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r006c006",
+  "lat": 82.88176,
+  "lng": -28.93196,
+  "bbox": [
+   -29.47565,
+   82.81393,
+   -28.38826,
+   82.94959
+  ],
+  "status": "filtered",
+  "reason": "ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r006c007",
+  "lat": 82.88176,
+  "lng": -28.19413,
+  "bbox": [
+   -28.38826,
+   82.81393,
+   -28.0,
+   82.94959
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 36% of full size; ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r007c000",
+  "lat": 82.9748,
+  "lng": -35.44914,
+  "bbox": [
+   -36.0,
+   82.94959,
+   -34.89828,
+   83.0
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 37% of full size; ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r007c001",
+  "lat": 82.9748,
+  "lng": -34.34742,
+  "bbox": [
+   -34.89828,
+   82.94959,
+   -33.79656,
+   83.0
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 37% of full size; ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r007c002",
+  "lat": 82.9748,
+  "lng": -33.24571,
+  "bbox": [
+   -33.79656,
+   82.94959,
+   -32.69485,
+   83.0
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 37% of full size; ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r007c003",
+  "lat": 82.9748,
+  "lng": -32.14399,
+  "bbox": [
+   -32.69485,
+   82.94959,
+   -31.59313,
+   83.0
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 37% of full size; ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r007c004",
+  "lat": 82.9748,
+  "lng": -31.04227,
+  "bbox": [
+   -31.59313,
+   82.94959,
+   -30.49141,
+   83.0
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 37% of full size; ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r007c005",
+  "lat": 82.9748,
+  "lng": -29.94055,
+  "bbox": [
+   -30.49141,
+   82.94959,
+   -29.38969,
+   83.0
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 37% of full size; ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r007c006",
+  "lat": 82.9748,
+  "lng": -28.83883,
+  "bbox": [
+   -29.38969,
+   82.94959,
+   -28.28797,
+   83.0
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 37% of full size; ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_peary_land",
+  "cell": "r007c007",
+  "lat": 82.9748,
+  "lng": -28.14399,
+  "bbox": [
+   -28.28797,
+   82.94959,
+   -28.0,
+   83.0
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 10% of full size; ocean/no-data 100%; usable 0%<50%; patch 0.00km2<2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r000c000",
+  "lat": 66.86783,
+  "lng": -51.3285,
+  "bbox": [
+   -51.5,
+   66.8,
+   -51.15701,
+   66.93566
+  ],
+  "status": "filtered",
+  "reason": "usable 47%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r000c001",
+  "lat": 66.86783,
+  "lng": -50.98551,
+  "bbox": [
+   -51.15701,
+   66.8,
+   -50.81401,
+   66.93566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r000c002",
+  "lat": 66.86783,
+  "lng": -50.64252,
+  "bbox": [
+   -50.81401,
+   66.8,
+   -50.47102,
+   66.93566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r000c003",
+  "lat": 66.86783,
+  "lng": -50.29952,
+  "bbox": [
+   -50.47102,
+   66.8,
+   -50.12802,
+   66.93566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r000c004",
+  "lat": 66.86783,
+  "lng": -49.96401,
+  "bbox": [
+   -50.12802,
+   66.8,
+   -49.8,
+   66.93566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r001c000",
+  "lat": 67.00348,
+  "lng": -51.32755,
+  "bbox": [
+   -51.5,
+   66.93566,
+   -51.15509,
+   67.07131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r001c001",
+  "lat": 67.00348,
+  "lng": -50.98264,
+  "bbox": [
+   -51.15509,
+   66.93566,
+   -50.81019,
+   67.07131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r001c002",
+  "lat": 67.00348,
+  "lng": -50.63773,
+  "bbox": [
+   -50.81019,
+   66.93566,
+   -50.46528,
+   67.07131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r001c003",
+  "lat": 67.00348,
+  "lng": -50.29283,
+  "bbox": [
+   -50.46528,
+   66.93566,
+   -50.12037,
+   67.07131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r001c004",
+  "lat": 67.00348,
+  "lng": -49.96018,
+  "bbox": [
+   -50.12037,
+   66.93566,
+   -49.8,
+   67.07131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r002c000",
+  "lat": 67.13565,
+  "lng": -51.32661,
+  "bbox": [
+   -51.5,
+   67.07131,
+   -51.15321,
+   67.2
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r002c001",
+  "lat": 67.13565,
+  "lng": -50.97981,
+  "bbox": [
+   -51.15321,
+   67.07131,
+   -50.80641,
+   67.2
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r002c002",
+  "lat": 67.13565,
+  "lng": -50.63302,
+  "bbox": [
+   -50.80641,
+   67.07131,
+   -50.45962,
+   67.2
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r002c003",
+  "lat": 67.13565,
+  "lng": -50.28623,
+  "bbox": [
+   -50.45962,
+   67.07131,
+   -50.11283,
+   67.2
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "greenland_kangerlussuaq",
+  "cell": "r002c004",
+  "lat": 67.13565,
+  "lng": -49.95641,
+  "bbox": [
+   -50.11283,
+   67.07131,
+   -49.8,
+   67.2
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_al_wahbah",
+  "cell": "r000c000",
+  "lat": 22.76783,
+  "lng": 40.97306,
+  "bbox": [
+   40.9,
+   22.7,
+   41.04613,
+   22.83566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_al_wahbah",
+  "cell": "r000c001",
+  "lat": 22.76783,
+  "lng": 41.1192,
+  "bbox": [
+   41.04613,
+   22.7,
+   41.19227,
+   22.83566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_al_wahbah",
+  "cell": "r000c002",
+  "lat": 22.76783,
+  "lng": 41.26534,
+  "bbox": [
+   41.19227,
+   22.7,
+   41.3384,
+   22.83566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_al_wahbah",
+  "cell": "r000c003",
+  "lat": 22.76783,
+  "lng": 41.3692,
+  "bbox": [
+   41.3384,
+   22.7,
+   41.4,
+   22.83566
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 42% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_al_wahbah",
+  "cell": "r001c000",
+  "lat": 22.90348,
+  "lng": 40.97314,
+  "bbox": [
+   40.9,
+   22.83566,
+   41.04628,
+   22.97131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_al_wahbah",
+  "cell": "r001c001",
+  "lat": 22.90348,
+  "lng": 41.11942,
+  "bbox": [
+   41.04628,
+   22.83566,
+   41.19256,
+   22.97131
+  ],
+  "status": "ranked",
+  "reason": "",
+  "site": "arid_al_wahbah r001c001",
+  "score_total": 0.2457
+ },
+ {
+  "run": "arid_al_wahbah",
+  "cell": "r001c002",
+  "lat": 22.90348,
+  "lng": 41.2657,
+  "bbox": [
+   41.19256,
+   22.83566,
+   41.33884,
+   22.97131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_al_wahbah",
+  "cell": "r001c003",
+  "lat": 22.90348,
+  "lng": 41.36942,
+  "bbox": [
+   41.33884,
+   22.83566,
+   41.4,
+   22.97131
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 42% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_al_wahbah",
+  "cell": "r002c000",
+  "lat": 23.03565,
+  "lng": 40.97321,
+  "bbox": [
+   40.9,
+   22.97131,
+   41.04642,
+   23.1
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_al_wahbah",
+  "cell": "r002c001",
+  "lat": 23.03565,
+  "lng": 41.11963,
+  "bbox": [
+   41.04642,
+   22.97131,
+   41.19284,
+   23.1
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_al_wahbah",
+  "cell": "r002c002",
+  "lat": 23.03565,
+  "lng": 41.26605,
+  "bbox": [
+   41.19284,
+   22.97131,
+   41.33927,
+   23.1
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_al_wahbah",
+  "cell": "r002c003",
+  "lat": 23.03565,
+  "lng": 41.36964,
+  "bbox": [
+   41.33927,
+   22.97131,
+   41.4,
+   23.1
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 39% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_tenoumer",
+  "cell": "r000c000",
+  "lat": 22.76783,
+  "lng": -10.57693,
+  "bbox": [
+   -10.65,
+   22.7,
+   -10.50387,
+   22.83566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_tenoumer",
+  "cell": "r000c001",
+  "lat": 22.76783,
+  "lng": -10.4308,
+  "bbox": [
+   -10.50387,
+   22.7,
+   -10.35773,
+   22.83566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_tenoumer",
+  "cell": "r000c002",
+  "lat": 22.76783,
+  "lng": -10.28467,
+  "bbox": [
+   -10.35773,
+   22.7,
+   -10.2116,
+   22.83566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_tenoumer",
+  "cell": "r000c003",
+  "lat": 22.76783,
+  "lng": -10.1808,
+  "bbox": [
+   -10.2116,
+   22.7,
+   -10.15,
+   22.83566
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 42% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_tenoumer",
+  "cell": "r001c000",
+  "lat": 22.90348,
+  "lng": -10.57686,
+  "bbox": [
+   -10.65,
+   22.83566,
+   -10.50372,
+   22.97131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_tenoumer",
+  "cell": "r001c001",
+  "lat": 22.90348,
+  "lng": -10.43058,
+  "bbox": [
+   -10.50372,
+   22.83566,
+   -10.35744,
+   22.97131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_tenoumer",
+  "cell": "r001c002",
+  "lat": 22.90348,
+  "lng": -10.2843,
+  "bbox": [
+   -10.35744,
+   22.83566,
+   -10.21116,
+   22.97131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_tenoumer",
+  "cell": "r001c003",
+  "lat": 22.90348,
+  "lng": -10.18058,
+  "bbox": [
+   -10.21116,
+   22.83566,
+   -10.15,
+   22.97131
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 42% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_tenoumer",
+  "cell": "r002c000",
+  "lat": 23.03565,
+  "lng": -10.57679,
+  "bbox": [
+   -10.65,
+   22.97131,
+   -10.50358,
+   23.1
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_tenoumer",
+  "cell": "r002c001",
+  "lat": 23.03565,
+  "lng": -10.43037,
+  "bbox": [
+   -10.50358,
+   22.97131,
+   -10.35716,
+   23.1
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_tenoumer",
+  "cell": "r002c002",
+  "lat": 23.03565,
+  "lng": -10.28394,
+  "bbox": [
+   -10.35716,
+   22.97131,
+   -10.21073,
+   23.1
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_tenoumer",
+  "cell": "r002c003",
+  "lat": 23.03565,
+  "lng": -10.18037,
+  "bbox": [
+   -10.21073,
+   22.97131,
+   -10.15,
+   23.1
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 39% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_roter_kamm",
+  "cell": "r000c000",
+  "lat": -27.88217,
+  "lng": 16.12622,
+  "bbox": [
+   16.05,
+   -27.95,
+   16.20244,
+   -27.81434
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_roter_kamm",
+  "cell": "r000c001",
+  "lat": -27.88217,
+  "lng": 16.27867,
+  "bbox": [
+   16.20244,
+   -27.95,
+   16.35489,
+   -27.81434
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_roter_kamm",
+  "cell": "r000c002",
+  "lat": -27.88217,
+  "lng": 16.43111,
+  "bbox": [
+   16.35489,
+   -27.95,
+   16.50733,
+   -27.81434
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_roter_kamm",
+  "cell": "r000c003",
+  "lat": -27.88217,
+  "lng": 16.52867,
+  "bbox": [
+   16.50733,
+   -27.95,
+   16.55,
+   -27.81434
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 28% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_roter_kamm",
+  "cell": "r001c000",
+  "lat": -27.74652,
+  "lng": 16.12613,
+  "bbox": [
+   16.05,
+   -27.81434,
+   16.20225,
+   -27.67869
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_roter_kamm",
+  "cell": "r001c001",
+  "lat": -27.74652,
+  "lng": 16.27838,
+  "bbox": [
+   16.20225,
+   -27.81434,
+   16.35451,
+   -27.67869
+  ],
+  "status": "ranked",
+  "reason": "",
+  "site": "arid_roter_kamm r001c001",
+  "score_total": 0.2327
+ },
+ {
+  "run": "arid_roter_kamm",
+  "cell": "r001c002",
+  "lat": -27.74652,
+  "lng": 16.43064,
+  "bbox": [
+   16.35451,
+   -27.81434,
+   16.50676,
+   -27.67869
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_roter_kamm",
+  "cell": "r001c003",
+  "lat": -27.74652,
+  "lng": 16.52838,
+  "bbox": [
+   16.50676,
+   -27.81434,
+   16.55,
+   -27.67869
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 28% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_roter_kamm",
+  "cell": "r002c000",
+  "lat": -27.61435,
+  "lng": 16.12604,
+  "bbox": [
+   16.05,
+   -27.67869,
+   16.20207,
+   -27.55
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_roter_kamm",
+  "cell": "r002c001",
+  "lat": -27.61435,
+  "lng": 16.27811,
+  "bbox": [
+   16.20207,
+   -27.67869,
+   16.35414,
+   -27.55
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_roter_kamm",
+  "cell": "r002c002",
+  "lat": -27.61435,
+  "lng": 16.43017,
+  "bbox": [
+   16.35414,
+   -27.67869,
+   16.50621,
+   -27.55
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "arid_roter_kamm",
+  "cell": "r002c003",
+  "lat": -27.61435,
+  "lng": 16.52811,
+  "bbox": [
+   16.50621,
+   -27.67869,
+   16.55,
+   -27.55
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 27% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
   "run": "meteor_crater",
   "cell": "r000c000",
   "lat": 34.91783,

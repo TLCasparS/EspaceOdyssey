@@ -28,7 +28,7 @@ import numpy as np
 from scipy import ndimage
 
 from dem.terrain import compute_terrain
-from pipeline.light import place_light, rim_zone
+from pipeline.light import floor_zone, place_light, rim_zone
 from pipeline.scoring import apply_rank, rank_score, score_direct, total_score
 
 CRITERIA = ("c1_sunny_ridge", "c2_dark_floor", "c3_light_dark", "c4_grazing_sun", "c5_sky_view", "c7_bowl", "c9_relief", "c10_flat_base", "c11_walls", "c13_roughness", "c14_aspect")
@@ -137,10 +137,11 @@ def rim_to_floor_m(z: np.ndarray, low, search_m: float, res_m: float):
 class _Cell:
     """Arrays shared by all candidates of one cell (computed once)."""
 
-    def __init__(self, mg, in_cell, usable, lat, cfg, body: str = "earth"):
+    def __init__(self, mg, in_cell, usable, lat, cfg, body: str = "earth", ice=None):
         p = cfg["polar"]
         self.mg, self.in_cell, self.lat, self.cfg, self.p = mg, in_cell, lat, cfg, p
         self.body = body                                    # earth / moon: curvature + refraction for horizons
+        self.ice = ice                                      # bool snow/ice mask on the grid (Earth), None = unknown
         self.t = compute_terrain(mg, relief_window_m=p["relief_window_m"],
                                  roughness_window_px=p["roughness_window_px"])
         self.rr, self.cc = np.indices(mg.dem.shape)
@@ -219,7 +220,16 @@ class _Cell:
                                             self.cfg["light"], self.body, fallback_dist_m=p["wall_ring_m"][1])
         raw.update(light_raw)
 
+        # ice shares of the floor and rim zones (display); ice floor -> place excluded (DEM = ice surface)
+        ice_floor = ice_rim = None
+        if self.ice is not None and dep is not None:
+            fz = floor_zone(dep["mask"], t.slope_deg, low, self.cfg["light"]["floor_max_slope_deg"])
+            ice_floor = float(self.ice[fz].mean()) if fz.any() else None
+            ice_rim = float(self.ice[zone].mean()) if zone.any() else None
+
         reasons = []
+        if ice_floor is not None and ice_floor > p["max_floor_ice_share"]:
+            reasons.append(f"ice floor, DEM measures ice surface ({ice_floor:.0%} snow/ice > {p['max_floor_ice_share']:.0%})")
         if raw["c10_flat_base"] is None:
             reasons.append(f"no usable base pad {where}")
         elif raw["c10_flat_base"] > p["max_base_slope_deg"]:
@@ -238,7 +248,9 @@ class _Cell:
                "c7_width_m": round(dep["width_m"], 0) if dep else 0.0,
                "c7_elongation": round(dep["elongation"], 2) if dep else None,
                "depression_extends_outside_cell": dep["extends_outside_cell"] if dep else None,
-               "c14_n_steep": n_steep, **light_info}
+               "c14_n_steep": n_steep, **light_info,
+               "ice_floor_share": None if ice_floor is None else round(ice_floor, 3),
+               "ice_rim_share": None if ice_rim is None else round(ice_rim, 3)}
         for name in PLACE_CRITERIA:
             v = raw[name]
             out[name] = None if v is None else round(v, 4)
@@ -248,14 +260,14 @@ class _Cell:
 
 
 def polar_candidates(mg, in_cell: np.ndarray, usable: np.ndarray | None, lat: float, cfg: dict,
-                     body: str = "earth"):
+                     body: str = "earth", ice: np.ndarray | None = None):
     """(cell-level dict, list of candidate places). Candidates carry raw values and direct
     scores; rank scores are filled later by select_best (per cell or across the whole run)."""
     p = cfg["polar"]
     usable = np.ones_like(in_cell) if usable is None else usable
     if not (in_cell & np.isfinite(mg.dem)).any():
         return {"keep": False, "reason": "no DEM data in cell", "n_depressions": 0}, []
-    cell = _Cell(mg, in_cell, usable, lat, cfg, body)
+    cell = _Cell(mg, in_cell, usable, lat, cfg, body, ice)
     deps = find_depressions(mg.dem, in_cell, mg.res_m, p)
 
     info = {"keep": True, "reason": "", "n_depressions": len(deps)}
@@ -272,7 +284,7 @@ def polar_candidates(mg, in_cell: np.ndarray, usable: np.ndarray | None, lat: fl
         cands = [cell.place((int(low[0]), int(low[1])), None)]
     if not any(c["keep"] for c in cands):
         info.update(keep=False, reason=cands[0]["reason"] if len(cands) == 1
-                    else f"none of {len(cands)} depressions has a valid base pad ({cands[0]['reason']}, ...)")
+                    else f"none of {len(cands)} depressions is valid ({cands[0]['reason']}, ...)")
     return info, cands
 
 
