@@ -1,0 +1,17 @@
+# Region registry for the app export (src/export_app.py): role and country per region.
+# role: tuning (used to tune, does not count), validation (config-v1 test, nothing tuned there),
+#       screening (results count as candidates). Night-run regions come from config/night_regions.yaml.
+# country = what the box covers (region level, approximate; no per-cell lookup). Bboxes from CLAUDE.md.
+regions:
+  - {name: meteor_crater,           title: "Meteor Crater area",            bbox: [-111.2, 34.85, -110.85, 35.15], role: tuning,     country: "United States"}
+  - {name: pinacate,                title: "Pinacate volcanic field",       bbox: [-113.8, 31.6, -113.2, 32.1],   role: tuning,     country: "Mexico"}
+  - {name: sf_volcanic,             title: "San Francisco Volcanic Field",  bbox: [-112.3, 35.0, -111.2, 35.8],   role: tuning,     country: "United States"}
+  - {name: svalbard_nordenskiold,   title: "Svalbard Nordenskiöld Land",    bbox: [14.5, 77.9, 17.5, 78.7],       role: screening,  country: "Norway (Svalbard)"}
+  - {name: ellesmere_fosheim,       title: "Ellesmere Fosheim Peninsula",   bbox: [-87.0, 79.3, -82.0, 80.3],     role: screening,  country: "Canada"}
+  - {name: greenland_peary_land,    title: "Greenland Peary Land",          bbox: [-36.0, 82.0, -28.0, 83.0],     role: screening,  country: "Greenland (Denmark)"}
+  - {name: greenland_kangerlussuaq, title: "Greenland Kangerlussuaq",       bbox: [-51.5, 66.8, -49.8, 67.2],     role: screening,  country: "Greenland (Denmark)"}
+  - {name: arid_al_wahbah,          title: "Al Wahbah area",                bbox: [40.9, 22.7, 41.4, 23.1],       role: screening,  country: "Saudi Arabia"}
+  - {name: arid_tenoumer,           title: "Tenoumer area",                 bbox: [-10.65, 22.7, -10.15, 23.1],   role: screening,  country: "Mauritania"}
+  - {name: arid_roter_kamm,         title: "Roter Kamm area",               bbox: [16.05, -27.95, 16.55, -27.55], role: screening,  country: "Namibia"}
+  - {name: devon_haughton,          title: "Devon Island (Haughton)",       bbox: [-90.6, 75.1, -88.7, 75.7],     role: validation, country: "Canada"}
+  - {name: iceland,                 title: "Iceland",                       bbox: [-24.6, 63.2, -13.4, 66.6],     role: validation, country: "Iceland"}
