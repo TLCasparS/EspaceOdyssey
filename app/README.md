@@ -49,6 +49,25 @@ To switch to real data, point `DATA.scores` and `DATA.targets` at `../outputs/..
 The heatmap is a fake pattern for now (`fakeHeatPoints()` in `app.js`). It should be
 replaced by a grid of real suitability scores (lat, lng, weight) from the pipeline.
 
+## AI use
+
+The hackathon asks teams to say where and how AI was used. For this app:
+
+- **Code:** `index.html`, `style.css` and `app.js` were written with help from an AI assistant
+  (Claude, by Anthropic). Commits it helped with carry a `Co-Authored-By: Claude` line.
+- **Data:** `sample/scores.csv` and `sample/targets.json` are fake values made by a script, only to
+  design the app. The heatmap is a fake pattern for the same reason. The app shows a "Fake data" badge.
+- **Text:** the notes in `sample/site_info.json` were drafted with AI help. Facts about known sites
+  link to their sources; `[brackets]` mark text still to research or check.
+- **Images and video:** none are AI-generated. The globe uses NASA's Blue Marble, and the 3D view uses
+  real elevation (AWS Terrain Tiles) and satellite imagery (Sentinel-2 cloudless by EOX).
+- The same note is shown in the app's footer and in an `ai-assistance` meta tag in `index.html`.
+
+## Branding
+
+The app uses no NASA or Space Apps logos or design elements (hackathon rule). The header shows the
+team name, EspaceOdyssey. NASA imagery (Blue Marble) is used as data, with credit.
+
 ## Libraries
 
 - globe.gl 2.32.0 (3D globe and heatmap), loaded from unpkg.

@@ -1,5 +1,4 @@
-/* Colours taken from the NASA Space Apps logo: navy #1E2B80, red #D53C25.
-   Fonts: Fira Sans (body) and Fira Sans Extra Condensed (titles), a close match to the Space Apps site. */
+/* Colours: deep navy with a red accent. Fonts: Fira Sans (body) and Fira Sans Extra Condensed (titles). */
 :root {
   --navy: #1E2B80;
   --red: #D53C25;
@@ -26,12 +25,16 @@ h1, h2, h3 { font-family: var(--title); font-weight: 700; margin: 0; letter-spac
 button, select, input { font: inherit; color: inherit; }
 a { color: var(--earth); }
 
-/* Top bar in Space Apps navy, so the logo blends in */
+/* Top bar in navy, with the team name on the right */
 .topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; padding: 10px 24px; background: var(--navy); }
 .brand h1 { font-size: 30px; text-transform: uppercase; line-height: 1.05; }
 .subtitle { margin: 2px 0 0; font-size: 14px; color: #D5DBF5; }
 .topbar-right { display: flex; align-items: center; gap: 16px; }
-.logo { height: 64px; width: auto; display: block; }
+/* Team wordmark: same title font as the headline */
+.team-mark { margin: 0; display: flex; flex-direction: column; align-items: flex-end; line-height: 1; font-family: var(--title); }
+.team-label { font-size: 12px; font-weight: 600; letter-spacing: .25em; text-transform: uppercase; color: #D5DBF5; }
+.team-name { font-size: 34px; font-weight: 700; letter-spacing: .01em; color: var(--text); }
+.team-name b { font-weight: 700; color: var(--accent); }
 .badge { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; border-radius: 999px; padding: 4px 10px; }
 .badge-warn { background: var(--warn); color: #1A1005; }
 .badge-new { background: var(--accent); color: #1A1405; }
@@ -152,6 +155,8 @@ a { color: var(--earth); }
 
 /* Footer */
 .footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 10px 24px 18px; font-size: 12px; color: var(--muted); }
+.ai-note { flex-basis: 100%; margin: 4px 0 0; max-width: 90ch; line-height: 1.5; }
+.ai-note b { color: var(--text); }
 
 /* Narrower screens: stack */
 @media (max-width: 1180px) {
@@ -164,5 +169,6 @@ a { color: var(--earth); }
   .list-panel { max-height: none; min-height: 0; }
   .topbar, .filters { padding-left: 16px; padding-right: 16px; }
   .brand h1 { font-size: 24px; }
-  .logo { height: 48px; }
+  .team-mark { align-items: flex-start; }
+  .team-name { font-size: 26px; }
 }
