@@ -78,7 +78,8 @@ polar:
   # as similar. Size-dependent c9 gets a deliberately large tolerance (scale decision 14 Nov).
   # Weights: (team start value) all equal; adjustable for the jury demo.
   criteria:
-    c5_sky_view:   {weight: 1.0, direction: lower, tolerance: 0.05}   # share of sky visible from the floor (light section below)
+    c5_sky_view:   {weight: 0.5, direction: lower, tolerance: 0.1}    # share of sky visible from the floor. Weight 0.5, tolerance 0.1: team choice 14 Nov,
+                                                                      # c5 nearly duplicates c7 for simple bowls; decide after the c2 correlation check
     c7_bowl:       {weight: 1.0, direction: higher, tolerance: 0.05}  # depth / width of closed depression
     c9_relief:     {weight: 0.0, direction: higher, tolerance: 1500}  # m, rim-to-floor depth of the bowl. DISPLAY ONLY (team choice 14 Nov: size-dependent)
     c10_flat_base: {weight: 1.0, direction: lower, scale: [0, 15], tolerance: 3}  # deg, flattest usable pad on the rim
