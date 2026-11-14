@@ -21,6 +21,10 @@ from pipeline.polar import CRITERIA, best_of, polar_candidates, select_best
 from pipeline.scoring import method, scoring_note
 
 LABELS = {
+    "c1_sunny_ridge": ("1 Sunny ridge", "lit / flat"),
+    "c2_dark_floor": ("2 Dark floor", "shadow share"),
+    "c3_light_dark": ("3 Light next to dark", "distance / r"),
+    "c4_grazing_sun": ("4 Grazing sun", "deg"),
     "c5_sky_view": ("5 Sky-view factor (floor)", "share"),
     "c7_bowl": ("7 Bowl shape", "depth/width"),
     "c9_relief": ("9 Rim-to-floor depth", "m"),
@@ -159,7 +163,7 @@ RANK_COLS = (["rank", "id", "score", "n_scored", "lon", "lat"]
              + ["anchor", "c7_depth_m", "c7_width_m", "c7_elongation", "depression_extends_outside_cell", "n_depressions",
                 "n_candidates", "n_valid_candidates", "c14_n_steep", "low_lon", "low_lat", "low_elev_m",
                 "base_lon", "base_lat", "base_elev_m", "base_to_low_km", "base_to_bowl_km",
-                "wall_ring_km", "c11_ring_covered", "c5_floor_px", "c5_horizon_km", "c5_svf_low_point",
+                "wall_ring_km", "c11_ring_covered", "c5_floor_px", "c5_horizon_km", "c5_svf_low_point", "max_dark_days", "near_permanent_shadow_share", "flat_lit_fraction", "mean_sun_elev_deg",
                 "usable", "largest_patch_km2", "utm_crs", "west", "south", "east", "north"])
 
 

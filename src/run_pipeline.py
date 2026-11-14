@@ -24,7 +24,7 @@ from pipeline.config import load_config  # noqa: E402
 from pipeline.polar import CRITERIA  # noqa: E402
 from pipeline.run import run  # noqa: E402
 
-SHORT = {"c5_sky_view": "5 sky view", "c7_bowl": "7 bowl", "c9_relief": "9 depth m", "c10_flat_base": "10 base deg",
+SHORT = {"c1_sunny_ridge": "1 sunny", "c2_dark_floor": "2 dark", "c3_light_dark": "3 dist/r", "c4_grazing_sun": "4 sun max", "c5_sky_view": "5 sky view", "c7_bowl": "7 bowl", "c9_relief": "9 depth m", "c10_flat_base": "10 base deg",
          "c11_walls": "11 walls deg", "c13_roughness": "13 rough m", "c14_aspect": "14 pole"}
 
 
@@ -52,7 +52,7 @@ def main():
     for r in ranked[:a.top]:
         vals = []
         for c in CRITERIA:
-            nd = 0 if c == "c9_relief" else (3 if c in ("c7_bowl", "c5_sky_view") else 1 if c in ("c10_flat_base", "c11_walls", "c13_roughness") else 2)
+            nd = 0 if c == "c9_relief" else (3 if c in ("c7_bowl", "c5_sky_view", "c1_sunny_ridge", "c2_dark_floor") else 1 if c in ("c10_flat_base", "c11_walls", "c13_roughness") else 2)
             vals.append(f"{fmt(r[c], nd):>9} [{fmt(r['s_' + c])}]")
         print(f"{r['rank']:>3} {r['id']:9} {r['score']:5.3f} {r['n_scored']:>2} " + " ".join(f"{v:>17}" for v in vals))
     print("\nlocation of the top cells (cell centre / base spot / low point, lon lat):")

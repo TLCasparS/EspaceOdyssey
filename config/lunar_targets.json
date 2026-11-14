@@ -16,6 +16,42 @@
     },
     "window": "15 km square centred on the crater low point, found from the data (largest depth x width depression within 15 km of the pole)",
     "criteria": {
+      "c1_sunny_ridge": {
+        "label": "1 Sunny ridge",
+        "unit": "lit fraction / flat-land lit fraction",
+        "definition": "max lit fraction in the rim zone (outside the bowl, <= 1 km from its edge) / flat-land lit fraction; lit = Sun centre above the horizon",
+        "value": null,
+        "source": null,
+        "verified": false,
+        "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+      },
+      "c2_dark_floor": {
+        "label": "2 Dark floor",
+        "unit": "share",
+        "definition": "p99 over the floor zone of the terrain shadow fraction 1 - lit / flat_lit",
+        "value": null,
+        "source": null,
+        "verified": false,
+        "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+      },
+      "c3_light_dark": {
+        "label": "3 Light next to dark",
+        "unit": "distance / r",
+        "definition": "distance from the darkest floor pixel to the sunniest rim pixel, divided by the bowl radius r",
+        "value": null,
+        "source": null,
+        "verified": false,
+        "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+      },
+      "c4_grazing_sun": {
+        "label": "4 Grazing sun",
+        "unit": "deg",
+        "definition": "max Sun elevation over the year (latitude only)",
+        "value": null,
+        "source": null,
+        "verified": false,
+        "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+      },
       "c5_sky_view": {
         "label": "5 Sky-view factor",
         "unit": "share of sky hemisphere",

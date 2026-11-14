@@ -28,10 +28,10 @@ import numpy as np
 from scipy import ndimage
 
 from dem.terrain import compute_terrain
-from pipeline.light import c5_sky_view
+from pipeline.light import place_light
 from pipeline.scoring import apply_rank, score_direct, weighted_score
 
-CRITERIA = ("c5_sky_view", "c7_bowl", "c9_relief", "c10_flat_base", "c11_walls", "c13_roughness", "c14_aspect")
+CRITERIA = ("c1_sunny_ridge", "c2_dark_floor", "c3_light_dark", "c4_grazing_sun", "c5_sky_view", "c7_bowl", "c9_relief", "c10_flat_base", "c11_walls", "c13_roughness", "c14_aspect")
 PLACE_CRITERIA = CRITERIA                          # all criteria are per place (13 too, since 14 Nov)
 
 
@@ -212,9 +212,11 @@ class _Cell:
         else:
             raw["c14_aspect"] = 0.0                       # (interpreted) no steep walls at all
 
-        # 5: sky-view factor of the floor (light criterion, src/pipeline/light.py); same function on Earth and Moon
-        raw["c5_sky_view"], c5_info = c5_sky_view(self.mg.dem, dep, low, t.slope_deg, res, self.cfg["light"],
-                                                  self.body, fallback_dist_m=p["wall_ring_m"][1])
+        # 1-5: light criteria (src/pipeline/light.py). Rim zone = the criterion-10 zone (bowl places only).
+        # c5 on Earth and Moon; c1-c4 only on Earth here (Moon: src/pipeline/lunar_light.py, Mateo)
+        light_raw, light_info = place_light(self.mg, dep, low, t.slope_deg, zone if dep else None,
+                                            self.cfg["light"], self.body, fallback_dist_m=p["wall_ring_m"][1])
+        raw.update(light_raw)
 
         reasons = []
         if raw["c10_flat_base"] is None:
@@ -235,7 +237,7 @@ class _Cell:
                "c7_width_m": round(dep["width_m"], 0) if dep else 0.0,
                "c7_elongation": round(dep["elongation"], 2) if dep else None,
                "depression_extends_outside_cell": dep["extends_outside_cell"] if dep else None,
-               "c14_n_steep": n_steep, **c5_info}
+               "c14_n_steep": n_steep, **light_info}
         for name in PLACE_CRITERIA:
             v = raw[name]
             out[name] = None if v is None else round(v, 4)

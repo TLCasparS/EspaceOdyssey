@@ -35,10 +35,10 @@ The "Base type" column says which lunar base a criterion matters for; "Any" appl
 | # | Criterion | Base type | Lunar reference | What we measure on Earth | Earth data | Priority |
 | --- | --- | --- | --- | --- | --- | --- |
 |  | **Light** |  |  |  |  |  |
-| 1 | Sunny ridge | Polar | best rim spots sunlit most of the year | share of the year in direct sun vs. flat land at the same latitude | DEM + shadow sim | Core |
-| 2 | Dark floor | Polar | permanently shadowed floor | share of daylight blocked by terrain; longest run of days without sun | DEM + shadow sim | Core |
-| 3 | Light next to dark | Polar | power and ice within driving reach | distance from darkest cell to sunniest cell | DEM + shadow sim | Core |
-| 4 | Grazing sun | Polar | sun stays within \~1.5° of the horizon | mean and max sun elevation over the year | latitude only | Core |
+| 1 | Sunny ridge | Polar | best rim spots sunlit most of the year | max lit fraction in the rim zone (outside the bowl, ≤ 1 km from its edge) / flat-land lit fraction² | DEM + shadow sim | Core |
+| 2 | Dark floor | Polar | permanently shadowed floor | p99 over the floor zone of the terrain shadow fraction 1 − lit / flat-land lit²; display: longest run of days without sun (Earth), share of floor with shadow ≥ 0.9 (both) | DEM + shadow sim | Core |
+| 3 | Light next to dark | Polar | power and ice within driving reach | distance from the darkest floor pixel to the sunniest rim pixel, divided by the bowl radius r² | DEM + shadow sim | Core |
+| 4 | Grazing sun | Polar | Sun's centre at most 1.535° above the horizon at the pole (lunar equator tilt to the ecliptic, from NSSDC 6.68° − 5.145°; 1.91° at Shackleton's floor low point) | max Sun elevation over the year = 90° − max(0, \|lat\| − declination amplitude); mean over daylight as display² | latitude only | Core |
 | 5 | Sky-view factor | Polar, Cave | no atmosphere, so shadow is truly dark | share of sky visible from the floor (low is good) | DEM | Core |
 | 6 | Clear skies | Any | hard, direct light | annual cloud-free share | MODIS clear-sky coverage | Secondary |
 |  | **Terrain** |  |  |  |  |  |
@@ -70,6 +70,8 @@ The "Base type" column says which lunar base a criterion matters for; "Any" appl
 | 29 | Research station nearby | Any | existing logistics | distance to nearest station | station lists | Stretch |
 
 ¹ Measured by `src/compute_lunar_target.py` from [LDEM\_80S\_20MPP\_ADJ.TIF](https://pgda.gsfc.nasa.gov/products/90) (LOLA, Barker et al. 2023), a ±25 km window around the pole, bilinear to the common 60 m grid. Crater found from the data (largest closed depression near the pole). Rim crest = highest point per 1° azimuth within 1.3 × the bowl's equivalent radius; diameter = 2 × median crest distance from the floor low point; depth = median crest elevation minus the low point (−2869 m). Inner wall = bowl pixels between the floor (< 10°, ~5.2 km across) and the rim crest. Full values in `config/lunar_targets.json`. The pipeline's criterion 11 ring (0.5–1.0 × equivalent radius) gives 27.1° for the same crater.
+
+² Light criteria (interface agreed with Mateo, 14 Nov 2026; Earth in `src/pipeline/light.py`, Moon in `src/pipeline/lunar_light.py`). **"Lit" means the centre of the Sun is above the local horizon (point Sun, not the 0.5° disk).** The flat-land lit fraction comes from one shared function for Earth and Moon (`light.flat_lit_fraction`: latitude, declination amplitude, hour angle). With a 0° horizon it is exactly 0.5 by symmetry; Earth refraction raises it to ~0.503–0.509. It ignores Earth's orbital eccentricity, so on Earth it is up to ~2 % off at ±75° (checked against the simulated year).
 
 Rows 10 and 11 must stay separate: low slope is good at the base spot and high slope is good on the walls, so one combined slope score cancels out.
 

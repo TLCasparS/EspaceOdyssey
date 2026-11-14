@@ -17,6 +17,7 @@ from pipeline.polar import evaluate_polar_cell, fill_depressions  # noqa: E402
 from pipeline.scoring import apply_rank, percentile_ranks, weighted_score  # noqa: E402
 
 CFG = load_config()                                  # real config, incl. verified lunar targets
+CFG["light"]["sun"] = False                          # terrain tests: no year of Sun (tests/test_light.py covers it)
 CFG_RANK = copy.deepcopy(CFG)                        # same, with lunar targets switched off
 for _c in CFG_RANK["polar"]["criteria"].values():
     _c["target"] = None
