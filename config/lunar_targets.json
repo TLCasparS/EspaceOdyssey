@@ -8,51 +8,54 @@
   ],
   "polar": {
     "label": "Shackleton rim + floor (lunar south pole)",
-    "status": "TODO: compute all raw values from LOLA 5 m site DEMs (NASA PGDA), resampled to 60 m with src/dem/grid.reproject_dem, criteria from src/pipeline/polar.py",
+    "status": "computed by src/moon_targets.py; verified=false until a person checks each value against the quicklook and the definition",
     "grid": {
       "res_m": 60,
-      "crs": "lunar south polar stereographic (as the LOLA site DEMs)"
+      "crs": "lunar south polar stereographic (R = 1737.4 km)",
+      "resampling": "bilinear"
     },
-    "window": "TODO: one ~15 km square (= one Earth cell) around the planned base area, read with the same 5.5 km buffer (config polar.buffer_m); the best qualifying depression in it is the target place",
+    "window": "15 km cell centred on Shackleton (-89.67, 129.8) in lunar south polar stereographic, read with polar.buffer_m = 5500 m; widest depression in the cell",
     "criteria": {
       "c7_bowl": {
         "label": "7 Bowl shape",
         "unit": "depth/width",
         "definition": "candidate places = closed depressions >= 50 m deep and >= 1000 m wide whose low point is in the window (searched with a 5 km margin); value = spill depth / equivalent diameter of the chosen place",
-        "value": null,
-        "source": null,
+        "value": 0.1972,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (NASA PGDA; native 20 m) -> 60 m bilinear, src/moon_targets.py, 2026-11-14",
         "verified": false
       },
       "c9_relief": {
         "label": "9 Relief ~5 km",
         "unit": "m",
         "definition": "max - min elevation in a 5 km square centred on the chosen depression's low point",
-        "value": null,
-        "source": null,
+        "value": 1400.6382,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (NASA PGDA; native 20 m) -> 60 m bilinear, src/moon_targets.py, 2026-11-14",
         "verified": false
       },
       "c10_flat_base": {
         "label": "10 Flat base spot",
         "unit": "deg",
         "definition": "mean slope of the flattest ~200 m pad (3x3 px at 60 m) whose centre is within 5 km of the low point",
-        "value": null,
-        "source": null,
-        "verified": false
+        "value": 0.6284,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (NASA PGDA; native 20 m) -> 60 m bilinear, src/moon_targets.py, 2026-11-14",
+        "verified": false,
+        "note": "TODO: with max_base_to_low_km = 5 the pad is searched within 5 km of the low point, i.e. on Shackleton's floor/lower wall (permanently dark), not on the rim where NASA's base sites are (~10 km out). Kept as is for v1; revisit the search radius."
       },
       "c11_walls": {
         "label": "11 Steep walls",
         "unit": "deg",
         "definition": "mean slope in a 500-3000 m ring around the low point",
-        "value": null,
-        "source": null,
-        "verified": false
+        "value": 14.7109,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (NASA PGDA; native 20 m) -> 60 m bilinear, src/moon_targets.py, 2026-11-14",
+        "verified": false,
+        "note": "TODO: the wall ring (polar.wall_ring_m = 500-3000 m from the low point) covers Shackleton's floor and the foot of its walls; the steep inner walls run ~3-10 km out, so this value understates them. Kept as is for v1; revisit a ring scaled to the depression size."
       },
       "c13_roughness": {
         "label": "13 Roughness",
         "unit": "m",
         "definition": "median std of elevation in 3x3 px windows over the window",
-        "value": null,
-        "source": null,
+        "value": 28.6108,
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (NASA PGDA; native 20 m) -> 60 m bilinear, src/moon_targets.py, 2026-11-14",
         "verified": false
       },
       "c14_aspect": {
@@ -62,7 +65,7 @@
         "value": null,
         "source": null,
         "verified": false,
-        "note": "unsure: Shackleton contains the pole, so 'facing the pole' may be ill-defined there; check before use"
+        "note": "Shackleton's rim touches the lunar south pole and the Sun circles the whole horizon there, so 'facing the pole' does not mean 'less sun' as it does on Earth. Computed value kept in the note for reference only. Computed: 0.415."
       }
     },
     "not_yet_in_earth_pipeline": {
@@ -116,6 +119,14 @@
         },
         "why_unused": "0-1 scores for the target itself have no source and no meaning in the scoring: Earth cells are scored against the lunar raw values"
       }
+    },
+    "computed": {
+      "n_depressions_in_cell": 1,
+      "spill_depth_m": 3752.5,
+      "depression_width_m": 19031.0,
+      "low_elev_m": -2868.2,
+      "base_to_low_km": 2.66,
+      "base_elev_m": -2813.1
     }
   }
 }
