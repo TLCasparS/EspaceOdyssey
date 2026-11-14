@@ -373,7 +373,8 @@
         "value": null,
         "source": null,
         "verified": false,
-        "fact": "No Earth analog possible (see pipeline.mare.FACT_C16); Earth side via MODIS later"
+        "fact": "No Earth analog possible (see pipeline.mare.FACT_C16); Earth side via MODIS later",
+        "todo": "Mateo: fill value + source from Diviner and replace the text of pipeline.mare.FACT_C16"
       },
       "c23_basalt": {
         "value": null,

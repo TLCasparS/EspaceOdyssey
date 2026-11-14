@@ -38,10 +38,14 @@ def _row(cid, score, lat, lon, **kw):
             "c7_bowl": 0.13, "s_c7_bowl": 0.17, **kw}
 
 
-def _export(tmp, runs, *extra):
+def _export(tmp, runs, *extra, isolate=True):
     out = tmp / "outputs"
-    p = subprocess.run([sys.executable, str(ROOT / "src" / "export_app.py"), *map(str, runs), "--out", str(out), *extra],
-                       capture_output=True, text=True)
+    iso = ["--regions", str(tmp / "none.yaml"), "--night-regions", str(tmp / "none.yaml"),
+           "--missed", str(tmp / "none.yaml")] if isolate else []
+    if "--sites-info" not in extra:
+        iso += ["--sites-info", str(tmp / "none.json")]
+    p = subprocess.run([sys.executable, str(ROOT / "src" / "export_app.py"), *map(str, runs), "--out", str(out),
+                        *iso, *extra], capture_output=True, text=True)
     return p, out
 
 
@@ -69,7 +73,7 @@ def test_export_writes_app_files(tmp_path):
     assert by["SUNNY_RIDGE"]["score_method"] == "rank" and by["SUNNY_RIDGE"]["moon"]["value"] is None
     assert by["SKY_VIEW"]["score_method"] == "display" and not by["SKY_VIEW"]["counts"]
     heat = json.loads((out / "heatmap.json").read_text())
-    assert heat[0] == {"lat": 31.8, "lng": -113.4, "weight": 0.6}                  # cell centre, weight = total
+    assert heat[0] == {"lat": 31.8, "lng": -113.4, "weight": 0.6, "base": "polar"}  # cell centre, weight = total
     assert (out / "README.md").exists()
     assert json.loads((out / "cells.json").read_text()) == []                       # fake runs: no cells.geojson
 
@@ -89,3 +93,51 @@ def test_impact_match_radius():
     disp = {"impact_match_rel": 0.6, "impact_match_min_km": 1.0}
     assert impact_match(35.005, -111.0, ims, disp)["name"] == "Test"           # 0.55 km < max(0.72, 1) km
     assert impact_match(35.05, -111.0, ims, disp) is None                      # 5.5 km away
+
+
+def _mare_run(tmp, name, rows):
+    d = tmp / name
+    d.mkdir()
+    axes = [{"id": c, "label": c, "method": "none", "weight": 1.0, "target": None, "tolerance": None, "in_total": False}
+            for c in ("c9_relief", "c10_flat_base", "c12_drivable", "c13_roughness")]
+    (d / "radar.json").write_text(json.dumps({"base_type": "mare", "axes": axes, "display": {"c16_day_night_swing": "fact"},
+                                              "lunar_target": {"label": "Mare · Apollo 11", "named_site": "Apollo 11",
+                                                               "criteria": {}}}))
+    cols = ["id", "score", "lat", "lon", "base_lat", "base_lon", "west", "south", "east", "north",
+            "c9_relief", "s_c9_relief", "c10_flat_base", "s_c10_flat_base", "c12_drivable", "s_c12_drivable",
+            "c13_roughness", "s_c13_roughness"]
+    with open(d / "ranking.csv", "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=cols)
+        w.writeheader()
+        w.writerows(rows)
+    return d
+
+
+def test_export_v2_regions_missed_mare(tmp_path):
+    a = _run(tmp_path, "zz_region", [_row("zz_region_r001c001", 0.3, 35.0, -111.0)])
+    m = _mare_run(tmp_path, "zz_mare", [{"id": "zz_region_r002c002", "score": "", "lat": 20.0, "lon": 17.0,
+                                          "base_lat": 20.01, "base_lon": 17.01, "west": 16.9, "south": 19.9,
+                                          "east": 17.1, "north": 20.1, "c9_relief": 120.0, "c10_flat_base": 0.2,
+                                          "c12_drivable": 0.98, "c13_roughness": 1.1}])
+    reg = tmp_path / "regions.yaml"
+    reg.write_text("regions:\n  - {name: zz_region, title: ZZ Land, bbox: [-112, 34, 18, 36], role: screening, country: Nowhere}\n")
+    missed = tmp_path / "missed.yaml"
+    missed.write_text("missed:\n  - {name: Lost crater, country: Nowhere, lat: 1.0, lon: 2.0, base_type: polar, reason: 'too shallow, 44 m'}\n")
+    p, out = _export(tmp_path, [a, m], "--regions", str(reg), "--night-regions", str(tmp_path / "none.yaml"),
+                     "--missed", str(missed), isolate=False)
+    assert p.returncode == 0, p.stderr
+    rows = list(csv.DictReader(open(out / "scores.csv", encoding="utf-8")))
+    by = {r["BASE_TYPE"] + r["ROLE"]: r for r in rows}
+    pol, mare, lost = by["polarscreening"], by["marescreening"], by["polarmissed"]
+    assert pol["NAME"] == "ZZ Land r001c001" and pol["COUNTRY"] == "Nowhere" and pol["RANK"] == "1"
+    assert pol["TERRAIN_SCORE"] == "0.17" and pol["LIGHT_SCORE"] == ""        # c7 counts; c1 rank, c5 display
+    assert mare["SCORE_TOTAL"] == "" and mare["RELIEF"] == "" and mare["LAT"] == "20.01"   # no Mare target yet
+    assert lost["NAME"] == "Lost crater" and lost["MISSED_REASON"] == "too shallow; 44 m" and lost["RANK"] == ""
+    raw = {r["BASE_TYPE"] + r["SITE"]: r for r in csv.DictReader(open(out / "raw_values.csv", encoding="utf-8"))}
+    assert raw["mare" + mare["SITE"]]["RELIEF"] == "120" and raw["mare" + mare["SITE"]]["DRIVABLE"] == "0.98"
+    t = json.loads((out / "targets.json").read_text(encoding="utf-8"))
+    assert set(t) >= {"polar", "mare"} and t["mare"]["named_site"] == "Apollo 11"
+    assert {c["column"] for c in t["mare"]["criteria"] if c["column"]} == {"RELIEF", "SLOPE_BASE", "DRIVABLE", "ROUGHNESS"}
+    regs = json.loads((out / "regions.json").read_text(encoding="utf-8"))
+    assert regs[0]["role"] == "screening"
+    assert isinstance(json.loads((out / "coverage.json").read_text()), list)

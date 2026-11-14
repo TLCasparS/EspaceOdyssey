@@ -139,211 +139,344 @@ def site_name(run: str, row: dict, sites) -> str:
     return inside[0] if inside else f"{run} {row['id']}"
 
 
+MARE_COLUMNS = {"c9_relief": "RELIEF", "c10_flat_base": "SLOPE_BASE", "c12_drivable": "DRIVABLE",
+                "c13_roughness": "ROUGHNESS"}
+MARE_UNITS = {"c9_relief": "m (max - min within 5 km of the base pad)", "c10_flat_base": "deg (base pad slope)",
+              "c12_drivable": "share of pixels < 15 deg within 5 km", "c13_roughness": "m (median 3x3 std within 5 km)"}
+LIGHT_GROUP = {"c1_sunny_ridge", "c2_dark_floor", "c3_light_dark", "c4_grazing_sun", "c5_sky_view"}
+EXTRA_COLS = ["RUN", "CELL", "BASE_TYPE", "SCORE_TOTAL", "RANK", "NAME", "COUNTRY", "ROLE",
+              "TERRAIN_SCORE", "LIGHT_SCORE", "MISSED_REASON"]
+
+
+def group_score(r: dict, axes: dict, ids) -> float | None:
+    """Weighted mean of the target-scored axes with weight > 0 among ids (TERRAIN_SCORE / LIGHT_SCORE)."""
+    num = den = 0.0
+    for c in ids:
+        ax = axes.get(c)
+        s = _num(r.get(f"s_{c}"))
+        if ax is None or s is None or ax["weight"] <= 0 or ax["method"] != "target":
+            continue
+        num += ax["weight"] * s
+        den += ax["weight"]
+    return round(num / den, 4) if den > 0 else None
+
+
+def load_regions(registry: Path, night: Path) -> list[dict]:
+    import yaml
+    regs = []
+    if registry.exists():
+        regs += yaml.safe_load(registry.read_text(encoding="utf-8"))["regions"]
+    if night.exists():
+        for r in yaml.safe_load(night.read_text(encoding="utf-8"))["regions"]:
+            regs.append({"title": r["name"].replace("_", " ").title(), **r})
+    return regs
+
+
+WORLD_REGION = {"name": "world", "title": "World cell", "bbox": None, "role": "screening", "country": ""}
+
+
+def region_of(run: str, cell_id: str, lat, lon, regions: list[dict]) -> dict | None:
+    import re
+    if re.match(r"^b\d{3}_r\d+c\d+$", cell_id):            # night run --world: world grid cells (screening)
+        named = [rg for rg in regions if lat is not None and lon is not None and rg.get("bbox")
+                 and rg["bbox"][1] <= lat <= rg["bbox"][3] and rg["bbox"][0] <= lon <= rg["bbox"][2]]
+        return named[0] if named else WORLD_REGION
+    for rg in regions:                                     # night runs: cell ids carry the region name
+        if cell_id.startswith(rg["name"] + "_r"):
+            return rg
+    for rg in regions:                                     # single runs: run folder name = region name
+        if run == rg["name"] or run.startswith(rg["name"] + "_"):
+            return rg
+    if lat is not None and lon is not None:
+        for rg in regions:
+            w, s, e, n = rg["bbox"]
+            if s <= lat <= n and w <= lon <= e:
+                return rg
+    return None
+
+
+def cell_status(pr: dict, scored: bool, base: str) -> str:
+    fr, tr = pr.get("filter_reason") or "", pr.get("terrain_reason") or ""
+    if scored:
+        return "ranked" if base == "polar" else "kept"
+    if fr:
+        return "filtered"
+    if tr.startswith("prefilter"):
+        return "prefilter"
+    if tr.startswith("no depression"):
+        return "no_bowl"
+    if "ice floor" in tr:
+        return "ice_floor"
+    return "dropped"
+
+
+def _dist_km(lat1, lon1, lat2, lon2):
+    return math.hypot((lat1 - lat2) * 110.6, (lon1 - lon2) * 111.3 * math.cos(math.radians(lat1)))
+
+
 def main():
+    import sys
+    import yaml
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("runs", nargs="+", type=Path, help="out/<run> folders (with radar.json + ranking.csv)")
+    ap.add_argument("runs", nargs="+", type=Path, help="out/<run> folders (radar.json + ranking.csv), Polar or Mare")
     ap.add_argument("--out", type=Path, default=ROOT / "outputs")
     ap.add_argument("--sites-info", type=Path, default=ROOT / "app" / "sample" / "site_info.json")
     ap.add_argument("--sites-coords", type=Path, default=ROOT / "app" / "sample" / "scores.csv",
                     help="CSV with SITE,LAT,LON for the known sites (Sofia's approximate coordinates)")
-    ap.add_argument("--impacts", type=Path, default=ROOT / "data" / "impact" / "impact_structures.csv",
-                    help="confirmed impact structures (src/impact_list.py)")
+    ap.add_argument("--impacts", type=Path, default=ROOT / "data" / "impact" / "impact_structures.csv")
+    ap.add_argument("--regions", type=Path, default=ROOT / "config" / "regions.yaml")
+    ap.add_argument("--night-regions", type=Path, default=ROOT / "config" / "night_regions.yaml")
+    ap.add_argument("--missed", type=Path, default=ROOT / "config" / "missed_sites.yaml")
+    ap.add_argument("--cells-near-km", type=float, default=50.0,
+                    help="cells.json: only cells within this distance of a ranked/kept place")
     a = ap.parse_args()
-    import sys
     sys.path.insert(0, str(ROOT / "src"))
     from impact_list import load as load_impacts
     from pipeline.config import load_config
     disp = load_config().get("display", {})
     impacts = load_impacts(a.impacts)
-    if not impacts:
-        print(f"note: no impact list at {a.impacts}: IMPACT_CRATER stays empty (run src/impact_list.py)")
-
-    runs = [(p.name, *load_run(p)) for p in a.runs]
-    ref_axes = {x["id"]: x for x in runs[0][1]["axes"]}
-    for name, radar, _ in runs[1:]:
-        axes = {x["id"]: x for x in radar["axes"]}
-        diff = [k for k in set(ref_axes) | set(axes)
-                if {f: (ref_axes.get(k) or {}).get(f) for f in ("method", "weight", "target", "tolerance")}
-                != {f: (axes.get(k) or {}).get(f) for f in ("method", "weight", "target", "tolerance")}]
-        if diff:
-            raise SystemExit(f"run {name} was scored with a different config than {runs[0][0]} ({sorted(diff)}): rerun it")
-    base_type = runs[0][1]["base_type"]
-    lunar = runs[0][1]["lunar_target"]
+    regions = load_regions(a.regions, a.night_regions)
     sites = known_sites(a.sites_info, a.sites_coords)
-    if not sites:
-        print("note: no known-site file found, every SITE is '<run> <cell>'")
+
+    runs = [(p, p.name, *load_run(p)) for p in a.runs]
+    ref = {}                                               # base type -> (run name, axes, radar)
+    keys = ("method", "weight", "target", "tolerance")
+    for p, name, radar, _ in runs:
+        base = radar["base_type"]
+        axes = {x["id"]: x for x in radar["axes"]}
+        if base not in ref:
+            ref[base] = (name, axes, radar)
+            continue
+        r_axes = ref[base][1]
+        diff = [k for k in set(r_axes) | set(axes)
+                if {f: (r_axes.get(k) or {}).get(f) for f in keys} != {f: (axes.get(k) or {}).get(f) for f in keys}]
+        if diff:
+            raise SystemExit(f"{base} run {name} was scored with a different config than {ref[base][0]} "
+                             f"({sorted(diff)}): rerun it")
 
     rows = []
-    for name, radar, ranking in runs:
+    for p, name, radar, ranking in runs:
+        base = radar["base_type"]
+        axes = ref[base][1]
+        colmap = APP_COLUMNS if base == "polar" else MARE_COLUMNS
         for r in ranking:
-            row = {"SITE": site_name(name, r, sites), "LAT": _num(r["low_lat"]), "LON": _num(r["low_lon"]),
-                   "RUN": name, "CELL": r["id"], "BASE_TYPE": radar["base_type"], "SCORE_TOTAL": _num(r["score"]),
-                   "_r": r, "_centre": (_num(r["lat"]), _num(r["lon"]))}
-            for crit, col in APP_COLUMNS.items():
-                ax = ref_axes.get(crit)
-                ok = ax is not None and score_method(ax) in ("target", "display") and ax["method"] == "target"
-                row[col] = _num(r.get(f"s_{crit}")) if ok else None       # similarity only; rank -> empty
-            hit = impact_match(row["LAT"], row["LON"], impacts, disp)
-            r["impact_match"] = None if not impacts else (1.0 if hit else 0.0)
+            if base == "polar":
+                lat, lon = _num(r.get("low_lat")), _num(r.get("low_lon"))
+            else:
+                lat, lon = _num(r.get("base_lat")), _num(r.get("base_lon"))
+            rg = region_of(name, r["id"], lat, lon, regions)
+            row = {c: None for c in list(APP_COLUMNS.values()) + list(DISPLAY_COLUMNS)}
+            row.update(LAT=lat, LON=lon, RUN=name, CELL=r["id"], BASE_TYPE=base, SCORE_TOTAL=_num(r.get("score")),
+                       _r=r, _centre=(_num(r["lat"]), _num(r["lon"])), ROLE=rg["role"] if rg else "",
+                       COUNTRY=rg["country"] if rg else "", MISSED_REASON="")
+            for crit, col in colmap.items():
+                ax = axes.get(crit)
+                row[col] = _num(r.get(f"s_{crit}")) if ax is not None and ax["method"] == "target" else None
+            hit = None
+            if base == "polar":
+                hit = impact_match(lat, lon, impacts, disp)
+                r["impact_match"] = None if not impacts else (1.0 if hit else 0.0)
+                for col, (_, field, _, _) in DISPLAY_COLUMNS.items():
+                    row[col] = _num(r.get(field)) if field else None
+                row["TERRAIN_SCORE"] = group_score(r, axes, [c for c in APP_COLUMNS if c not in LIGHT_GROUP])
+                row["LIGHT_SCORE"] = group_score(r, axes, [c for c in APP_COLUMNS if c in LIGHT_GROUP])
+            else:
+                row["TERRAIN_SCORE"] = group_score(r, axes, list(MARE_COLUMNS))
+                row["LIGHT_SCORE"] = None
             row["_impact"] = hit
-            for col, (_, field, _, _) in DISPLAY_COLUMNS.items():
-                row[col] = _num(r.get(field)) if field else None
+            w, s, e, n = (float(r[k]) for k in ("west", "south", "east", "north"))
+            known = [nm for nm, la, lo in sites if s <= la <= n and w <= lo <= e]
+            short = r["id"].split("_")[-1]
+            row["NAME"] = known[0] if known else hit["name"] if hit else f"{rg['title'] if rg else name} {short}"
             rows.append(row)
-    rows.sort(key=lambda x: (x["SCORE_TOTAL"] is None, -(x["SCORE_TOTAL"] or 0.0)))
-    for i, x in enumerate(rows, 1):
-        x["RANK"] = i if x["SCORE_TOTAL"] is not None else None
-    dup = {x["SITE"] for x in rows if sum(y["SITE"] == x["SITE"] for y in rows) > 1}
+
+    for base in ref:                                       # rank per base type
+        sub = sorted([x for x in rows if x["BASE_TYPE"] == base and x["SCORE_TOTAL"] is not None],
+                     key=lambda x: -x["SCORE_TOTAL"])
+        for i, x in enumerate(sub, 1):
+            x["RANK"] = i
+    for x in rows:
+        x.setdefault("RANK", None)
+
+    missed = yaml.safe_load(a.missed.read_text(encoding="utf-8"))["missed"] if a.missed.exists() else []
+    for m in missed:
+        row = {c: None for c in list(APP_COLUMNS.values()) + list(DISPLAY_COLUMNS)}
+        row.update(LAT=m["lat"], LON=m["lon"], RUN="", CELL="", BASE_TYPE=m["base_type"], SCORE_TOTAL=None, RANK=None,
+                   NAME=m["name"], COUNTRY=m["country"], ROLE="missed", TERRAIN_SCORE=None, LIGHT_SCORE=None,
+                   MISSED_REASON=m["reason"], _r={}, _impact=None, _centre=(m["lat"], m["lon"]))
+        rows.append(row)
+
+    rows.sort(key=lambda x: (x["ROLE"] == "missed", x["BASE_TYPE"], x["RANK"] is None, x["RANK"] or 0))
+    for x in rows:
+        x["SITE"] = x["NAME"]
+    count = {}
+    for x in rows:
+        count[x["SITE"]] = count.get(x["SITE"], 0) + 1
     for x in rows:                                         # app keys sites by SITE: keep names unique
-        if x["SITE"] in dup:
-            x["SITE"] = f"{x['SITE']} ({x['RUN']} {x['CELL']})"
-    assert all("," not in x["SITE"] for x in rows), "site names must not contain commas"
+        if count[x["SITE"]] > 1:
+            x["SITE"] = f"{x['NAME']} ({x['BASE_TYPE']} {x['CELL'] or 'missed'})"
+    for x in rows:
+        for k in ("SITE", "NAME", "COUNTRY", "MISSED_REASON"):
+            x[k] = str(x[k] or "").replace(",", ";")       # the app splits on ","
 
     a.out.mkdir(parents=True, exist_ok=True)
-    cols = ["SITE", "LAT", "LON", *APP_COLUMNS.values(), *DISPLAY_COLUMNS, "RUN", "CELL", "BASE_TYPE", "SCORE_TOTAL", "RANK"]
+    cols = ["SITE", "LAT", "LON", *APP_COLUMNS.values(), *DISPLAY_COLUMNS, *EXTRA_COLS]
     with open(a.out / "scores.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(cols)
         for x in rows:
             w.writerow([x["SITE"], _fmt(x["LAT"], 5), _fmt(x["LON"], 5), *[_fmt(x[c]) for c in APP_COLUMNS.values()],
-                        *[_fmt(x[c]) for c in DISPLAY_COLUMNS],
-                        x["RUN"], x["CELL"], x["BASE_TYPE"], _fmt(x["SCORE_TOTAL"]), x["RANK"] or ""])
+                        *[_fmt(x[c]) for c in DISPLAY_COLUMNS], x["RUN"], x["CELL"], x["BASE_TYPE"],
+                        _fmt(x["SCORE_TOTAL"]), x["RANK"] or "", x["NAME"], x["COUNTRY"], x["ROLE"],
+                        _fmt(x["TERRAIN_SCORE"]), _fmt(x["LIGHT_SCORE"]), x["MISSED_REASON"]])
 
-    # raw_values.csv also carries text columns (IMPACT_NAME, IMPACT_SOURCE): parse them as text in the app
-    raw_cols = ["SITE", "LAT", "LON", *APP_COLUMNS.values(), *EXTRA_RAW.values(), *DISPLAY_RAW.values(),
-                "IMPACT_NAME", "IMPACT_DIAMETER_KM", "IMPACT_DIST_KM", "IMPACT_SOURCE", "RUN", "CELL"]
+    crit_cols = list(dict.fromkeys([*APP_COLUMNS.values(), *MARE_COLUMNS.values()]))   # Polar + Mare raw columns
+    raw_cols = ["SITE", "LAT", "LON", *crit_cols, *EXTRA_RAW.values(), *DISPLAY_RAW.values(),
+                "IMPACT_NAME", "IMPACT_DIAMETER_KM", "IMPACT_DIST_KM", "IMPACT_SOURCE", "RUN", "CELL", "BASE_TYPE"]
     with open(a.out / "raw_values.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(raw_cols)
         for x in rows:
             r, hit = x["_r"], x["_impact"]
+            inv = {v: k for k, v in (APP_COLUMNS if x["BASE_TYPE"] == "polar" else MARE_COLUMNS).items()}
             w.writerow([x["SITE"], _fmt(x["LAT"], 5), _fmt(x["LON"], 5),
-                        *[_fmt(_num(r.get(c))) for c in APP_COLUMNS],
-                        *[_fmt(_num(r.get(c))) for c in EXTRA_RAW],
-                        *[_fmt(_num(r.get(c))) for c in DISPLAY_RAW],
+                        *[_fmt(_num(r.get(inv[col]))) if col in inv else "" for col in crit_cols],
+                        *[_fmt(_num(r.get(c))) for c in EXTRA_RAW], *[_fmt(_num(r.get(c))) for c in DISPLAY_RAW],
                         hit["name"] if hit else "", _fmt(hit["diameter_km"]) if hit else "",
-                        _fmt(hit["dist_km"], 2) if hit else "", hit["source"] if hit else "", x["RUN"], x["CELL"]])
+                        _fmt(hit["dist_km"], 2) if hit else "", hit["source"] if hit else "",
+                        x["RUN"], x["CELL"], x["BASE_TYPE"]])
 
-    crit_list = []
-    for crit, col in APP_COLUMNS.items():
-        ax = ref_axes.get(crit)
-        lt = (lunar.get("criteria") or {}).get(crit, {})
-        crit_list.append({
-            "column": col, "criterion": crit, "label": ax["label"] if ax else None,
-            "counts": bool(ax and ax.get("in_total")),
-            "weight": ax["weight"] if ax else None,
-            "score_method": score_method(ax) if ax else "not computed",
-            "in_scores_csv": bool(ax and ax["method"] == "target"),
-            "tolerance": ax.get("tolerance") if ax else None,
-            "earth_unit": UNITS.get(crit),
-            "limitation": LIMITATIONS.get(crit),
-            "fact": FACTS.get(crit),
-            "moon": {"value": lt.get("value") if lt.get("verified") else None, "unit": lt.get("unit"),
-                     "source": lt.get("source") if lt.get("verified") else None,
-                     "zone": lt.get("zone"), "note": lt.get("note")} if lt else None,
-        })
-    for col, (crit, field, kind, meaning) in DISPLAY_COLUMNS.items():
-        crit_list.append({
-            "column": col, "criterion": crit, "label": None, "counts": False, "weight": 0,
-            "score_method": "display", "display_kind": kind, "in_scores_csv": field is not None,
-            "tolerance": None, "earth_unit": meaning, "limitation": None, "fact": None,
-            "moon": None, "note": ("Display only, not a similarity to the Moon: environment criteria are 'more is "
-                                   "better' (the Moon's values are not reachable or not meaningful as closeness, like "
-                                   "c4). Parameters in config/display.yaml, outside the config-v1 freeze."),
-        })
-    targets = {
-        "_note": ("Lunar reference per base type. The 0-1 values in scores.csv ARE the similarity to the Moon "
-                  "(1 = equal to the Moon); there are no 0-1 target values. Moon values are raw, in earth_unit. "
-                  "score_method: target = similarity, counts in SCORE_TOTAL if weight > 0; display = similarity "
-                  "shown but weight 0; rank = no lunar value yet, rank within one run, NOT in scores.csv; "
-                  "not computed = no pipeline value yet."),
-        base_type: {"label": "Polar base · " + lunar.get("label", ""),
-                    "total_rule": runs[0][1].get("score_label", "score vs Moon"),
-                    "criteria": crit_list},
-    }
+    targets = {"_note": ("Lunar reference per base type. The 0-1 values in scores.csv ARE the similarity to the "
+                         "Moon (1 = equal); no 0-1 target values. Moon values are raw, in earth_unit. score_method: "
+                         "target = similarity, counts in SCORE_TOTAL if weight > 0; display = shown, weight 0; "
+                         "rank = no lunar value yet; not computed = no pipeline value yet. A column can mean "
+                         "different things per base type (e.g. DRIVABLE: Polar display share, Mare scored "
+                         "similarity): always read it through targets[BASE_TYPE].")}
+    for base, (_, axes, radar) in ref.items():
+        lunar = radar.get("lunar_target", {})
+        colmap, units = (APP_COLUMNS, UNITS) if base == "polar" else (MARE_COLUMNS, MARE_UNITS)
+        crit_list = []
+        for crit, col in colmap.items():
+            ax = axes.get(crit)
+            lt = (lunar.get("criteria") or {}).get(crit, {})
+            ok = bool(lt.get("verified"))
+            crit_list.append({
+                "column": col, "criterion": crit, "label": ax["label"] if ax else None,
+                "counts": bool(ax and ax.get("in_total")), "weight": ax["weight"] if ax else None,
+                "score_method": score_method(ax) if ax else "not computed",
+                "in_scores_csv": bool(ax and ax["method"] == "target"),
+                "tolerance": ax.get("tolerance") if ax else None, "earth_unit": units.get(crit),
+                "limitation": LIMITATIONS.get(crit) if base == "polar" else None,
+                "fact": FACTS.get(crit) if base == "polar" else None,
+                "moon": {"value": lt.get("value") if ok else None, "unit": lt.get("unit"),
+                         "source": lt.get("source") if ok else None, "zone": lt.get("zone"),
+                         "n_cells": lt.get("n_cells"), "note": lt.get("note")} if lt else None})
+        if base == "polar":
+            for col, (crit, field, kind, meaning) in DISPLAY_COLUMNS.items():
+                crit_list.append({"column": col, "criterion": crit, "label": None, "counts": False, "weight": 0,
+                                  "score_method": "display", "display_kind": kind, "in_scores_csv": field is not None,
+                                  "tolerance": None, "earth_unit": meaning, "limitation": None, "fact": None,
+                                  "moon": None, "note": "Display only, 'more is better', not a similarity to the Moon."})
+        else:
+            for crit, txt in radar.get("display", {}).items():
+                crit_list.append({"column": None, "criterion": crit, "counts": False, "weight": 0,
+                                  "score_method": "display", "fact": txt, "moon": None})
+        targets[base] = {"label": lunar.get("label") or base, "named_site": lunar.get("named_site"),
+                         "total_rule": radar.get("score_label", "score vs Moon"), "criteria": crit_list}
     (a.out / "targets.json").write_text(json.dumps(targets, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    heat = [{"lat": x["_centre"][0], "lng": x["_centre"][1], "weight": round(x["SCORE_TOTAL"], 4)}
-            for x in rows if x["SCORE_TOTAL"] is not None]
+    heat = [{"lat": x["_centre"][0], "lng": x["_centre"][1], "weight": round(x["SCORE_TOTAL"], 4),
+             "base": x["BASE_TYPE"]} for x in rows if x["SCORE_TOTAL"] is not None]
     (a.out / "heatmap.json").write_text(json.dumps(heat, indent=1) + "\n", encoding="utf-8")
 
-    # every searched cell (ranked or not), so the app can draw the searched area; not part of the heatmap
-    ranked_ids = {(x["RUN"], x["CELL"]): x for x in rows}
-    cells = []
-    for p in a.runs:
+    # every searched cell -> coverage per 1 deg tile + region counts; cells.json only near ranked/kept places
+    anchors = [x["_centre"] for x in rows if x["RUN"] and x["_centre"][0] is not None]
+    by_id = {(x["RUN"], x["CELL"]): x for x in rows if x["RUN"]}
+    cells, cov, reg_count = [], {}, {}
+    for p, name, radar, _ in runs:
         gj = p / "cells.geojson"
         if not gj.exists():
             continue
+        base = radar["base_type"]
         for f in json.loads(gj.read_text(encoding="utf-8"))["features"]:
             pr = f["properties"]
-            ring = f["geometry"]["coordinates"][0]
-            lons, lats = [c[0] for c in ring], [c[1] for c in ring]
-            hit = ranked_ids.get((p.name, pr["id"]))
-            fr, tr = pr.get("filter_reason") or "", pr.get("terrain_reason") or ""
-            status = ("ranked" if hit else "filtered" if fr else "no_bowl" if tr.startswith("no depression")
-                      else "ice_floor" if "ice floor" in tr else "dropped")
-            cells.append({"run": p.name, "cell": pr["id"], "lat": pr.get("lat"), "lng": pr.get("lon"),
-                          "bbox": [round(min(lons), 5), round(min(lats), 5), round(max(lons), 5), round(max(lats), 5)],
-                          "status": status, "reason": fr or tr or "", "site": hit["SITE"] if hit else None,
-                          "score_total": hit["SCORE_TOTAL"] if hit else None})
+            hit = by_id.get((name, pr["id"]))
+            st = cell_status(pr, hit is not None and (hit["SCORE_TOTAL"] is not None or base == "mare"), base)
+            lat, lon = pr.get("lat"), pr.get("lon")
+            t = cov.setdefault(f"{math.floor(lat)}_{math.floor(lon)}", {"lat": math.floor(lat), "lon": math.floor(lon)})
+            b = t.setdefault(base, {})
+            b["searched"] = b.get("searched", 0) + 1
+            b[st] = b.get(st, 0) + 1
+            rg = region_of(name, pr["id"], lat, lon, regions)
+            rk = rg["name"] if rg else name
+            rc = reg_count.setdefault(rk, {}).setdefault(base, {})
+            rc[st] = rc.get(st, 0) + 1
+            if hit or any(_dist_km(lat, lon, la, lo) <= a.cells_near_km for la, lo in anchors):
+                ring = f["geometry"]["coordinates"][0]
+                lons, lats = [c[0] for c in ring], [c[1] for c in ring]
+                cells.append({"run": name, "cell": pr["id"], "base": base, "lat": lat, "lng": lon,
+                              "bbox": [round(min(lons), 5), round(min(lats), 5), round(max(lons), 5), round(max(lats), 5)],
+                              "status": st, "reason": pr.get("filter_reason") or pr.get("terrain_reason") or "",
+                              "site": hit["SITE"] if hit else None, "score_total": hit["SCORE_TOTAL"] if hit else None})
     (a.out / "cells.json").write_text(json.dumps(cells, indent=1) + "\n", encoding="utf-8")
+    (a.out / "coverage.json").write_text(json.dumps(sorted(cov.values(), key=lambda t: (t["lat"], t["lon"])), indent=1)
+                                         + "\n", encoding="utf-8")
+    for x in rows:                                         # regions that only appear in the rows (no cells.geojson)
+        if x["RUN"]:
+            rg = region_of(x["RUN"], x["CELL"], x["LAT"], x["LON"], regions)
+            if rg:
+                reg_count.setdefault(rg["name"], {})
+    reg_out = [{k: rg.get(k) for k in ("name", "title", "bbox", "role", "country")} | {"cells": reg_count[rg["name"]]}
+               for rg in regions if rg["name"] in reg_count]
+    known_names = {r["name"] for r in reg_out}
+    reg_out += [{"name": rk, "title": rk, "bbox": None, "role": "", "country": "", "cells": c}
+                for rk, c in reg_count.items() if rk not in known_names]
+    (a.out / "regions.json").write_text(json.dumps(reg_out, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    by = {m: [c["column"] for c in crit_list if c["score_method"] == m] for m in ("target", "display", "rank", "not computed")}
-    counts = [c["column"] for c in crit_list if c["counts"]]
+    n_by = {b: sum(1 for x in rows if x["BASE_TYPE"] == b and x["ROLE"] != "missed") for b in ref}
     readme = f"""# outputs/ for the app
 
-Written by `src/export_app.py` from: {', '.join(n for n, _, _ in runs)}. Base type: {base_type}.
-Re-create with `python src/export_app.py {' '.join('out/' + n for n, _, _ in runs)}` (site names need
-`--sites-info` / `--sites-coords`, default `app/sample/site_info.json` and `app/sample/scores.csv` from Sofia's app).
-Known sites matched this time: {', '.join(sorted({x['SITE'] for x in rows if not x['SITE'].startswith(tuple(n + ' ' for n, _, _ in runs))})) or 'none'}.
+Written by `src/export_app.py` from {len(runs)} runs: {', '.join(n for _, n, _, _ in runs)}.
+Base types: {', '.join(f"{b} ({n_by[b]} rows)" for b in ref)}; plus {len(missed)} missed known sites.
 
 | File | What it is |
 |---|---|
-| `scores.csv` | one row per ranked cell: `SITE,LAT,LON`, one 0–1 column per criterion, then `RUN,CELL,BASE_TYPE,SCORE_TOTAL,RANK` |
-| `raw_values.csv` | same rows, raw Earth values (units in `targets.json` → `earth_unit`) plus depth, diameter, base pad, dark days |
-| `targets.json` | per base type: each criterion's column, `counts`, `weight`, `score_method`, raw Moon value + unit + source |
-| `heatmap.json` | `[{{lat, lng, weight}}]`, one point per ranked cell at the **cell centre**, weight = `SCORE_TOTAL` |
-| `cells.json` | every searched cell of these runs ({len(cells)}): centre, `bbox` [W,S,E,N], `status` (ranked / no_bowl / ice_floor / filtered / dropped) + `reason`, for drawing the searched area |
+| `scores.csv` | one row per ranked (Polar) / kept (Mare) cell + missed known sites: `SITE,LAT,LON`, one 0–1 column per criterion, display columns, then `{','.join(EXTRA_COLS)}` |
+| `raw_values.csv` | same rows, raw Earth values (units in `targets.json` → `earth_unit`), impact match, base pad |
+| `targets.json` | per base type: each column's meaning, `counts`, `weight`, `score_method`, raw Moon value + unit + source |
+| `heatmap.json` | `[{{lat, lng, weight, base}}]` per scored cell (cell centre), weight = `SCORE_TOTAL` |
+| `cells.json` | cells within {a.cells_near_km:g} km of a ranked/kept place ({len(cells)}): `bbox`, `status`, `reason` |
+| `coverage.json` | every searched cell counted per 1° tile and base type ({len(cov)} tiles): searched / filtered / prefilter / no_bowl / ice_floor / dropped / ranked (Polar) or kept (Mare) |
+| `regions.json` | regions in this export: title, bbox, **role** (tuning / validation / screening), country, cell counts |
 
-**Why bowl-less cells are not in the heatmap with weight 0:** a weighted heatmap adds up the weights, so a
-point with weight 0 adds nothing and would be invisible. To show where we searched and found nothing, draw
-`cells.json` (e.g. faint outlines for `no_bowl` / `filtered`) under the heatmap instead.
-Status counts here: {', '.join(f"{s} {sum(c['status'] == s for c in cells)}" for s in ('ranked', 'no_bowl', 'ice_floor', 'filtered', 'dropped'))}.
+## Columns
+- **0–1 criterion columns** = similarity to the Moon (1 = same). Empty = no data / no similarity yet. The meaning
+  depends on `BASE_TYPE`: read it through `targets[BASE_TYPE]` (DRIVABLE is a display share for Polar and a scored
+  similarity for Mare).
+- **`SCORE_TOTAL`** = score vs Moon (counted criteria only); **`RANK`** = rank within the same `BASE_TYPE`.
+- **`TERRAIN_SCORE` / `LIGHT_SCORE`** = the same weighted mean over the counted terrain / light criteria only.
+- **`NAME`** = known site (site_info) or confirmed impact structure, else `<region title> <cell>`. **`COUNTRY`** =
+  region level (approximate, from the region registry, no per-cell lookup).
+- **`ROLE`** = tuning / validation / screening (from the region), or **missed** for known sites the pipeline does
+  not rank; `MISSED_REASON` says why ({', '.join(m['name'] for m in missed)}).
+- **`LAT`/`LON`** = Polar: the crater's low point; Mare: the base pad.
+- Mare scores stay **empty** until the lunar Mare targets (Mateo) are verified; raw values are already there.
 
-## How to read the numbers
-- **A 0–1 value in `scores.csv` is already the similarity to the Moon**: exp(−((Earth − Moon) / tolerance)²),
-  1 = same as the Moon. Do not compare it with a target again.
-- **Empty = no data** or no similarity yet. Never 0.
-- **`SCORE_TOTAL`** = score vs Moon: weighted mean of the criteria with `counts: true` only
-  ({', '.join(counts)}). Comparable across runs. **`RANK`** = rank of `SCORE_TOTAL` over all rows in this file.
-- **`LAT`/`LON`** = the crater's low point (centre of the bowl), for the 3D view. The base pad is in `raw_values.csv`.
-- **`SITE`** = a known site from `site_info.json` when its (approximate) point lies inside the cell, else `<run> <cell>`.
-
-## Which criteria count
-- **Counted (target, weight > 0):** {', '.join(by['target']) or 'none'}
-- **Display only (similarity shown, weight 0):** {', '.join(by['display']) or 'none'}
-- **Rank-scored, no lunar value yet** (empty in `scores.csv`, raw value in `raw_values.csv`):
-  {(', '.join(by['rank']) + '. They get a similarity once their lunar value exists.') if by['rank'] else 'none (every scored criterion has a lunar value).'}
-- **Not computed by the pipeline yet:** {', '.join(by['not computed']) or 'none'}
-- Only the polar base type exists so far; `cave` and `mare` have no targets yet.
-
-## Display-only columns (weight 0, never in SCORE_TOTAL)
-Parameters in `config/display.yaml` (outside the config-v1 freeze). These are **not** a similarity to the Moon:
-environment criteria are "more is better" shares, because the Moon's values are not reachable or not meaningful
-as closeness (like GRAZING_SUN).
+## Display-only columns (Polar, weight 0, never in SCORE_TOTAL)
 {chr(10).join(f"- **{c}** ({v[2]}): {v[3]}" for c, v in DISPLAY_COLUMNS.items())}
-- Impact list: {len(impacts)} confirmed structures from {impacts[0]['source'] if impacts else 'no list'}
-  (incomplete; "0" means "not in this list"). Matched places: {', '.join(sorted({x['_impact']['name'] for x in rows if x['_impact']})) or 'none'}.
+- Impact list: {len(impacts)} confirmed structures (incomplete; "0" = not in this list).
 
-## No Earth analog possible: GRAZING_SUN
-{FACTS["c4_grazing_sun"]} (`targets.json` → `fact`.)
+## No Earth analog possible: GRAZING_SUN (Polar)
+{FACTS["c4_grazing_sun"]}
 
 ## Known limitation: Sun disc vs Sun centre (SUNNY_RIDGE, DARK_FLOOR, LIGHT_NEAR_DARK)
-{DISC_VS_CENTRE} The same text is in `targets.json` (`limitation`) for these three criteria.
+{DISC_VS_CENTRE}
 """
     (a.out / "README.md").write_text(readme, encoding="utf-8")
-    print(f"{len(rows)} rows from {len(runs)} runs -> {a.out}")
-    for x in rows:
-        print(f"  {x['RANK']}. {x['SITE']}  total {x['SCORE_TOTAL']}  ({x['LAT']}, {x['LON']})")
+    print(f"{len(rows)} rows ({', '.join(f'{b} {n_by[b]}' for b in ref)}, missed {len(missed)}) from {len(runs)} runs -> {a.out}")
+    for x in rows[:12]:
+        print(f"  {x['BASE_TYPE']} {x['RANK']}. {x['SITE']} [{x['ROLE']}; {x['COUNTRY']}] total {x['SCORE_TOTAL']} "
+              f"terrain {x['TERRAIN_SCORE']} light {x['LIGHT_SCORE']}")
 
 
 if __name__ == "__main__":

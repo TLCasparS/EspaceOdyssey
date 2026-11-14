@@ -38,6 +38,10 @@ Craters wider than ~20 km don't close inside the Earth DEM window (15 km cell + 
 while the Moon target used ±35 km. Large craters such as Haughton are cut off on Earth. Documented in the
 criteria doc; **not changed in config-v1**. First candidate for config-v2.
 
+## Before any Mare validation
+Tag `mare-v1` and add a freeze guard for the `mare:` config section and the Mare lunar targets, exactly like
+`config-v1` for Polar (`tests/test_config_freeze.py`). Until then Mare floors and weights may still change.
+
 ## Decisions made
 | Date | Decision | Why |
 |---|---|---|

@@ -25,6 +25,7 @@ from dem.terrain import compute_terrain
 MARE_CRITERIA = ("c9_relief", "c10_flat_base", "c12_drivable", "c13_roughness")
 MARE_DISPLAY = ("c16_day_night_swing", "c23_basalt")
 
+# TODO (Mateo): replace the numbers in this text with your Diviner values + source (criteria doc values are unchecked)
 FACT_C16 = ("No Earth analog possible: the lunar day-night surface temperature swing is several hundred kelvin "
             "(criteria doc row 16: near 400 K at noon, under 100 K at night at the equator; to be checked with "
             "Diviner before the pitch). Earth's largest swings are far smaller. Shown for information, weight 0.")

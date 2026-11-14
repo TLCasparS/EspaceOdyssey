@@ -83,11 +83,19 @@ def run_mare(bbox, name, cfg, dem_res=30, pop_path=None, out_root="out", log=pri
         out_rows.append(row)
         if (i + 1) % 20 == 0 or i == len(rows) - 1:
             log(f"  mare {i + 1}/{len(rows)} cells ({time.time() - t0:.0f} s)")
+    out_dir = os.path.join(out_root, name)
+    kept = write_mare_outputs(out_dir, bbox, dem_res, cfg, out_rows, len(rows))
+    log(f"Done in {time.time() - t0:.0f} s. {len(kept)} kept cells, {sum(r.get('score') is not None for r in kept)} "
+        f"scored -> {out_dir}/")
+    return out_rows, kept
+
+def write_mare_outputs(out_dir, bbox, dem_res, cfg, out_rows, n_cells):
+    """ranking.csv, cells.geojson, radar.json, run_info.json for Mare rows (also used by night_run --score)."""
+    crit = cfg["mare"]["criteria"]
     kept = [r for r in out_rows if r["keep"]]
     kept.sort(key=lambda r: (r.get("score") is None, -(r.get("score") or 0.0)))
     for k, r in enumerate(kept, 1):
         r["rank"] = k if r.get("score") is not None else None
-    out_dir = os.path.join(out_root, name)
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, "ranking.csv"), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=COLS, extrasaction="ignore")
@@ -118,9 +126,7 @@ def run_mare(bbox, name, cfg, dem_res=30, pop_path=None, out_root="out", log=pri
         json.dump(radar, f, indent=1)
     with open(os.path.join(out_dir, "run_info.json"), "w") as f:
         json.dump({"base_type": "mare", "bbox": list(bbox), "dem": f"Copernicus GLO-{dem_res} (AWS)",
-                   "note": scoring_note(crit), "n_cells": len(rows), "n_kept": len(kept),
+                   "note": scoring_note(crit), "n_cells": n_cells, "n_kept": len(kept),
                    "n_scored": sum(r.get("score") is not None for r in kept),
                    "config": {"grid": cfg["grid"], "filter": cfg["filter"], "mare": cfg["mare"]}}, f, indent=1)
-    log(f"Done in {time.time() - t0:.0f} s. {len(kept)} kept cells, {sum(r.get('score') is not None for r in kept)} "
-        f"scored -> {out_dir}/")
-    return out_rows, kept
+    return kept

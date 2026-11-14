@@ -1,0 +1,27 @@
+# Known sites the pipeline (config-v1) does NOT rank, with the reason. Exported as rows with ROLE = missed,
+# so the app can show them honestly. Coordinates: source given per site.
+missed:
+  - name: Tenoumer crater
+    country: Mauritania
+    lat: 22.91722
+    lon: -10.40778
+    coord_source: "Wikipedia List of impact craters on Earth (data/impact/impact_structures.csv)"
+    base_type: polar
+    reason: "spill depth 44 m < 50 m minimum (spill depth counts only to the lowest rim saddle; partly filled crater)"
+    doc: "docs/Moon Analog Criteria and Datasets.md (traps: spill depth and filled craters)"
+  - name: Haughton crater
+    country: Canada
+    lat: 75.383
+    lon: -89.667
+    coord_source: "Wikipedia List of impact craters on Earth (same as config/sites.csv)"
+    base_type: polar
+    reason: "no closed depression >= 10 m even with a 65 x 67 km window: eroded, not a closed bowl in the DEM (validation)"
+    doc: "docs/VALIDATION_config-v1.md"
+  - name: Askja caldera
+    country: Iceland
+    lat: 65.0
+    lon: -16.7
+    coord_source: "approximate position given by the team (unchecked)"
+    base_type: polar
+    reason: "caldera lake is a flat water surface in the DEM: spill depth 48 m < 50 m minimum (validation)"
+    doc: "docs/VALIDATION_config-v1.md"
