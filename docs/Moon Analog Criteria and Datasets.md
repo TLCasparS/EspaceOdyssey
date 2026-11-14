@@ -135,7 +135,7 @@ Traps we found while checking the data:
 - **Temperature scale.** MODIS at 1 km describes the region, not one shadowed hollow. Score "cold" as climate and let the shadow simulation carry the local effect.
 - **Coverage gaps.** Travel time stops at 60°S, the permafrost map is Northern Hemisphere only, and CHIRPS stops at 50° latitude. Polar candidates lose some criteria; show them as "no data", not zero.
 - **Caves have no global map.** Criterion 25 is a hand check on shortlisted basalt fields.
-- **Small craters at 60 m (known limitation, found 14 Nov 2026).** A bowl only ~1 km wide is ~19 pixels across on the common grid, so its walls are smoothed and criterion 11 comes out too low (Meteor Crater: 23.9° on the 0.5–1.0 × r ring). Bowls near the size limit (1 km equivalent diameter) can also drop out of the bowl filter. Treat wall slope of small bowls as a lower bound.
+- **Small craters at 60 m (known limitation, found 14 Nov 2026).** A bowl only ~1 km wide is ~19 pixels across on the common grid, so its walls are smoothed and criterion 11 comes out too low (Meteor Crater: 23.9° on the 0.5–1.0 × r ring). Bowls near the size limit (1 km equivalent diameter) can also drop out of the bowl filter. Treat wall slope of small bowls as a lower bound. The bowl filter keeps a minimum equivalent diameter of **1 km for all regions** (decision 14 Nov 2026): a smaller bowl is < ~17 pixels across at 60 m, its walls are smoothed and its depth/width and wall slope are not reliable. This is a resolution limit, not a statement that small craters are poor analogs; it removes most maar craters in the Pinacate field and leaves Meteor Crater (1.1 km) just above the limit.
 
 ## Open decisions
 

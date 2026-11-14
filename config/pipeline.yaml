@@ -84,8 +84,9 @@ polar:
     c2_dark_floor:  {weight: 1.0, direction: higher, tolerance: 0.2}  # p99 terrain shadow fraction (1 - lit / flat_lit) in the floor zone
     c3_light_dark:  {weight: 1.0, direction: lower, tolerance: 0.5}   # distance darkest floor px -> sunniest rim px, / r
     c4_grazing_sun: {weight: 1.0, direction: lower, tolerance: 5}     # deg, max Sun elevation over the year (latitude only)
-    c5_sky_view:   {weight: 0.5, direction: lower, tolerance: 0.1}    # share of sky visible from the floor. Weight 0.5, tolerance 0.1: team choice 14 Nov,
-                                                                      # c5 nearly duplicates c7 for simple bowls; decide after the c2 correlation check
+    c5_sky_view:   {weight: 0.0, direction: lower, tolerance: 0.1}    # share of sky visible from the floor. DISPLAY ONLY (team choice 14 Nov):
+                                                                      # duplicates c7 for simple bowls (r -0.91 over 6 bowl cells) and overlaps c2
+                                                                      # (r -0.91), which has the lunar comparison. Still computed for the radar charts.
     c7_bowl:       {weight: 1.0, direction: higher, tolerance: 0.05}  # depth / width of closed depression
     c9_relief:     {weight: 0.0, direction: higher, tolerance: 1500}  # m, rim-to-floor depth of the bowl. DISPLAY ONLY (team choice 14 Nov: size-dependent)
     c10_flat_base: {weight: 1.0, direction: lower, scale: [0, 15], tolerance: 3}  # deg, flattest usable pad on the rim
