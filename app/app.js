@@ -331,6 +331,8 @@ function renderCard() {
 
     ${info.why ? `<p class="why">${research(info.why)}</p>` : ''}
 
+    <div class="card-body">
+    <div class="card-col card-col-a">
     <div class="radar-box">
       <h3>Fingerprint · ${esc(groupName)}</h3>
       ${radarSVG(s)}
@@ -341,6 +343,18 @@ function renderCard() {
       ${missing.length ? `<p class="nodata">No data yet: ${missing.map(esc).join(', ')}. Left out of the score, not counted as zero.</p>` : ''}
     </div>
 
+    <div class="note-box prac-box">
+      <h3>Practical</h3>
+      <div class="prac">${practical.map(c => `
+        <span title="${esc(c.hint)}">${esc(c.label)}</span>
+        <span class="bar"><span style="width:${Math.round((s[c.key] ?? 0) * 100)}%"></span></span>
+        <span class="pct">${s[c.key] == null ? '–' : Math.round(s[c.key] * 100)}</span>`).join('')}
+      </div>
+      <p class="nodata">Scored apart from similarity: these say how easy the site is to use, not how Moon-like it is.</p>
+    </div>
+    </div>
+
+    <div class="card-col card-col-b">
     <div>
       <h3>Closest to the Moon on</h3>
       <div class="chips">${strengths.map(d => `<span class="chip good"><b>${esc(d.label)}</b> ${d.site.toFixed(2)} vs ${d.target.toFixed(2)}</span>`).join('')}</div>
@@ -361,15 +375,7 @@ function renderCard() {
       <p>${info.helps ? research(info.helps) : `<span class="todo">${isNew ? '[to write once ranked: what we could test here]' : '[to research]'}</span>`}</p>
       ${sourcesHTML(info.sources)}
     </div>
-
-    <div class="note-box">
-      <h3>Practical</h3>
-      <div class="prac">${practical.map(c => `
-        <span title="${esc(c.hint)}">${esc(c.label)}</span>
-        <span class="bar"><span style="width:${Math.round((s[c.key] ?? 0) * 100)}%"></span></span>
-        <span class="pct">${s[c.key] == null ? '–' : Math.round(s[c.key] * 100)}</span>`).join('')}
-      </div>
-      <p class="nodata">Scored apart from similarity: these say how easy the site is to use, not how Moon-like it is.</p>
+    </div>
     </div>`;
 }
 

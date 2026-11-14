@@ -122,7 +122,17 @@ a { color: var(--earth); }
 .why { margin: 0; font-size: 14px; line-height: 1.5; }
 .radar-box { background: var(--panel-2); border-radius: 10px; padding: 12px; }
 .card h3 { font-size: 16px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .03em; }
-.radar { width: 100%; height: auto; display: block; }
+.radar { width: 100%; max-width: 420px; height: auto; display: block; margin-inline: auto; }
+
+/* Card body: stacked in a narrow card (Practical goes last), chart | details in a wide one. */
+.card-panel { container-type: inline-size; }
+.card-body, .card-col { display: contents; }
+.prac-box { order: 1; }
+@container (min-width: 720px) {
+  .card-body { display: grid; grid-template-columns: minmax(300px, 5fr) 6fr; gap: 20px; align-items: start; }
+  .card-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .prac-box { order: 0; }
+}
 .radar-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--muted); }
 .swatch { display: inline-block; width: 16px; height: 0; border-top: 3px solid; vertical-align: middle; margin-right: 6px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
