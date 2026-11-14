@@ -1,0 +1,19 @@
+# Night run regions (src/night_run.py), processed in priority order (1 first).
+# role: screening = results count as candidates (neither tuning nor validation, see CLAUDE.md).
+# Bboxes chosen from memory on 14 Nov 2026, not checked against maps. country = what the box covers
+# (approximate, region level; no per-cell country lookup).
+regions:
+  - {name: tibesti,        bbox: [16.0, 19.5, 19.5, 22.0],    priority: 1, country: "Chad / Libya",               role: screening}
+  - {name: harrat_saudi,   bbox: [39.5, 22.0, 42.5, 24.5],    priority: 2, country: "Saudi Arabia",               role: screening}
+  - {name: altiplano_puna, bbox: [-69.5, -24.5, -66.5, -21.5], priority: 3, country: "Chile / Bolivia / Argentina", role: screening}
+  - {name: namibia_south,  bbox: [16.0, -28.5, 18.5, -25.5],  priority: 4, country: "Namibia",                    role: screening}
+  - {name: afar,           bbox: [40.0, 11.5, 42.5, 14.0],    priority: 5, country: "Ethiopia / Eritrea",         role: screening}
+
+# night-run settings (NOT scoring parameters; outside the config-v1 freeze)
+settings:
+  tile_deg: 1.0                 # work unit: 1 x 1 deg tile (cells assigned by their centre)
+  retries: 3                    # attempts per tile and stage before it is marked failed
+  retry_wait_s: [30, 120, 300]  # wait before attempt 2, 3, ... (S3 hiccups)
+  keep_dem_cache: false         # delete a tile's cached DEM once all tracks are done (saves GBs)
+  mare_prefilter_relief_m: 1000 # (interpreted) track B skips cells whose own relief (max-min) is above this:
+                                # a Mare analog is a plain; mountain cells cannot score
