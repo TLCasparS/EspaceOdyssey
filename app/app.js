@@ -363,7 +363,7 @@ function setBase(id, fly) {
     // Drop filters that do not apply to the new base type
     [...state.active].forEach(k => { if (!byKey[k].bases.includes(state.base)) state.active.delete(k); });
     const top = visibleSites().filter(x => x.sim != null);
-    if (top.length) state.selected = top[0].SITE;
+    if (top.length) state.selected = bestTwin(top).SITE;
     state.twinFlash = top.slice(0, 3).map(x => x.SITE);
     clearTimeout(twinTimer);
     twinTimer = setTimeout(() => { state.twinFlash = []; renderList(); updateGlobe(false); }, 7000);
@@ -379,6 +379,8 @@ function setBase(id, fly) {
   syncViewUI();
   updateMoon(fly);
 }
+// The best independent twin: tuning sites (Meteor Crater, Pinacate) rank high partly by design, so skip them.
+const bestTwin = list => list.find(x => !isTuning(x)) ?? list[0];
 const twinsOf = () => visibleSites().filter(x => x.sim != null).slice(0, 3);
 
 function wireFilters() {
@@ -970,7 +972,7 @@ function renderMoonInfo() {
     <p class="moon-why">${esc(b.why)}</p>
     ${rows || facts ? `<p class="moon-sub">${crit ? 'Target values (what Earth sites are compared with)' : 'What a lunar mare base site looks like'}</p><ul class="moon-vals">${rows}${facts}</ul>` : ''}
     ${b.detail ? `<p class="moon-detail">${esc(b.detail)}</p>` : ''}
-    ${crit && b.id === state.base ? `<p class="moon-sub">Closest Earth twins</p><div class="moon-twins">${twinsOf().map(t => `<button type="button" class="moon-twin" data-twin="${esc(t.SITE)}"><span class="rank ${t.type === 'known' ? 'known' : 'new'}">${t.rank}</span><span>${esc(nameOf(t))}</span><b>${pct(t.sim)}</b>${isTuning(t) ? '<i>tuning</i>' : ''}</button>`).join('')}</div>` : ''}
+    ${crit && b.id === state.base ? `<p class="moon-sub">Closest Earth twins</p><div class="moon-twins">${twinsOf().map(t => `<button type="button" class="moon-twin" data-twin="${esc(t.SITE)}"><span class="rank ${t.type === 'known' ? 'known' : 'new'}">${t.rank}</span><span>${esc(nameOf(t))}</span><b>${pct(t.sim)}</b>${isTuning(t) ? '<i>tuning</i>' : t.SITE === bestTwin(twinsOf())?.SITE ? '<i class="best">best independent</i>' : ''}</button>`).join('')}</div>` : ''}
     ${crit ? '' : `<p class="moon-soon">Earth twins for this base come with tonight’s pipeline run. Where we search:</p><div class="moon-twins">${PLANNED_REGIONS.map(r => `<button type="button" class="moon-twin" data-planned="${r.run}"><span>${esc(r.label)}</span><i>${esc(r.country)}</i></button>`).join('')}</div>`}
     <a class="moon-fig" href="${esc(b.figure)}" target="_blank" rel="noopener" hidden>${esc(b.figureLabel ?? 'See the target figure')}</a>`;
   // Show the figure link only if the figure is in the repo (the mare map arrives with Mateo's branch).
@@ -1328,7 +1330,7 @@ function refresh() {
   state.moonInfo = state.base;
   initMoon();
   renderMoonButtons();
-  state.selected = ranked()[0]?.SITE ?? null;
+  state.selected = bestTwin(ranked().filter(x => x.sim != null))?.SITE ?? ranked()[0]?.SITE ?? null;
   refresh();
   // Load the 3D map quietly behind the globe, so the first fly-in doesn't wait for it.
   setTimeout(() => {

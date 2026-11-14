@@ -65,7 +65,8 @@ shows as greyed out in the filters. Only the `polar` base type has pipeline data
   "typical lunar mare plain").
 - Clicking a marker (or its button under the Moon) picks that base type: the Earth list, heatmap and cards are
   re-ranked against it. This is the only base-type selector (the old "Base type" buttons are gone).
-- Picking a base links the two globes: its closest Earth twin is selected and the Earth turns to it, the top
+- Picking a base links the two globes: its best independent Earth twin (the highest-ranked site that is not a
+  tuning site, e.g. Al Wahbah) is selected and the Earth turns to it, the top
   three pulse on the globe and in the list for a few seconds, and the Moon card lists them ("Closest Earth
   twins", each one clickable).
 - A base without Earth scores yet (Mare until the night run): the Earth shows the regions searched next
