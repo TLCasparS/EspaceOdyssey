@@ -10,6 +10,8 @@ dependencies:
 - xarray
 - rasterio
 - rioxarray
+- pystac-client
+- planetary-computer
 - geopandas
 - earthaccess
 - earthengine-api
