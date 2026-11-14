@@ -64,6 +64,7 @@ const state = {
   sites: [], targets: {}, info: {}, columns: new Set(),
   base: 'polar', group: 'all', active: new Set(), threshold: 0.7,
   typeFilter: 'all', selected: null, globe: null,
+  view: 'globe', moonColours: false,   // 'globe' or 'terrain' (3D close-up of the selected site)
 };
 
 /* ---------- Loading ---------- */
@@ -469,23 +470,144 @@ function updateGlobe(fly) {
   }
 }
 
+/* ---------- 3D terrain: MapLibre GL with free tiles (no account, no key) ---------- */
+
+const TERRAIN = {
+  // Elevation: Terrain Tiles on AWS Open Data (Mapzen; SRTM, GMTED, ETOPO1 and others), Terrarium encoding.
+  dem: 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
+  // Imagery: Sentinel-2 cloudless 2020 by EOX (modified Copernicus Sentinel data), about 10 m per pixel.
+  img: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg',
+  exaggeration: 1.5,   // heights x1.5 so relief reads on screen; said in the caption
+  defaultZoom: 12,     // a site can set its own "zoom" in site_info.json
+};
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let terrainMap = null, orbitFrame = null, flyInTimer = null;
+
+const currentSite = () => visibleSites().find(s => s.SITE === state.selected);
+
+function terrainStyle() {
+  const dem = { type: 'raster-dem', tiles: [TERRAIN.dem], tileSize: 256, maxzoom: 15, encoding: 'terrarium' };
+  return {
+    version: 8,
+    sources: {
+      img: { type: 'raster', tiles: [TERRAIN.img], tileSize: 256, maxzoom: 15,
+        attribution: 'Imagery: <a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless</a> by EOX (contains modified Copernicus Sentinel data 2020)' },
+      dem: { ...dem, attribution: 'Elevation: <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">Terrain Tiles on AWS</a> (Mapzen)' },
+      shade: dem,
+    },
+    layers: [
+      { id: 'space', type: 'background', paint: { 'background-color': '#03051A' } },
+      { id: 'img', type: 'raster', source: 'img' },
+      { id: 'shade', type: 'hillshade', source: 'shade', paint: { 'hillshade-exaggeration': 0.3, 'hillshade-shadow-color': '#000000' } },
+    ],
+    terrain: { source: 'dem', exaggeration: TERRAIN.exaggeration },
+  };
+}
+
+function stopOrbit() { cancelAnimationFrame(orbitFrame); orbitFrame = null; }
+function startOrbit() {
+  stopOrbit();
+  if (reducedMotion || state.view !== 'terrain') return;
+  const step = () => { terrainMap.setBearing(terrainMap.getBearing() + 0.04); orbitFrame = requestAnimationFrame(step); };
+  orbitFrame = requestAnimationFrame(step);
+}
+
+function flyTerrainTo(s) {
+  if (!terrainMap || !s) return;
+  stopOrbit();
+  terrainMap.flyTo({ center: [s.lng, s.lat], zoom: state.info[s.SITE]?.zoom ?? TERRAIN.defaultZoom,
+    pitch: 68, bearing: -25, duration: reducedMotion ? 0 : 4500, essential: true });
+  terrainMap.once('moveend', startOrbit);
+  syncViewUI();
+}
+
+function openTerrain() {
+  const s = currentSite();
+  if (!s || typeof maplibregl === 'undefined' || !hasWebGL()) return;
+  clearTimeout(flyInTimer);
+  state.view = 'terrain';
+  syncViewUI();
+  pauseRotation(0);
+  if (!terrainMap) {
+    terrainMap = new maplibregl.Map({
+      container: 'terrain', style: terrainStyle(), center: [s.lng, s.lat], zoom: 4, pitch: 0,
+      maxPitch: 80, attributionControl: false,
+    });
+    terrainMap.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+    terrainMap.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+    // Any touch, drag or scroll by the viewer stops the slow orbit.
+    ['mousedown', 'touchstart', 'wheel'].forEach(ev => terrainMap.on(ev, stopOrbit));
+    terrainMap.once('load', () => { applyMoonColours(); flyTerrainTo(s); });
+  } else {
+    terrainMap.resize();
+    flyTerrainTo(s);
+  }
+}
+
+function closeTerrain() {
+  clearTimeout(flyInTimer);
+  stopOrbit();
+  state.view = 'globe';
+  syncViewUI();
+  pauseRotation(3000);
+}
+
+// Grey, high-contrast imagery so Earth terrain reads like the Moon.
+function applyMoonColours() {
+  if (!terrainMap?.getLayer('img')) return;
+  terrainMap.setPaintProperty('img', 'raster-saturation', state.moonColours ? -1 : 0);
+  terrainMap.setPaintProperty('img', 'raster-contrast', state.moonColours ? 0.25 : 0);
+}
+
+function syncViewUI() {
+  const inTerrain = state.view === 'terrain';
+  const s = currentSite();
+  document.getElementById('terrain').hidden = !inTerrain;
+  document.getElementById('globeLegend').hidden = inTerrain;
+  document.getElementById('moonBtn').hidden = !inTerrain;
+  document.getElementById('moonBtn').setAttribute('aria-pressed', String(!!state.moonColours));
+  const fly = document.getElementById('flyBtn');
+  fly.textContent = inTerrain ? '← Back to globe' : 'Fly into 3D terrain';
+  fly.disabled = !inTerrain && !s;
+  const cap = document.getElementById('terrainCaption');
+  cap.hidden = !inTerrain || !s;
+  if (s) cap.innerHTML = `<b>${esc(s.SITE)}</b><br>3D terrain, heights ×${TERRAIN.exaggeration}. Drag to look around, scroll to zoom.`;
+}
+
+function wireViewTools() {
+  document.getElementById('flyBtn').addEventListener('click', () => (state.view === 'terrain' ? closeTerrain() : openTerrain()));
+  document.getElementById('moonBtn').addEventListener('click', () => { state.moonColours = !state.moonColours; applyMoonColours(); syncViewUI(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.view === 'terrain') closeTerrain(); });
+}
+
 /* ---------- Wiring ---------- */
 
+// fly = the viewer clicked a site: spin the globe to it, then dive into 3D terrain.
 function select(site, fly) {
   state.selected = site;
   renderList();
   renderCard();
-  updateGlobe(fly);
+  updateGlobe(fly && state.view === 'globe');
+  if (!fly) return syncViewUI();
+  if (state.view === 'terrain') return flyTerrainTo(currentSite());
+  clearTimeout(flyInTimer);
+  flyInTimer = setTimeout(openTerrain, reducedMotion ? 0 : 1300);
 }
 
 // Re-render everything after a filter or base change; keep the selection if it still passes.
 function refresh() {
+  const before = state.selected;
   const shown = visibleSites();
   if (!shown.some(s => s.SITE === state.selected)) state.selected = shown[0]?.SITE ?? null;
   renderFilters();
   renderList();
   renderCard();
   updateGlobe(false);
+  if (state.view === 'terrain') {
+    if (!state.selected) closeTerrain();
+    else if (state.selected !== before) flyTerrainTo(currentSite());
+  }
+  syncViewUI();
 }
 
 (async function main() {
@@ -501,6 +623,7 @@ function refresh() {
     ? 'Scores and heatmap are sample values, not results yet'
     : 'Scores from our pipeline: Copernicus DEM, ESA WorldCover, MODIS (Earth); LOLA, LROC, Diviner (Moon)';
   wireFilters();
+  wireViewTools();
   initGlobe();
   state.selected = ranked()[0]?.SITE ?? null;
   refresh();

@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Fira+Sans+Extra+Condensed:wght@600;700&display=swap">
   <link rel="stylesheet" href="style.css">
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 </head>
 <body>
   <header class="topbar">
@@ -61,7 +63,13 @@
 
     <section class="globe-wrap" aria-label="Globe">
       <div id="globe" class="globe"></div>
-      <div class="globe-legend">
+      <div id="terrain" class="terrain" hidden aria-label="3D terrain view"></div>
+      <div class="view-tools">
+        <button type="button" class="view-btn" id="flyBtn">Fly into 3D terrain</button>
+        <button type="button" class="view-btn" id="moonBtn" aria-pressed="false" hidden>Moon colours</button>
+      </div>
+      <p id="terrainCaption" class="terrain-caption" hidden></p>
+      <div class="globe-legend" id="globeLegend">
         <span class="legend-title">Heatmap: analog suitability</span>
         <span class="legend-bar" aria-hidden="true"></span>
         <span class="legend-scale"><span>low</span><span>high</span></span>

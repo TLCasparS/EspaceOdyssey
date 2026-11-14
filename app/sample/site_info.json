@@ -1,5 +1,5 @@
 {
-  "_note": "Sofia's research file: what each site is, where the analogy breaks down, and how it helps exploration. Known sites: 'helps' = what has been tested there, with source links in 'sources'. New candidates: 'helps' = what we could test there (write it once the pipeline ranks them; only the ~5 shown in the demo). [brackets] = still to research or check. Coordinates in scores.csv are approximate. Gorafe and Kali Gandaki are parked per the criteria doc.",
+  "_note": "Sofia's research file: what each site is, where the analogy breaks down, and how it helps exploration. Known sites: 'helps' = what has been tested there, with source links in 'sources'. New candidates: 'helps' = what we could test there (write it once the pipeline ranks them; only the ~5 shown in the demo). [brackets] = still to research or check. Coordinates in scores.csv are approximate. Gorafe and Kali Gandaki are parked per the criteria doc. 'zoom' = how close the 3D terrain view flies in (11 shows about 20 km, 14 about 2 km).",
   "Haughton Crater": {
     "type": "known",
     "place": "Devon Island, Nunavut, Canada",
@@ -19,7 +19,8 @@
         "label": "Aerospace Testing International: Testing for Mars in the High Arctic",
         "url": "https://www.aerospacetestinginternational.com/features/testing-for-mars-in-the-high-arctic.html"
       }
-    ]
+    ],
+    "zoom": 11
   },
   "Atacama (Yungay area)": {
     "type": "known",
@@ -36,7 +37,8 @@
         "label": "Space.com: NASA tests life-detecting rover tech in Chile",
         "url": "https://www.space.com/36106-nasa-tests-life-detecting-mars-rover-tech.html"
       }
-    ]
+    ],
+    "zoom": 11.5
   },
   "Meteor Crater": {
     "type": "known",
@@ -57,7 +59,8 @@
         "label": "Phys.org: Training future explorers of the Moon (2018)",
         "url": "https://phys.org/news/2018-10-future-explorers-moon.html"
       }
-    ]
+    ],
+    "zoom": 14
   },
   "Craters of the Moon": {
     "type": "known",
@@ -70,7 +73,8 @@
         "label": "National Park Service: Space exploration research and astronaut training",
         "url": "https://www.nps.gov/crmo/learn/historyculture/space-exploration-research-and-astronaut-training.htm"
       }
-    ]
+    ],
+    "zoom": 11.5
   },
   "Lava Beds": {
     "type": "known",
@@ -83,7 +87,8 @@
         "label": "NASA Astrobiology: Using a cave rover, NASA learns to search for life underground (2019)",
         "url": "https://astrobiology.nasa.gov/news/using-a-cave-rover-nasa-learns-to-search-for-life-underground/"
       }
-    ]
+    ],
+    "zoom": 12
   },
   "Lanzarote lava tubes": {
     "type": "known",
@@ -100,34 +105,39 @@
         "label": "Phys.org: 'Like the Moon': astronauts flock to Spanish isle to train (2022)",
         "url": "https://phys.org/news/2022-11-moon-astronauts-flock-spanish-isle.html"
       }
-    ]
+    ],
+    "zoom": 11.5
   },
   "Rjukan valley": {
     "type": "candidate",
     "place": "Vestfold og Telemark, Norway",
     "why": "Deep east-west valley; the town gets no direct sun for about six months a year.",
     "breaks": "Green, wet and inhabited: nothing like bare lunar ground.",
-    "helps": "[to write once ranked: the town's sun mirrors as a model for lighting dark craters]"
+    "helps": "[to write once ranked: the town's sun mirrors as a model for lighting dark craters]",
+    "zoom": 12
   },
   "Viganella": {
     "type": "candidate",
     "place": "Piedmont, Italy",
     "why": "Alpine village without direct sun from November to February.",
     "breaks": "[to research]",
-    "helps": "[to write once ranked: what we could test here]"
+    "helps": "[to write once ranked: what we could test here]",
+    "zoom": 13
   },
   "Seydisfjordur fjord": {
     "type": "candidate",
     "place": "East Iceland",
     "why": "Narrow fjord with little sun even in summer.",
     "breaks": "[to research]",
-    "helps": "[to write once ranked: what we could test here]"
+    "helps": "[to write once ranked: what we could test here]",
+    "zoom": 11.5
   },
   "Kagbeni (Upper Mustang)": {
     "type": "candidate",
     "place": "Mustang District, Nepal",
     "why": "Dry, high valley in the Himalayan rain shadow (team photos).",
     "breaks": "[to research]",
-    "helps": "[to write once ranked: what we could test here]"
+    "helps": "[to write once ranked: what we could test here]",
+    "zoom": 12
   }
 }

@@ -57,3 +57,11 @@ replaced by a grid of real suitability scores (lat, lng, weight) from the pipeli
   `assets/blue-marble-2004-07-4096.jpg`. Source:
   https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/
 - Radar chart: plain SVG in `app.js`, no library.
+- 3D terrain close-up: MapLibre GL JS 4.7.1 (open source), loaded from unpkg. No account or key.
+  - Elevation: [Terrain Tiles on AWS](https://registry.opendata.aws/terrain-tiles/) (Mapzen; SRTM, GMTED,
+    ETOPO1 and others), shown with heights ×1.5.
+  - Imagery: [Sentinel-2 cloudless 2020](https://s2maps.eu) by EOX (modified Copernicus Sentinel data),
+    CC BY-NC-SA 4.0, fine for a non-commercial hackathon.
+  - Clicking a site (list or globe) spins the globe to it, then flies into 3D terrain and orbits slowly.
+    "Moon colours" turns the imagery grey. Esc or "Back to globe" returns. How close it flies in is
+    the `zoom` value per site in `site_info.json`.
