@@ -1,0 +1,26 @@
+{
+  "centre_xy_m": [
+    7688.0,
+    -6405.4
+  ],
+  "centre_refined_from_dem": false,
+  "rim_radius_km": 10.45,
+  "rim_diameter_km": 20.9,
+  "rim_median_elev_m": 1389.8,
+  "floor_min_elev_m": null,
+  "depth_rim_to_floor_m": null,
+  "depth_to_diameter": null,
+  "lowest_point_inside_rim_m": -2846.3,
+  "depth_lower_bound_m": 4236.1,
+  "coverage": {
+    "rim_ring": 0.28,
+    "floor_disc": 0.4
+  },
+  "floor_pixels": 0,
+  "rim_pixels": 40817,
+  "source_file": "Site04_final_adj_5mpp_surf.tif",
+  "output_pixel_m": 30.0,
+  "crop_half_width_km": 18.0,
+  "nodata_fraction": 0.0,
+  "elevation_reference": "height above 1737.4 km sphere (LOLA convention)"
+}

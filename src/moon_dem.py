@@ -86,61 +86,93 @@ def load_crop(path: Path, half_width_m: float, res_m: float):
     return dem, transform, crs, (cx, cy)
 
 
-def zone_crater(dem, transform, centre_xy, rim_band_m=1000.0):
-    """Find the crater centre, rim radius and floor from the DEM itself.
+def zone_crater(dem, transform, centre_xy, half_width_m, rim_band_m=1000.0):
+    """Find the rim radius and floor from the DEM, and say what the tile covers.
 
-    - centre: the lowest point within 5 km of the catalogue position
-    - rim radius: the radius where the mean radial elevation peaks
-    - rim zone: a ring of +/- rim_band_m around that radius
-    - floor zone: inside 40% of the rim radius and within 300 m of the lowest point
+    - centre: the catalogue position; moved to the lowest point within 5 km only
+      when the data covers that whole 5 km disc (otherwise the "lowest point" is
+      just the tile edge on a crater wall)
+    - rim radius: the radius where the mean elevation of each ring peaks, using
+      only rings that the data covers well enough
+    - rim zone: a ring of +/- rim_band_m around that radius (covered part only)
+    - floor zone: inside 40% of the rim radius and within 300 m of the lowest
+      point; left empty when the data covers less than half of that disc
     """
     h, w = dem.shape
     cols, rows = np.meshgrid(np.arange(w), np.arange(h))
     xs, ys = rasterio.transform.xy(transform, rows.ravel(), cols.ravel())
     xs = np.asarray(xs).reshape(h, w)
     ys = np.asarray(ys).reshape(h, w)
+    res = abs(transform.a)
+    valid = np.isfinite(dem)
+
+    def coverage(mask_fn, area_m2):
+        return float((mask_fn & valid).sum() * res * res / area_m2) if area_m2 > 0 else 0.0
 
     cx, cy = centre_xy
-    near = np.hypot(xs - cx, ys - cy) < 5000
-    cand = np.where(near & np.isfinite(dem), dem, np.inf)
-    i, j = np.unravel_index(np.argmin(cand), dem.shape)
-    cx, cy = xs[i, j], ys[i, j]
+    r0 = np.hypot(xs - cx, ys - cy)
+    disc5_cov = coverage(r0 < 5000, np.pi * 5000 ** 2)
+    centre_refined = disc5_cov >= 0.9
+    if centre_refined:
+        cand = np.where((r0 < 5000) & valid, dem, np.inf)
+        i, j = np.unravel_index(np.argmin(cand), dem.shape)
+        cx, cy = xs[i, j], ys[i, j]
 
     r = np.hypot(xs - cx, ys - cy)
-    res = abs(transform.a)
-    bins = np.arange(0, r.max(), max(res, 100.0))
+    step = max(res, 100.0)
+    bins = np.arange(0, half_width_m, step)
     idx = np.digitize(r, bins)
-    prof_r, prof_z = [], []
+    prof_r, prof_z, prof_cov = [], [], []
     for k in range(1, len(bins)):
-        sel = (idx == k) & np.isfinite(dem)
+        sel = (idx == k) & valid
+        ring_area = np.pi * (bins[k] ** 2 - bins[k - 1] ** 2) if k < len(bins) else 0
         if sel.sum() > 10:
-            prof_r.append(bins[k - 1] + (bins[1] - bins[0]) / 2)
+            prof_r.append(bins[k - 1] + step / 2)
             prof_z.append(np.nanmean(dem[sel]))
-    prof_r, prof_z = np.array(prof_r), np.array(prof_z)
+            prof_cov.append(sel.sum() * res * res / ring_area if ring_area else 0)
+    prof_r, prof_z, prof_cov = map(np.array, (prof_r, prof_z, prof_cov))
 
-    # The rim is the first big peak of the profile; ignore the outermost ring
-    # where the crop edge can create false maxima.
-    usable = prof_r < 0.9 * min(r[h // 2, 0], r[h // 2, -1], r[0, w // 2], r[-1, w // 2])
-    rim_r = prof_r[usable][np.argmax(prof_z[usable])]
+    # A ring needs >= 15 % coverage to count; stay away from the crop edge.
+    usable = (prof_cov >= 0.15) & (prof_r < 0.95 * half_width_m)
+    if not usable.any():
+        raise SystemExit("No ring around the centre is covered well enough - wrong tile?")
+    rim_r = float(prof_r[usable][np.argmax(prof_z[usable])])
+    rim_cov = coverage(np.abs(r - rim_r) <= rim_band_m, np.pi * ((rim_r + rim_band_m) ** 2 - max(rim_r - rim_band_m, 0) ** 2))
+    floor_cov = coverage(r < 0.4 * rim_r, np.pi * (0.4 * rim_r) ** 2)
+    has_floor = floor_cov >= 0.5
 
-    floor_min = np.nanmin(dem[r < 0.4 * rim_r])
     zones = np.zeros(dem.shape, dtype="uint8")
-    zones[(r < 0.4 * rim_r) & (dem < floor_min + 300)] = 1
-    zones[np.abs(r - rim_r) <= rim_band_m] = 2
-    zones[~np.isfinite(dem)] = 0
-
+    zones[(np.abs(r - rim_r) <= rim_band_m) & valid] = 2
     rim_elev = float(np.nanmedian(dem[zones == 2]))
+    inside_min = float(np.nanmin(np.where(r < rim_r, dem, np.nan)))
+    if has_floor:
+        floor_min = float(np.nanmin(dem[(r < 0.4 * rim_r) & valid]))
+        zones[(r < 0.4 * rim_r) & (dem < floor_min + 300) & valid] = 1
+        depth = rim_elev - floor_min
+    else:
+        floor_min, depth = None, None
+
     info = {
-        "refined_centre_xy_m": [float(cx), float(cy)],
-        "rim_radius_km": round(float(rim_r) / 1000, 2),
-        "rim_diameter_km": round(2 * float(rim_r) / 1000, 2),
+        "centre_xy_m": [round(float(cx), 1), round(float(cy), 1)],
+        "centre_refined_from_dem": bool(centre_refined),
+        "rim_radius_km": round(rim_r / 1000, 2),
+        "rim_diameter_km": round(2 * rim_r / 1000, 2),
         "rim_median_elev_m": round(rim_elev, 1),
-        "floor_min_elev_m": round(float(floor_min), 1),
-        "depth_rim_to_floor_m": round(rim_elev - float(floor_min), 1),
-        "depth_to_diameter": round((rim_elev - float(floor_min)) / (2 * float(rim_r)), 3),
+        "floor_min_elev_m": None if floor_min is None else round(floor_min, 1),
+        "depth_rim_to_floor_m": None if depth is None else round(depth, 1),
+        "depth_to_diameter": None if depth is None else round(depth / (2 * rim_r), 3),
+        "lowest_point_inside_rim_m": round(inside_min, 1),
+        "depth_lower_bound_m": round(rim_elev - inside_min, 1),
+        "coverage": {"rim_ring": round(rim_cov, 2), "floor_disc": round(floor_cov, 2)},
         "floor_pixels": int((zones == 1).sum()),
         "rim_pixels": int((zones == 2).sum()),
     }
+    if not has_floor:
+        print(f"WARNING: the file covers only {floor_cov:.0%} of the crater floor, so no floor zone "
+              "and no depth were written. 'depth_lower_bound_m' is rim minus the lowest point "
+              "this file reaches; the real depth is larger.")
+    if rim_cov < 0.5:
+        print(f"NOTE: the file covers {rim_cov:.0%} of the rim ring; rim numbers describe that part only.")
     return zones, info, (prof_r, prof_z)
 
 
@@ -175,8 +207,10 @@ def quicklook(dem, zones, transform, profile, info, out_png):
     ax[1].axvline(info["rim_radius_km"], ls="--", color="tab:red", label="rim radius")
     ax[1].set_xlabel("distance from crater centre (km)")
     ax[1].set_ylabel("mean elevation (m)")
-    ax[1].set_title(f"radial profile: D ≈ {info['rim_diameter_km']} km, "
-                    f"depth ≈ {info['depth_rim_to_floor_m'] / 1000:.1f} km")
+    depth_txt = (f"depth ≈ {info['depth_rim_to_floor_m'] / 1000:.1f} km"
+                 if info["depth_rim_to_floor_m"] is not None
+                 else f"depth > {info['depth_lower_bound_m'] / 1000:.1f} km (floor not in file)")
+    ax[1].set_title(f"radial profile: D ≈ {info['rim_diameter_km']} km, {depth_txt}")
     ax[1].legend()
     fig.tight_layout()
     out_png.parent.mkdir(parents=True, exist_ok=True)
@@ -206,7 +240,7 @@ def main():
     nan_frac = float(np.isnan(dem).mean())
     print(f"crop: {dem.shape[1]}x{dem.shape[0]} px at {args.res:.0f} m, no-data fraction {nan_frac:.1%}")
 
-    zones, info, profile = zone_crater(dem, transform, centre)
+    zones, info, profile = zone_crater(dem, transform, centre, args.half_width_km * 1000)
     info.update({
         "source_file": args.dem.name,
         "output_pixel_m": args.res,
