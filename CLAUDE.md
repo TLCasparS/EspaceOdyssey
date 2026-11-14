@@ -60,6 +60,7 @@ criteria doc; **not changed in config-v1**. First candidate for config-v2.
 | 14 Nov 2026 | Shared rim zone `light.rim_zone` for c1 and c10, Earth and Moon: outside the bowl, out to max(edge + 1 km, 1.3 × r) | Shackleton's rim crest lies more than 1 km outside the filled bowl; one function so both sides stay the same |
 | 14 Nov 2026 | Lunar c1–c3 from PGDA illumination map (visible solar disc) vs Earth (Sun centre): accepted as known limitation (option a), shown in criteria doc, targets.json and app card | no Sun-centre lunar map available; both agree on flat land |
 | 14 Nov 2026 | **Freeze: git tag `config-v1`** (commit 9be7be9). No changes to thresholds, weights, tolerances or lunar values after it; `tests/test_config_freeze.py` guards it. Anything that looks wrong is reported, not changed; a change means config-v2 and a new validation | validation (Iceland, Devon Island) must run on an untuned config |
+| 14 Nov 2026 | Display values c8, c12, c18, c19, c24 (weight 0) with parameters in `config/display.yaml`, outside the config-v1 freeze. Environment criteria = "more is better", not closeness to the Moon; practical criteria (26, 29) = app filters, not similarity | the Moon's environment values are unreachable on Earth; display values never change scores |
 | 14 Nov 2026 | c5 sky-view factor display only (weight 0) | duplicates c7 for simple bowls and overlaps c2 (r −0.91 each over 6 bowl cells); c2 has the lunar comparison |
 
 ## Who does what

@@ -151,6 +151,24 @@ Traps we found while checking the data:
 
 ## Future work
 
+- **Display values built (14 Nov 2026, weight 0, outside the config-v1 freeze; parameters in `config/display.yaml`):**
+  - c8 crater size: equivalent diameter and rim-to-floor depth, raw only.
+  - c12 drivable share: pixels < 15° within 5 km of the base pad, and in the rim zone.
+  - c18 ground ice: WorldCover snow/ice share of the floor.
+  - c19 bare ground: WorldCover class 60 share of floor + rim.
+  - c24 impact crater: match against 88 confirmed structures from Wikipedia's list (incomplete; `src/impact_list.py`).
+- **Scoring rule for environment criteria (17–21):** "more is better" (dry, bare, dark, cold), **not** closeness
+  to the Moon. The Moon's values (no water, no vegetation, no air) are unreachable on Earth, as for c4.
+- **Practical criteria (26 access, 29 station nearby):** filters in the app, never part of the similarity score.
+
+### Planned, not built
+| # | Criterion | Data source | Size (checked 14 Nov 2026) | Effort | Notes |
+|---|---|---|---|---|---|
+| 17 | Dry (mean annual precipitation) | WorldClim 2.1 monthly precipitation (geodata.ucdavis.edu) | 10′ (~18 km): **7.3 MB**; 30″ (~1 km): **1.03 GB** (HTTP HEAD) | small: sum 12 months, sample at the cell; ~1–2 h | global incl. polar regions; CHIRPS (5 km) stops at 50° and my guessed download URL returned 404, so not checked |
+| 26 | Access (travel time to cities, practical → app filter) | MAP "accessibility to cities 2015" (Earth Engine or malariaatlas.org) | not checked (Earth Engine asset / no direct link found) | medium: needs an export from Earth Engine or the MAP download page; ~2–3 h | no data south of 60° S; roads from 2015 |
+| 21 | Night darkness (night lights) | NASA Black Marble VNP46A4 (annual, Earthdata login) or VIIRS VNL annual (EOG, registration) | not checked (login needed) | medium: login + tiles per region; ~2–3 h | annual composite; "darker is better" |
+| 23 | Basaltic ground (GLiM lithology) | GLiM, PANGAEA doi:10.1594/PANGAEA.788537 | not checked (download link and size not found on the page) | medium: polygon map, rasterise or point-in-polygon per cell; ~2–3 h | coarse; good for "basalt yes/no" (mare / cave base types) |
+
 - **"Open bowl" mode for polar analogs at high latitude (cirques).** The bowl filter needs a *closed* depression
   (≥ 50 m deep, ≥ 1 km wide, elongation ≤ 2). In the first high-latitude screening (Svalbard, Ellesmere,
   Peary Land, Kangerlussuaq; 14 Nov 2026) no place passed it. Glacial terrain has cirques: bowls open on the

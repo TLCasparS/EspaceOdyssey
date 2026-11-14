@@ -1,0 +1,11 @@
+# Display-only values (14 Nov 2026). NOT part of the scoring and NOT covered by the config-v1 freeze
+# (tests/test_config_freeze.py): changing these never changes a score. Shown in the outputs and the app.
+#
+# Environment criteria are "more is better" shares, not closeness to the Moon (the Moon's values, e.g.
+# 100 % bare ground, no water, are not reachable or not meaningful as a similarity, like c4).
+
+drivable_slope_deg: 15      # c12: a pixel is drivable below this slope (criteria doc: 15-20 deg; 15 = base-pad limit)
+drivable_radius_km: 5       # c12: also reported within this radius of the base pad (criteria doc: ~5 km)
+bare_classes: [60]          # c19: WorldCover "bare / sparse vegetation"
+impact_match_rel: 0.6       # c24: a place matches a confirmed impact structure if its low point lies within
+impact_match_min_km: 1.0    #      max(0.6 x structure diameter, 1 km) of the structure's listed centre
