@@ -15,6 +15,8 @@ DRAFT, not yet agreed: Which places on Earth best stand in for lunar base sites 
 - Earth candidates: not chosen by hand. They come out of the pipeline (filter → score → rank).
 - Test run done: Kali Gandaki (bbox 83.6 28.7 84.0 29.1) → median slope 28.75°, only 3.7 % of the area under 5° → too steep for a base site.
 - **Meteor Crater** (bbox -111.2 34.85 -110.85 35.15, `out/meteor_crater/`) is a **sanity/tuning site** with a known bowl. It is used to check and tune the pipeline and does **not** count for the later validation.
+- **Tuning regions, like Meteor Crater (do not count for validation):** Pinacate volcanic field, Sonora (bbox -113.8 31.6 -113.2 32.1, `out/pinacate/`) and San Francisco Volcanic Field, Arizona (bbox -112.3 35.0 -111.2 35.8, `out/sf_volcanic/`, approximate extent from memory). Used on 14 Nov 2026 for the c5 / c7 / c2 correlation check.
+- **Validation regions, keep untouched:** Iceland and Devon Island. Do not run, tune or look at results there until the method and weights are frozen.
 - **Mustang** (bbox 83 28 85 30, `out/mustang_polar/`) stays as the example of a region without good analogs (deep valleys, almost no closed bowls).
 
 ## Data we use
