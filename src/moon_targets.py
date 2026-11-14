@@ -114,7 +114,7 @@ def main():
           f"{'  (REJECTED: ' + shack['reason'] + ')' if not shack['keep'] else ''}")
 
     values = {name: shack.get(name) for name in CRITERIA}
-    values["c13_roughness"] = info["c13_roughness"]
+    # c13 is a per-place value since 14 Nov (bowl + rim ring), so it comes from shack like the others
     for name in CRITERIA:
         flag = "  (not used: see note)" if name in NOT_USED else ""
         print(f"  {name:15s} {values[name]}{flag}")
