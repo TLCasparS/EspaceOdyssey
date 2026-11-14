@@ -481,7 +481,9 @@ const TERRAIN = {
   defaultZoom: 12,     // a site can set its own "zoom" in site_info.json
 };
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-let terrainMap = null, orbitFrame = null, flyInTimer = null;
+let terrainMap = null, terrainReady = false, orbitFrame = null, flyInTimer = null;
+let flightTarget = null;                 // the fly-in in progress, so the orbit starts only if it arrives
+const TILT = { pitch: 68, bearing: -25 }; // the tilted 3D view; the 2D/3D button returns to it
 
 const currentSite = () => visibleSites().find(s => s.SITE === state.selected);
 
@@ -507,18 +509,95 @@ function terrainStyle() {
 function stopOrbit() { cancelAnimationFrame(orbitFrame); orbitFrame = null; }
 function startOrbit() {
   stopOrbit();
-  if (reducedMotion || state.view !== 'terrain') return;
-  const step = () => { terrainMap.setBearing(terrainMap.getBearing() + 0.04); orbitFrame = requestAnimationFrame(step); };
+  if (reducedMotion || state.view !== 'terrain' || !terrainReady) return;
+  const step = () => {
+    if (state.view !== 'terrain') return stopOrbit();
+    terrainMap.setBearing(terrainMap.getBearing() + 0.04);
+    orbitFrame = requestAnimationFrame(step);
+  };
   orbitFrame = requestAnimationFrame(step);
 }
 
+// The camera only moves once the map has loaded and while it is on screen. A flight before
+// 'load' stalls the map, and a move inside a hidden box turns MapLibre's camera into NaN (black map).
 function flyTerrainTo(s) {
-  if (!terrainMap || !s) return;
+  if (!terrainMap || !terrainReady || !s || state.view !== 'terrain') return;
   stopOrbit();
-  terrainMap.flyTo({ center: [s.lng, s.lat], zoom: state.info[s.SITE]?.zoom ?? TERRAIN.defaultZoom,
-    pitch: 68, bearing: -25, duration: reducedMotion ? 0 : 4500, essential: true });
-  terrainMap.once('moveend', startOrbit);
+  const zoom = state.info[s.SITE]?.zoom ?? TERRAIN.defaultZoom;
+  flightTarget = null;   // flyTo first stops any old move, which fires a 'moveend' that must not orbit
+  terrainMap.flyTo({ center: [s.lng, s.lat], zoom, ...TILT, duration: reducedMotion ? 0 : 4500, essential: true });
+  flightTarget = s.SITE;
   syncViewUI();
+}
+
+function onMoveEnd() {
+  // Orbit only when a fly-in finished untouched: a drag, scroll or new flight clears flightTarget first.
+  // (Don't compare zoom: with terrain, MapLibre adjusts it for the ground height, e.g. 14 → 13.5.)
+  if (flightTarget) startOrbit();
+  flightTarget = null;
+  syncTiltButton();
+}
+
+function viewerTookOver() { flightTarget = null; stopOrbit(); }
+
+function cameraBroken() {
+  try {
+    const c = terrainMap.getCenter();
+    return ![c.lng, c.lat, terrainMap.getZoom(), terrainMap.getPitch()].every(Number.isFinite);
+  } catch { return true; }
+}
+
+// 2D/3D toggle next to + and −: look straight down, then tilt back to the 3D view.
+const isTilted = () => terrainMap.getPitch() > 5;
+function toggleTilt() {
+  if (!terrainReady) return;
+  viewerTookOver();
+  terrainMap.easeTo(isTilted() ? { pitch: 0, bearing: 0, duration: 900 } : { ...TILT, duration: 900 });
+}
+function syncTiltButton() {
+  const b = document.querySelector('#terrain .tilt-btn');
+  if (!b || !terrainMap) return;
+  const tilted = isTilted();
+  b.textContent = tilted ? '2D' : '3D';
+  b.title = tilted ? 'Look straight down (2D)' : 'Tilt back to the 3D view';
+  b.setAttribute('aria-label', b.title);
+}
+class TiltControl {
+  onAdd() {
+    this.el = document.createElement('div');
+    this.el.className = 'maplibregl-ctrl maplibregl-ctrl-group';
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tilt-btn';
+    b.addEventListener('click', toggleTilt);
+    this.el.append(b);
+    return this.el;
+  }
+  onRemove() { this.el.remove(); }
+}
+
+function createTerrainMap(s) {
+  terrainReady = false;
+  terrainMap = new maplibregl.Map({
+    container: 'terrain', style: terrainStyle(), center: [s.lng, s.lat], zoom: 4, pitch: 0,
+    maxPitch: 80, attributionControl: false,
+  });
+  terrainMap.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+  terrainMap.addControl(new TiltControl(), 'top-right');
+  terrainMap.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+  syncTiltButton();
+  ['mousedown', 'touchstart', 'wheel'].forEach(ev => terrainMap.on(ev, viewerTookOver));
+  terrainMap.on('moveend', onMoveEnd);
+  terrainMap.on('pitchend', syncTiltButton);
+  terrainMap.once('load', () => {
+    terrainReady = true;
+    // Start the credits folded into the ⓘ button so they don't cover the caption.
+    document.querySelectorAll('#terrain .maplibregl-ctrl-attrib').forEach(d => {
+      d.classList.remove('maplibregl-compact-show'); d.removeAttribute('open');
+    });
+    applyMoonColours();              // in case it was switched while loading
+    flyTerrainTo(currentSite());     // the site selected now, even if it changed while loading
+  });
 }
 
 function openTerrain() {
@@ -526,35 +605,19 @@ function openTerrain() {
   if (!s || typeof maplibregl === 'undefined' || !hasWebGL()) return;
   clearTimeout(flyInTimer);
   state.view = 'terrain';
-  syncViewUI();
+  syncViewUI();                      // show the box first, so the map has a real size
   pauseRotation(0);
-  state.globe?.pauseAnimation();   // the globe is covered; stop drawing it so the 3D map gets the GPU
-  if (!terrainMap) {
-    terrainMap = new maplibregl.Map({
-      container: 'terrain', style: terrainStyle(), center: [s.lng, s.lat], zoom: 4, pitch: 0,
-      maxPitch: 80, attributionControl: false,
-    });
-    terrainMap.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
-    terrainMap.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
-    // Any touch, drag or scroll by the viewer stops the slow orbit.
-    ['mousedown', 'touchstart', 'wheel'].forEach(ev => terrainMap.on(ev, stopOrbit));
-    // Fly only after 'load': a flight started before the map has loaded stalls it (no tiles load).
-    terrainMap.once('load', () => {
-      // Start the credits folded into the ⓘ button so they don't cover the caption.
-      document.querySelectorAll('#terrain .maplibregl-ctrl-attrib').forEach(d => {
-        d.classList.remove('maplibregl-compact-show'); d.removeAttribute('open');
-      });
-      flyTerrainTo(currentSite());
-    });
-  } else {
-    terrainMap.resize();
-    flyTerrainTo(s);
-  }
+  state.globe?.pauseAnimation();     // the globe is covered; stop drawing it so the 3D map gets the GPU
+  if (terrainMap && cameraBroken()) { terrainMap.remove(); terrainMap = null; }   // self-repair
+  if (!terrainMap) return createTerrainMap(s);
+  terrainMap.resize();
+  flyTerrainTo(s);
 }
 
 function closeTerrain() {
   clearTimeout(flyInTimer);
-  stopOrbit();
+  viewerTookOver();
+  terrainMap?.stop();                // end any flight before the box is hidden
   state.view = 'globe';
   syncViewUI();
   state.globe?.resumeAnimation();
@@ -566,7 +629,8 @@ const moonPaint = () => ({ 'raster-saturation': state.moonColours ? -1 : 0, 'ras
 // With 3D terrain, MapLibre caches the imagery draped on the ground, so setPaintProperty only
 // recolours tiles that load later. Re-adding the layer redraws all of it at once.
 function applyMoonColours() {
-  const layer = terrainMap?.getStyle()?.layers.find(l => l.id === 'img');
+  if (!terrainReady) return;
+  const layer = terrainMap.getStyle()?.layers.find(l => l.id === 'img');
   if (!layer) return;
   terrainMap.removeLayer('img');
   terrainMap.addLayer({ ...layer, paint: moonPaint() }, 'shade');
@@ -575,7 +639,9 @@ function applyMoonColours() {
 function syncViewUI() {
   const inTerrain = state.view === 'terrain';
   const s = currentSite();
-  document.getElementById('terrain').hidden = !inTerrain;
+  // Hidden with visibility, not display:none, so the map keeps its size.
+  document.getElementById('terrain').classList.toggle('is-off', !inTerrain);
+  document.getElementById('terrain').setAttribute('aria-hidden', String(!inTerrain));
   document.getElementById('globeLegend').hidden = inTerrain;
   document.getElementById('moonBtn').hidden = !inTerrain;
   document.getElementById('moonBtn').setAttribute('aria-pressed', String(!!state.moonColours));
@@ -640,4 +706,9 @@ function refresh() {
   initGlobe();
   state.selected = ranked()[0]?.SITE ?? null;
   refresh();
+  // Load the 3D map quietly behind the globe, so the first fly-in doesn't wait for it.
+  setTimeout(() => {
+    const s = currentSite();
+    if (!terrainMap && s && typeof maplibregl !== 'undefined' && hasWebGL()) createTerrainMap(s);
+  }, 1500);
 })();
