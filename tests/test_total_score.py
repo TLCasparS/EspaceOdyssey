@@ -22,9 +22,12 @@ RES, N = 60.0, 400
 
 
 def _one_cell_run():
-    """One cell with one bowl, Sun on (coarse steps for speed) -> c1-c4 exist and are rank-scored."""
+    """One cell with one bowl, Sun on (coarse steps); c1-c4 without lunar value -> rank-scored."""
     cfg = copy.deepcopy(CFG)
     cfg["light"].update(sun=True, step_min=360, n_azimuths=36)
+    # simulate "no lunar value yet" for c1-c4 (real targets exist since 14 Nov): the rule must still hold
+    for c in ("c1_sunny_ridge", "c2_dark_floor", "c3_light_dark", "c4_grazing_sun"):
+        cfg["polar"]["criteria"][c]["target"] = None
     rr, cc = np.indices((N, N))
     x, y = (cc - N / 2 + 0.5) * RES, -(rr - N / 2 + 0.5) * RES
     r = np.hypot(x, y)
@@ -62,3 +65,8 @@ def test_total_ignores_rank_and_display_scores():
             changed[f"s_{c}"] = 0.0 if (best.get(f"s_{c}") or 0) > 0.5 else 1.0
     assert total_score(changed, crit)[0] == pytest.approx(base)
     assert rank_score(changed, crit)[0] != pytest.approx(best["rank_score"])
+
+
+def test_real_config_scores_c1_to_c4_against_the_moon():
+    for c in ("c1_sunny_ridge", "c2_dark_floor", "c3_light_dark", "c4_grazing_sun"):
+        assert method(CRIT[c]) == "target" and CRIT[c]["weight"] > 0, c

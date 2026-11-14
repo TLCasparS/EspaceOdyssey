@@ -77,7 +77,7 @@
   "status": "ranked",
   "reason": "",
   "site": "Meteor Crater",
-  "score_total": 0.4858
+  "score_total": 0.3674
  },
  {
   "run": "meteor_crater",
@@ -253,7 +253,7 @@
   "status": "ranked",
   "reason": "",
   "site": "pinacate r001c002",
-  "score_total": 0.3793
+  "score_total": 0.3144
  },
  {
   "run": "pinacate",
@@ -301,7 +301,7 @@
   "status": "ranked",
   "reason": "",
   "site": "pinacate r002c001",
-  "score_total": 0.2478
+  "score_total": 0.1258
  },
  {
   "run": "pinacate",

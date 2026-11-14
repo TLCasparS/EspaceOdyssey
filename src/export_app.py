@@ -48,6 +48,12 @@ UNITS = {
     "c10_flat_base": "deg (base pad slope)", "c11_walls": "deg (inner wall slope)",
     "c13_roughness": "m (elevation std, 3x3 px at 60 m)", "c14_aspect": "share of steep slopes facing the pole",
 }
+# known limitation (team decision 14 Nov 2026, option a): accepted and shown with the value
+DISC_VS_CENTRE = ("Known limitation: on the Moon 'lit' is the visible fraction of the solar DISC (PGDA AVGVISIB, "
+                  "extended Sun); on Earth it is the Sun's CENTRE above the horizon (point Sun). Both give 0.5 on "
+                  "flat land at the pole; on terrain they can differ where the Sun stays partly hidden for long "
+                  "stretches (disc fraction > 0 while the centre is already below the horizon).")
+LIMITATIONS = {"c1_sunny_ridge": DISC_VS_CENTRE, "c2_dark_floor": DISC_VS_CENTRE, "c3_light_dark": DISC_VS_CENTRE}
 EXTRA_RAW = {"c7_depth_m": "DEPTH_SPILL_M", "c7_width_m": "DIAMETER_EQUIV_M", "low_elev_m": "LOW_ELEV_M",
              "base_lat": "BASE_LAT", "base_lon": "BASE_LON", "base_elev_m": "BASE_ELEV_M",
              "max_dark_days": "MAX_DARK_DAYS", "near_permanent_shadow_share": "NEAR_PERMANENT_SHADOW_SHARE",
@@ -175,6 +181,7 @@ def main():
             "in_scores_csv": bool(ax and ax["method"] == "target"),
             "tolerance": ax.get("tolerance") if ax else None,
             "earth_unit": UNITS.get(crit),
+            "limitation": LIMITATIONS.get(crit),
             "moon": {"value": lt.get("value") if lt.get("verified") else None, "unit": lt.get("unit"),
                      "source": lt.get("source") if lt.get("verified") else None,
                      "zone": lt.get("zone"), "note": lt.get("note")} if lt else None,
@@ -251,9 +258,12 @@ Status counts here: {', '.join(f"{s} {sum(c['status'] == s for c in cells)}" for
 - **Counted (target, weight > 0):** {', '.join(by['target']) or 'none'}
 - **Display only (similarity shown, weight 0):** {', '.join(by['display']) or 'none'}
 - **Rank-scored, no lunar value yet** (empty in `scores.csv`, raw value in `raw_values.csv`):
-  {', '.join(by['rank']) or 'none'}. They get a similarity once the lunar light targets (Mateo) are in.
+  {(', '.join(by['rank']) + '. They get a similarity once their lunar value exists.') if by['rank'] else 'none (every scored criterion has a lunar value).'}
 - **Not computed by the pipeline yet:** {', '.join(by['not computed']) or 'none'}
 - Only the polar base type exists so far; `cave` and `mare` have no targets yet.
+
+## Known limitation: Sun disc vs Sun centre (SUNNY_RIDGE, DARK_FLOOR, LIGHT_NEAR_DARK)
+{DISC_VS_CENTRE} The same text is in `targets.json` (`limitation`) for these three criteria.
 """
     (a.out / "README.md").write_text(readme, encoding="utf-8")
     print(f"{len(rows)} rows from {len(runs)} runs -> {a.out}")

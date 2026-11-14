@@ -12,8 +12,8 @@ src/compute_lunar_target.py, which stays the only script that writes config/luna
            its agreement with the LPSR permanent-shadow map, flat_lit_fraction
 
 Zones exactly as on Earth: floor = light.floor_zone(bowl, slope, low, light.floor_max_slope_deg);
-rim = the criterion-10 zone of polar._Cell.place: outside the bowl, within polar.max_base_to_bowl_km
-of its edge.
+rim = light.rim_zone (shared with polar._Cell.place, criterion 10): outside the bowl, out to
+max(edge + polar.max_base_to_bowl_km, polar.rim_zone_rel x r). (Own copy removed 14 Nov 2026.)
 
 Lit fraction: PGDA product 69, AVGVISIB_85S_060M_201608 (modelled from LOLA, 60 m, hourly over
 18.6 years, shadows from distant terrain included). The GeoTIFF stores int16 with a scale in the
@@ -27,7 +27,7 @@ from __future__ import annotations
 import numpy as np
 from scipy import ndimage
 
-from pipeline.light import MOON_EQUATOR_TILT_DEG, floor_zone, flat_lit_fraction, max_sun_elevation_deg
+from pipeline.light import MOON_EQUATOR_TILT_DEG, floor_zone, flat_lit_fraction, max_sun_elevation_deg, rim_zone
 
 PGDA_AVGVISIB_60M = "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608.TIF"
 PGDA_LPSR_60M = "https://pgda.gsfc.nasa.gov/data/MoonIllumination/LPSR_85S_060M_201608.TIF"
@@ -62,13 +62,6 @@ def as_fraction(lit: np.ndarray) -> np.ndarray:
     if lo < -1e-6 or hi > 1.0 + 1e-6:
         raise ValueError(f"lit map range {lo:.4g}..{hi:.4g} is not 0-1: check the file's scale/offset")
     return lit
-
-
-def rim_zone(dep_mask: np.ndarray, res_m: float, max_base_to_bowl_km: float) -> np.ndarray:
-    """The criterion-10 zone (same expression as polar._Cell.place): outside the bowl, at most
-    max_base_to_bowl_km from its edge."""
-    to_bowl = ndimage.distance_transform_edt(~dep_mask) * res_m
-    return (to_bowl > 0) & (to_bowl <= max_base_to_bowl_km * 1000)
 
 
 def light_criteria(lit: np.ndarray, floor: np.ndarray, rim: np.ndarray, flat_lit: float, r_m: float,
@@ -110,7 +103,7 @@ def moon_light(mg, dep: dict, low, slope_deg: np.ndarray, lat_deg: float, cfg: d
     """c1-c4 + display values for the lunar place, zones and flat land as on Earth."""
     lcfg, p = cfg["light"], cfg["polar"]
     floor = floor_zone(dep["mask"], slope_deg, low, lcfg["floor_max_slope_deg"])
-    rim = rim_zone(dep["mask"], mg.res_m, p["max_base_to_bowl_km"])
+    rim, _ = rim_zone(dep["mask"], low, dep["width_m"] / 2, mg.res_m, p["max_base_to_bowl_km"], p["rim_zone_rel"])
     flat = flat_lit_fraction(lat_deg, MOON_EQUATOR_TILT_DEG)       # no atmosphere: horizon 0 deg
     out = light_criteria(as_fraction(lit), floor, rim, flat, dep["width_m"] / 2, mg.res_m,
                          lcfg["near_permanent_shadow"], psr)

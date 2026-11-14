@@ -10,7 +10,7 @@ spot near it.
    No qualifying depression -> one fallback candidate anchored at the cell's lowest pixel with
    bowl = 0 (interpreted; polar.require_depression: true drops the cell instead).
 3. Per candidate: 7 depth/width, 9 rim-to-floor depth (median rim crest - low point), 10 flattest usable pad "on the rim"
-   = outside the bowl, centre within max_base_to_bowl_km of the bowl's edge (fallback without a
+   = light.rim_zone: outside the bowl, out to max(edge + max_base_to_bowl_km, rim_zone_rel x r) (fallback without a
    bowl: within max_base_to_low_km of the low point; rejected if > max_base_slope_deg), 11 mean
    slope in a ring of wall_ring_rel x bowl radius around the low point (fallback: wall_ring_m),
    13 roughness over the bowl + rim ring (within rim_search_rel x r), 14 pole-facing share (display only).
@@ -28,7 +28,7 @@ import numpy as np
 from scipy import ndimage
 
 from dem.terrain import compute_terrain
-from pipeline.light import place_light
+from pipeline.light import place_light, rim_zone
 from pipeline.scoring import apply_rank, rank_score, score_direct, total_score
 
 CRITERIA = ("c1_sunny_ridge", "c2_dark_floor", "c3_light_dark", "c4_grazing_sun", "c5_sky_view", "c7_bowl", "c9_relief", "c10_flat_base", "c11_walls", "c13_roughness", "c14_aspect")
@@ -165,9 +165,10 @@ class _Cell:
         # 10: flattest usable pad "on the rim": outside the bowl (not on its floor) with its centre
         # within max_base_to_bowl_km of the bowl's edge. No bowl: within max_base_to_low_km of the low point.
         if dep:
-            to_bowl = ndimage.distance_transform_edt(~dep["mask"]) * res     # 0 inside the bowl
-            zone = (to_bowl > 0) & (to_bowl <= p["max_base_to_bowl_km"] * 1000)
-            where = f"on the rim (outside the bowl, within {p['max_base_to_bowl_km']:g} km of it)"
+            # shared rim zone (light.rim_zone, also used for c1 on Earth and Moon)
+            zone, to_bowl = rim_zone(dep["mask"], low, dep["width_m"] / 2, res, p["max_base_to_bowl_km"], p["rim_zone_rel"])
+            where = (f"on the rim (outside the bowl, out to max(edge + {p['max_base_to_bowl_km']:g} km, "
+                     f"{p['rim_zone_rel']:g} x r))")
         else:
             to_bowl = None
             zone = d <= p["max_base_to_low_km"] * 1000
