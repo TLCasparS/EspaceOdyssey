@@ -17,8 +17,8 @@ import numpy as np
 from dem.fetch import read_bbox
 from dem.grid import MetricGrid, metric_crs_for, onto_grid, reproject_dem
 from pipeline.filters import padded_bbox, run_filter
-from pipeline.polar import CRITERIA, evaluate_polar_cell
-from pipeline.scoring import NO_TARGET_NOTE, apply_rank, method, weighted_score
+from pipeline.polar import CRITERIA, best_of, polar_candidates, select_best
+from pipeline.scoring import NO_TARGET_NOTE, method
 
 LABELS = {
     "c7_bowl": ("7 Bowl shape", "depth/width"),
@@ -56,7 +56,19 @@ def cut_window(dem, dem_tf, bounds):
     return dem[r0:r1, c0:c1], win_tf(w, dem_tf)
 
 
-def evaluate_cell_terrain(cell, dem, dem_tf, usable, lc_tf, cfg):
+def _add_lonlat(place: dict, mg) -> None:
+    for key in ("low", "base"):
+        r, c = place.pop(f"{key}_row"), place.pop(f"{key}_col")
+        if r is None:
+            place[f"{key}_lon"] = place[f"{key}_lat"] = None
+        else:
+            lo, la = pixel_lonlat(mg, r, c)
+            place[f"{key}_lon"], place[f"{key}_lat"] = round(float(lo), 5), round(float(la), 5)
+    place["utm_crs"] = mg.crs
+
+
+def cell_candidates(cell, dem, dem_tf, usable, lc_tf, cfg):
+    """(cell info, candidate places with lon/lat) for one cell on its local-UTM grid."""
     pcfg, gcfg = cfg["polar"], cfg["grid"]
     lon_c, lat_c = (cell["west"] + cell["east"]) / 2, (cell["south"] + cell["north"]) / 2
     sub, sub_tf = cut_window(dem, dem_tf, padded_bbox(cell["west"], cell["south"], cell["east"],
@@ -65,16 +77,21 @@ def evaluate_cell_terrain(cell, dem, dem_tf, usable, lc_tf, cfg):
                        dst_crs=metric_crs_for(lon_c, lat_c), resampling=gcfg["resampling"])
     in_cell = cell_mask_on_grid(mg, cell)
     usable_g = onto_grid(usable.astype(np.uint8), lc_tf, "EPSG:4326", mg, nodata=0) == 1
-    t = evaluate_polar_cell(mg, in_cell, usable_g, lat_c, cfg)
-    for key in ("low", "base"):
-        r, c = t.pop(f"{key}_row"), t.pop(f"{key}_col")
-        if r is None:
-            t[f"{key}_lon"] = t[f"{key}_lat"] = None
-        else:
-            lo, la = pixel_lonlat(mg, r, c)
-            t[f"{key}_lon"], t[f"{key}_lat"] = round(float(lo), 5), round(float(la), 5)
-    t["utm_crs"] = mg.crs
-    return t
+    info, cands = polar_candidates(mg, in_cell, usable_g, lat_c, cfg)
+    for c in cands:
+        _add_lonlat(c, mg)
+        c["cell_id"] = cell["id"]
+    return info, cands
+
+
+def evaluate_cell_terrain(cell, dem, dem_tf, usable, lc_tf, cfg):
+    """One cell on its own: best candidate ranked against the cell's other candidates only."""
+    info, cands = cell_candidates(cell, dem, dem_tf, usable, lc_tf, cfg)
+    select_best(cands, cfg["polar"]["criteria"])
+    best = best_of(cands)
+    if best is None:
+        return {**{c: None for c in CRITERIA}, **(cands[0] if cands else {}), **info, "keep": False}
+    return {**best, **{k: v for k, v in info.items() if k not in ("keep", "reason")}, "n_candidates": len(cands)}
 
 
 def run(bbox, name, cfg, dem_res=30, pop_path=None, out_root="out", log=print):
@@ -89,30 +106,43 @@ def run(bbox, name, cfg, dem_res=30, pop_path=None, out_root="out", log=print):
     log(f"  DEM {dem.shape} ({time.time() - t0:.0f} s)")
 
     crit = cfg["polar"]["criteria"]
-    out_rows = []
+    infos, all_cands = {}, []
     for i, r in enumerate(rows):
-        row = {**r, "filter_reason": r["reason"]}
         if r["keep"]:
-            t = evaluate_cell_terrain(r, dem, prof["transform"], masks["usable"], lc_tf, cfg)
-            row.update(t)
-            row["terrain_reason"] = t["reason"]
-            row["reason"] = t["reason"]
-            row["keep"] = t["keep"]
-            if (i + 1) % 20 == 0 or i == len(rows) - 1:
-                log(f"  terrain {i + 1}/{len(rows)} cells ({time.time() - t0:.0f} s)")
+            info, cands = cell_candidates(r, dem, prof["transform"], masks["usable"], lc_tf, cfg)
+            infos[r["id"]] = (info, cands)
+            all_cands += cands
+        if (i + 1) % 20 == 0 or i == len(rows) - 1:
+            log(f"  terrain {i + 1}/{len(rows)} cells, {len(all_cands)} candidate places ({time.time() - t0:.0f} s)")
+
+    # rank every valid candidate of the run against each other, then each cell keeps its best
+    select_best(all_cands, crit)
+    out_rows = []
+    for r in rows:
+        row = {**r, "filter_reason": r["reason"], "terrain_reason": ""}
+        if r["id"] in infos:
+            info, cands = infos[r["id"]]
+            best = best_of(cands)
+            row.update({k: v for k, v in info.items() if k not in ("keep", "reason")})
+            row["n_candidates"] = len(cands)
+            row["n_valid_candidates"] = sum(c["keep"] for c in cands)
+            if best is None:
+                reason = info["reason"] or "no valid candidate"
+                row.update({**(cands[0] if cands else {}), "keep": False, "reason": reason,
+                            "terrain_reason": reason, "score": None})
+            else:
+                row.update({k: v for k, v in best.items() if k != "cell_id"})
         else:
             row.update({c: None for c in CRITERIA})
-            row["terrain_reason"] = ""
-        out_rows.append(row)
-
-    apply_rank(out_rows, crit)
-    for row in out_rows:
         for c in CRITERIA:
+            row.setdefault(c, None)
             row.setdefault(f"s_{c}", None)
             row[f"method_{c}"] = method(crit[c])
-        row["score"], row["n_scored"] = weighted_score(row, crit) if row["keep"] else (None, 0)
+        if not row["keep"]:
+            row["score"], row["n_scored"] = None, 0
+        out_rows.append(row)
 
-    ranked = sorted([r for r in out_rows if r["keep"] and r["score"] is not None], key=lambda r: -r["score"])
+    ranked = sorted([r for r in out_rows if r["keep"] and r.get("score") is not None], key=lambda r: -r["score"])
     for k, r in enumerate(ranked, 1):
         r["rank"] = k
     out_dir = os.path.join(out_root, name)
@@ -125,8 +155,9 @@ def run(bbox, name, cfg, dem_res=30, pop_path=None, out_root="out", log=print):
 
 RANK_COLS = (["rank", "id", "score", "n_scored", "lon", "lat"]
              + [x for c in CRITERIA for x in (c, f"s_{c}", f"method_{c}")]
-             + ["c7_depth_m", "c7_width_m", "has_depression", "depression_extends_outside_cell",
-                "c14_n_steep", "low_lon", "low_lat", "low_elev_m", "base_lon", "base_lat",
+             + ["anchor", "c7_depth_m", "c7_width_m", "depression_extends_outside_cell", "n_depressions",
+                "n_candidates", "n_valid_candidates", "c14_n_steep", "low_lon", "low_lat", "low_elev_m",
+                "base_lon", "base_lat", "base_elev_m", "base_to_low_km",
                 "usable", "largest_patch_km2", "utm_crs", "west", "south", "east", "north"])
 
 
@@ -180,4 +211,5 @@ def write_outputs(out_dir, bbox, dem_res, cfg, rows, ranked):
                    "n_cells": len(rows), "n_ranked": len(ranked),
                    "dropped_by_filter": sum(1 for r in rows if r["filter_reason"]),
                    "dropped_by_terrain": sum(1 for r in rows if r.get("terrain_reason")),
+                   "rank_basis": "percentile among all valid candidate places of this run",
                    "config": cfg}, f, indent=1)

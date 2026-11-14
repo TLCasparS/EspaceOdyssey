@@ -54,7 +54,7 @@ def test_fill_raises_closed_depression_to_spill_level():
 
 def test_bowl():
     r = evaluate_polar_cell(_grid(_bowl()), _cell_mask(), None, 28.5, CFG)
-    assert r["has_depression"]
+    assert r["anchor"] == "depression" and r["n_candidates"] == 1
     assert r["c7_depth_m"] == pytest.approx(1000, abs=10)
     assert r["c7_width_m"] == pytest.approx(6000, rel=0.03)
     assert r["c7_bowl"] == pytest.approx(1000 / 6000, rel=0.04)
@@ -64,9 +64,9 @@ def test_bowl():
     assert r["s_c10_flat_base"] == pytest.approx(1, abs=0.01) and r["keep"]
     # paraboloid wall slope at radius r: atan(2 d r / R^2); ring 500-3000 m is mostly inside the bowl
     assert 15 < r["c11_walls"] < 30
-    # symmetric bowl: steep pixels face every direction -> ~ 90/360 face north
+    # symmetric bowl: steep pixels within 3 km face every direction -> ~ 90/360 face north
     assert r["c14_aspect"] == pytest.approx(0.25, abs=0.03)
-    assert r["s_c7_bowl"] is None                                  # rank: filled later across cells
+    assert r["s_c7_bowl"] == 0.5             # single-cell use: ranked among its own 1 candidate (run ranks run-wide)
     assert r["c13_roughness"] is not None and r["s_c13_roughness"] is None   # no lunar target yet
 
 
@@ -74,7 +74,7 @@ def test_plane_no_depression_and_base_spot_filter():
     x, y = _xy()
     gentle = evaluate_polar_cell(_grid(-0.1 * y), _cell_mask(), None, 28.5, CFG)   # rises south -> faces north
     slope = math.degrees(math.atan(0.1))
-    assert not gentle["has_depression"] and gentle["c7_bowl"] == 0
+    assert gentle["anchor"] == "lowest_point" and gentle["c7_bowl"] == 0      # no depression: fallback
     assert gentle["c10_flat_base"] == pytest.approx(slope, abs=0.05)
     assert gentle["c11_walls"] == pytest.approx(slope, abs=0.05)
     assert gentle["c14_aspect"] == 0 and gentle["c14_n_steep"] == 0                 # 5.7 deg is not steep
@@ -92,7 +92,8 @@ def test_ridge_aspect_half_and_steep_walls_never_masked():
     x, y = _xy()
     ridge = 2000 - 0.5 * np.abs(y)                                                   # E-W ridge, 26.6 deg flanks
     r = evaluate_polar_cell(_grid(ridge), _cell_mask(), None, 28.5, CFG)
-    assert r["c14_aspect"] == pytest.approx(0.5, abs=0.02)
+    # lowest pixel lies at the foot of one flank; all steep pixels within 3 km face one way
+    assert r["c14_aspect"] in (pytest.approx(0.0, abs=0.02), pytest.approx(1.0, abs=0.02))
     assert r["c11_walls"] == pytest.approx(math.degrees(math.atan(0.5)), abs=1.0)   # steep pixels kept
     assert not r["keep"]                                                            # no flat pad anywhere
 
@@ -105,7 +106,7 @@ def test_base_spot_must_be_usable():
     assert usable[r["base_row"], r["base_col"]]
     assert r["c10_flat_base"] > 5                    # the flat plain is not usable
     none = evaluate_polar_cell(_grid(z), _cell_mask(), np.zeros((N, N), bool), 28.5, CFG)
-    assert none["c10_flat_base"] is None and none["reason"] == "no usable base pad"
+    assert none["c10_flat_base"] is None and none["reason"].startswith("no usable base pad within 5 km")
 
 
 def test_missing_dem_is_no_data_not_zero():
@@ -151,3 +152,50 @@ def test_lunar_targets_match_pipeline_and_unverified_values_are_unused(tmp_path)
     p.write_text(json.dumps(targets), encoding="utf-8")
     c9 = load_config(targets_path=p)["polar"]["criteria"]["c9_relief"]
     assert c9["target"] == 1234.0 and method(c9) == "target"
+
+
+def _bowl_at(x0, y0, radius, depth):
+    x, y = _xy()
+    r = np.hypot(x - x0, y - y0)
+    return np.where(r < radius, depth * (r ** 2 / radius ** 2 - 1), 0.0)
+
+
+def test_depressions_below_minimums_are_ignored():
+    shallow = evaluate_polar_cell(_grid(_bowl_at(0, 0, 2000, 40)), _cell_mask(), None, 28.5, CFG)   # 40 m < 50
+    narrow = evaluate_polar_cell(_grid(_bowl_at(0, 0, 400, 300)), _cell_mask(), None, 28.5, CFG)    # 800 m < 1000
+    for r in (shallow, narrow):
+        assert r["n_depressions"] == 0 and r["anchor"] == "lowest_point" and r["c7_bowl"] == 0
+
+
+def test_best_of_several_depressions_is_one_coherent_place():
+    z = (_bowl_at(-4000, 0, 2500, 600)          # A: big, deep
+         + _bowl_at(4500, 0, 1000, 120)         # B: qualifies, smaller
+         + _bowl_at(0, 5000, 1000, 30)          # too shallow
+         + _bowl_at(0, -5000, 300, 200))        # too narrow
+    r = evaluate_polar_cell(_grid(z), _cell_mask(), None, 28.5, CFG)
+    assert r["n_depressions"] == 2 and r["n_candidates"] == 2
+    lx, ly = (r["low_col"] - N / 2 + 0.5) * RES, -(r["low_row"] - N / 2 + 0.5) * RES
+    assert abs(lx + 4000) < 120 and abs(ly) < 120                    # A chosen
+    assert r["c7_depth_m"] == pytest.approx(600, abs=10)
+    assert r["base_to_low_km"] <= CFG["polar"]["max_base_to_low_km"]  # base belongs to the same place
+
+
+def test_depression_crossing_cell_edge_counted_once_by_its_low_point():
+    inside = evaluate_polar_cell(_grid(_bowl_at(6500, 0, 2000, 300)), _cell_mask(), None, 28.5, CFG)
+    assert inside["anchor"] == "depression"
+    assert inside["depression_extends_outside_cell"]
+    assert inside["c7_width_m"] == pytest.approx(4000, rel=0.03)   # found whole, not cut at the edge
+    outside = evaluate_polar_cell(_grid(_bowl_at(8500, 0, 2000, 300)), _cell_mask(), None, 28.5, CFG)
+    assert outside["n_depressions"] == 0 and outside["anchor"] == "lowest_point"   # belongs to the neighbour
+
+
+def test_base_spot_must_be_within_max_distance_of_low_point():
+    z = _bowl_at(0, 0, 3000, 1000)
+    usable = np.zeros((N, N), bool)
+    usable[:, :] = False
+    usable[195:205, 200 + 110:200 + 120] = True        # flat plain 6.6-7.2 km east: too far
+    r = evaluate_polar_cell(_grid(z), _cell_mask(), usable, 28.5, CFG)
+    assert not r["keep"] and r["reason"].startswith("no usable base pad within 5 km")
+    usable[195:205, 200 + 70:200 + 80] = True          # 4.2-4.8 km east: allowed
+    r = evaluate_polar_cell(_grid(z), _cell_mask(), usable, 28.5, CFG)
+    assert r["keep"] and r["base_to_low_km"] <= 5 and r["c10_flat_base"] == pytest.approx(0, abs=0.05)

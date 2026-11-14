@@ -9,68 +9,111 @@
   "polar": {
     "label": "Shackleton rim + floor (lunar south pole)",
     "status": "TODO: compute all raw values from LOLA 5 m site DEMs (NASA PGDA), resampled to 60 m with src/dem/grid.reproject_dem, criteria from src/pipeline/polar.py",
-    "grid": { "res_m": 60, "crs": "lunar south polar stereographic (as the LOLA site DEMs)" },
-    "window": "TODO: one ~15 km square (= one Earth cell) around the planned base area, plus the same buffer (config polar.buffer_m)",
+    "grid": {
+      "res_m": 60,
+      "crs": "lunar south polar stereographic (as the LOLA site DEMs)"
+    },
+    "window": "TODO: one ~15 km square (= one Earth cell) around the planned base area, read with the same 5.5 km buffer (config polar.buffer_m); the best qualifying depression in it is the target place",
     "criteria": {
       "c7_bowl": {
-        "label": "7 Bowl shape", "unit": "depth/width",
-        "definition": "closed depression: spill depth / equivalent diameter, deepest depression in the window",
-        "value": null, "source": null, "verified": false
+        "label": "7 Bowl shape",
+        "unit": "depth/width",
+        "definition": "candidate places = closed depressions >= 50 m deep and >= 1000 m wide whose low point is in the window (searched with a 5 km margin); value = spill depth / equivalent diameter of the chosen place",
+        "value": null,
+        "source": null,
+        "verified": false
       },
       "c9_relief": {
-        "label": "9 Relief ~5 km", "unit": "m",
-        "definition": "max - min elevation in a 5 km square centred on the low point",
-        "value": null, "source": null, "verified": false
+        "label": "9 Relief ~5 km",
+        "unit": "m",
+        "definition": "max - min elevation in a 5 km square centred on the chosen depression's low point",
+        "value": null,
+        "source": null,
+        "verified": false
       },
       "c10_flat_base": {
-        "label": "10 Flat base spot", "unit": "deg",
-        "definition": "mean slope of the flattest ~200 m pad (3x3 px at 60 m)",
-        "value": null, "source": null, "verified": false
+        "label": "10 Flat base spot",
+        "unit": "deg",
+        "definition": "mean slope of the flattest ~200 m pad (3x3 px at 60 m) whose centre is within 5 km of the low point",
+        "value": null,
+        "source": null,
+        "verified": false
       },
       "c11_walls": {
-        "label": "11 Steep walls", "unit": "deg",
+        "label": "11 Steep walls",
+        "unit": "deg",
         "definition": "mean slope in a 500-3000 m ring around the low point",
-        "value": null, "source": null, "verified": false
+        "value": null,
+        "source": null,
+        "verified": false
       },
       "c13_roughness": {
-        "label": "13 Roughness", "unit": "m",
+        "label": "13 Roughness",
+        "unit": "m",
         "definition": "median std of elevation in 3x3 px windows over the window",
-        "value": null, "source": null, "verified": false
+        "value": null,
+        "source": null,
+        "verified": false
       },
       "c14_aspect": {
-        "label": "14 Pole-facing slopes", "unit": "share",
-        "definition": "share of steep pixels (> 20 deg) facing the nearer pole (+-45 deg)",
-        "value": null, "source": null, "verified": false,
+        "label": "14 Pole-facing slopes",
+        "unit": "share",
+        "definition": "share of steep pixels (> 20 deg) within 3 km of the low point facing the nearer pole (+-45 deg)",
+        "value": null,
+        "source": null,
+        "verified": false,
         "note": "unsure: Shackleton contains the pole, so 'facing the pole' may be ill-defined there; check before use"
       }
     },
     "not_yet_in_earth_pipeline": {
       "sunny_ridge": {
-        "unit": "fraction of time lit", "zone": "rim", "value": 0.85,
-        "source": "LROC illumination map (as stated in the draft)", "verified": false,
+        "unit": "fraction of time lit",
+        "zone": "rim",
+        "value": 0.85,
+        "source": "LROC illumination map (as stated in the draft)",
+        "verified": false,
         "pipeline": "light criteria 1-5 via src/shadowsim, not wired into run_pipeline yet"
       },
       "dark_floor": {
-        "unit": "TODO", "zone": "floor", "value": null, "source": null, "verified": false,
+        "unit": "TODO",
+        "zone": "floor",
+        "value": null,
+        "source": null,
+        "verified": false,
         "pipeline": "light criteria 1-5 via src/shadowsim, not wired in yet"
       },
       "cold": {
-        "unit": "TODO", "value": null, "source": null, "verified": false,
+        "unit": "TODO",
+        "value": null,
+        "source": null,
+        "verified": false,
         "pipeline": "temperature criteria (MODIS LST), later"
       }
     },
     "draft_reference": {
       "relief_rim_floor": {
-        "value": 4100, "unit": "m", "zone": "rim+floor",
-        "source": "LOLA Shackleton DEM (as stated in the draft)", "verified": false,
+        "value": 4100,
+        "unit": "m",
+        "zone": "rim+floor",
+        "source": "LOLA Shackleton DEM (as stated in the draft)",
+        "verified": false,
         "why_unused": "crater rim-to-floor depth, not c9 (5 km window at the low point); recompute c9 from LOLA"
       },
       "bare_ground": {
         "why_unused": "land cover is a hard filter in the Earth pipeline (config filter), not a scored criterion"
       },
       "draft_scores": {
-        "values": { "slope_base": 0.8, "steep_walls": 0.9, "relief": 1.0, "roughness": 0.4, "bowl_shape": 0.9,
-                    "sunny_ridge": 0.9, "dark_floor": 1.0, "bare_ground": 1.0, "cold": 1.0 },
+        "values": {
+          "slope_base": 0.8,
+          "steep_walls": 0.9,
+          "relief": 1.0,
+          "roughness": 0.4,
+          "bowl_shape": 0.9,
+          "sunny_ridge": 0.9,
+          "dark_floor": 1.0,
+          "bare_ground": 1.0,
+          "cold": 1.0
+        },
         "why_unused": "0-1 scores for the target itself have no source and no meaning in the scoring: Earth cells are scored against the lunar raw values"
       }
     }

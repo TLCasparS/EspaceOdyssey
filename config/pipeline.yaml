@@ -34,22 +34,33 @@ filter:
 # --- Stage 2: Polar terrain criteria (DEM only), per surviving cell, on the 60 m grid --------
 # Criterion numbers follow the team plan (HANDOFF_terrain.md table).
 polar:
-  buffer_m: 3500              # DEM read around each cell: >= relief_window/2 and >= wall ring outer radius
-  relief_window_m: 5000       # criterion 9: relief within ~5 km
-  roughness_window_px: 3      # criterion 13: std of elevation in 3x3 px (180 m at 60 m)
+  # The cell is scored as ONE coherent place: a depression (bowl) + the walls around it + a
+  # base spot near it. Every qualifying depression whose low point lies inside the cell is a
+  # candidate; the best candidate (highest weighted score) is the cell's result.
+  buffer_m: 5500              # DEM read around each cell = depression search margin (5 km) + 0.5 km.
+                              # Depressions crossing the cell border are found whole; only those whose
+                              # low point is inside the cell count, so nothing is counted twice.
+  relief_window_m: 5000       # criterion 9: relief within ~5 km of the low point
+  roughness_window_px: 3      # criterion 13: std of elevation in 3x3 px (180 m at 60 m), cell-wide
 
-  min_depression_depth_m: 2   # (interpreted) criterion 7: shallower closed depressions = DEM noise, ignored
+  min_depression_depth_m: 50     # (team start value) criterion 7: shallower depressions are ignored
+  min_depression_width_m: 1000   # (team start value) criterion 7: narrower depressions are ignored
+  require_depression: false      # (interpreted) false: a cell with no qualifying depression is still
+                                 # scored, anchored at its lowest pixel, with bowl = 0. true: drop it.
   pad_m: 200                  # criterion 10: base pad ~200 m -> 3x3 px at 60 m
-  max_base_slope_deg: 15      # criterion 10: cell dropped if the flattest usable pad is steeper (only slope filter)
+  max_base_to_low_km: 5       # (team start value) criterion 10: base pad centre within 5 km of the low point
+                              # (same radius as the drivable share in criterion 12)
+  max_base_slope_deg: 15      # criterion 10: candidate rejected if its flattest usable pad is steeper (only slope filter)
   wall_ring_m: [500, 3000]    # (interpreted) criterion 11: ring around the low point counted as "walls"
   steep_slope_deg: 20         # (interpreted) criterion 14: what counts as steep terrain
-  pole_sector_deg: 45         # (interpreted) criterion 14: facing the pole = aspect within +-45 deg of it
+  pole_sector_deg: 45         # (interpreted) criterion 14: facing the pole = aspect within +-45 deg of it;
+                              # counted within wall_ring_m[1] of the low point (the walls of this place)
 
   # How each raw value becomes a 0-1 score (src/pipeline/scoring.py):
   #   scale: [a, b]   -> direct linear score, a -> 1 ... b -> 0 if direction lower (reverse if higher)
   #   lunar target    -> similarity to the lunar value (not implemented until targets exist).
   #                      Targets live in config/lunar_targets.json (used only when verified: true).
-  #   neither, direction higher/lower -> percentile rank among the surviving cells of THIS run
+  #   neither, direction higher/lower -> percentile rank among all candidate places of THIS run
   #                                      (score_method=rank: only comparable within one run)
   #   direction target, no target     -> score None ("no data") until the lunar value exists
   # Weights: (team start value) all equal; adjustable for the jury demo.
