@@ -195,3 +195,9 @@ a { color: var(--earth); }
 .known-ref summary .muted { color: var(--muted); font-weight: 400; }
 .known-ref details[open] summary { margin-bottom: 6px; }
 .region-btn.is-current { border-color: var(--signal); background: var(--brand); }
+
+/* A known crater our method missed (e.g. Tenoumer) */
+.badge-missed { background: rgba(255,138,112,.16); color: #FFB3A1; border: 1px solid rgba(255,138,112,.5); }
+.missed-box p { margin: 0; color: var(--text); font-size: 14px; line-height: 1.5; }
+.regions .missed-title { margin-top: 10px; }
+.region-btn.missed-btn { border-color: rgba(255,138,112,.6); }

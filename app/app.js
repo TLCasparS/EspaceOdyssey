@@ -128,6 +128,12 @@ async function loadAll() {
     parseCSV(coordsCsv).rows.filter(r => info[r.SITE]?.type === 'known' && !have.has(r.SITE) && r.LAT != null && r.LON != null)
       .forEach(r => state.sites.push({ SITE: r.SITE, LAT: r.LAT, LON: r.LON, lat: r.LAT, lng: r.LON, raw: {}, unscored: true }));
   }
+  // Known craters our method searched but missed (type "missed", with lat/lng in site_info.json), e.g.
+  // Tenoumer: shown on purpose, as an honest example of a limitation of the pipeline settings.
+  if (!DATA.isFake) {
+    Object.entries(info).filter(([k, v]) => v?.type === 'missed' && v.lat != null && v.lng != null && !state.sites.some(x => x.SITE === k))
+      .forEach(([k, v]) => state.sites.push({ SITE: k, LAT: v.lat, LON: v.lng, lat: v.lat, lng: v.lng, raw: {}, unscored: true, missed: true }));
+  }
   state.targets = Object.fromEntries(Object.entries(targets).filter(([k]) => !k.startsWith('_')));
   state.info = info;
   state.heat = Array.isArray(heat) ? heat : null;
@@ -338,7 +344,8 @@ function renderList() {
   const list = document.getElementById('siteList');
   const ofType = s => state.typeFilter === 'all' || s.type === state.typeFilter;
   const rows = visibleSites().filter(s => s.sim != null && ofType(s));          // the ranking: scored sites only
-  const reference = visibleSites().filter(s => s.sim == null && ofType(s));     // known analogs, not scored yet
+  const reference = visibleSites().filter(s => s.sim == null && !s.missed && ofType(s));   // known analogs, not scored yet
+  const missedSites = visibleSites().filter(s => s.missed);
   const total = scoredCount(), shown = visibleSites().filter(s => s.sim != null).length;
   document.getElementById('listHint').textContent = state.active.size
     ? `${shown} of ${total} sites pass the filters. Ranked by similarity to a ${baseLabel().toLowerCase()} base.`
@@ -376,8 +383,12 @@ function renderList() {
       <p class="regions-title">Searched, no crater found</p>
       <p class="regions-hint">No bowl at least 50 m deep and 1 km wide in these regions. Click one to see it on the globe.</p>
       ${empty.map(r => `<button type="button" class="region-btn" data-region="${esc(r.run)}" title="${r.cells} grid squares searched">${esc(r.label)}</button>`).join('')}
+      ${missedSites.length ? `<p class="regions-title missed-title">A known crater our method missed</p>
+      <p class="regions-hint">Its rim is too low on one side for our depth rule. Click it to see why.</p>
+      ${missedSites.map(s => `<button type="button" class="region-btn missed-btn site-btn-ref${s.SITE === state.selected ? ' is-current' : ''}" data-site="${esc(s.SITE)}">${esc(nameOf(s))}</button>`).join('')}` : ''}
     </li>`);
-    list.querySelectorAll('.region-btn').forEach(b => b.addEventListener('click', () => showRegion(b.dataset.region)));
+    list.querySelectorAll('.region-btn[data-region]').forEach(b => b.addEventListener('click', () => showRegion(b.dataset.region)));
+    list.querySelectorAll('.missed-btn').forEach(b => b.addEventListener('click', () => select(b.dataset.site, true)));
   }
   list.querySelectorAll('.site-btn').forEach(b => b.addEventListener('click', () => select(b.dataset.site, true)));
 }
@@ -468,6 +479,7 @@ function renderCard() {
   const info = state.info[s.SITE] ?? {};
   const isNew = info.type !== 'known';
   const unscored = s.sim == null;
+  const missed = s.type === 'missed';   // a known crater our method searched but did not find
   // Chips: criteria with a value, closest to the Moon first. ≥ 50 % = close, below = what it lacks.
   const scored = s.details.filter(d => d.counts && d.sim != null).sort((a, b) => b.sim - a.sim);
   const shownOnly = s.details.filter(d => !d.counts && d.sim != null);
@@ -502,13 +514,13 @@ function renderCard() {
   el.innerHTML = `
     <div class="card-top">
       <div class="card-title">
-        <span class="badge ${s.type === 'known' ? 'badge-known' : 'badge-new'}">${s.type === 'known' ? 'Known analog' : 'New candidate'}</span>
+        <span class="badge ${missed ? 'badge-missed' : s.type === 'known' ? 'badge-known' : 'badge-new'}">${missed ? 'Missed by our method' : s.type === 'known' ? 'Known analog' : 'New candidate'}</span>
         <h2 style="margin-top:8px">${esc(nameOf(s))}</h2>
         <p class="card-place">${esc(info.place ?? '')}${info.place ? ' · ' : ''}${fmtCoord(s.lat, s.lng)}${craterFacts.length ? ' · crater ' + esc(craterFacts.join(', ')) : ''}</p>
       </div>
       <div class="score">
         <strong>${pct(s.sim)}</strong>
-        <span>${unscored ? 'not scored yet' : `similar to the Moon (${esc(baseLabel().toLowerCase())} base)<br>rank ${s.RANK ?? s.rank} of ${scoredCount()}`}</span>
+        <span>${missed ? 'not found by our<br>pipeline (config-v1)' : unscored ? 'not scored yet' : `similar to the Moon (${esc(baseLabel().toLowerCase())} base)<br>rank ${s.RANK ?? s.rank} of ${scoredCount()}`}</span>
       </div>
     </div>
 
@@ -516,7 +528,10 @@ function renderCard() {
 
     <div class="card-body">
     <div class="card-col card-col-a">
-    ${unscored ? `<div class="radar-box">
+    ${missed ? `<div class="radar-box missed-box">
+      <h3>Missed by our method</h3>
+      <p>Our search covered this crater but found no bowl here. We show it on purpose: a known crater that our method misses is an honest example of its limits, and tells us what to fix next.</p>
+    </div>` : unscored ? `<div class="radar-box">
       <h3>Not scored yet</h3>
       <p class="nodata">Our pipeline has only searched a few regions so far (${esc(pipelineAreas())}), so this site has no score or fingerprint yet. It stays on the map with our research notes; it gets a score once the pipeline runs on its area.</p>
     </div>` : `<div class="radar-box">
@@ -561,12 +576,12 @@ function renderCard() {
     ${isPipeline() ? '<p class="nodata">Earth value vs Moon value. Hover a chip for its match.</p>' : ''}`}
 
     <div class="note-box">
-      <h3>Where the analogy breaks down</h3>
+      <h3>${missed ? 'Why our method missed it' : 'Where the analogy breaks down'}</h3>
       <p>${info.breaks ? research(info.breaks) : '<span class="todo">[to research]</span>'}</p>
     </div>
 
     <div class="note-box">
-      <h3>${isNew ? 'What we could test here' : 'How it has helped exploration'}</h3>
+      <h3>${missed ? 'What we change next' : isNew ? 'What we could test here' : 'How it has helped exploration'}</h3>
       <p>${info.helps ? research(info.helps) : `<span class="todo">${isNew ? '[to write once ranked: what we could test here]' : '[to research]'}</span>`}</p>
       ${sourcesHTML(info.sources)}
     </div>
@@ -634,7 +649,7 @@ function initGlobe() {
     .labelSize(d => (d.SITE === state.selected ? 1.6 : 1.0) * labelScale)
     .labelDotRadius(d => (d.SITE === state.selected ? 0.7 : d.sim == null ? 0.3 : 0.45) * labelScale)
     // Scored sites stand out; known analogs not scored yet are faint grey dots without a name.
-    .labelColor(d => (d.SITE === state.selected ? '#FFFFFF' : d.sim == null ? 'rgba(167,186,199,0.55)'
+    .labelColor(d => (d.SITE === state.selected ? '#FFFFFF' : d.missed ? REGION_COLORS.none : d.sim == null ? 'rgba(167,186,199,0.55)'
       : (typeOf(d) === 'known' ? COLORS.known : COLORS.newSite)))
     .labelAltitude(() => 0.07 * labelScale)
     .labelResolution(2)

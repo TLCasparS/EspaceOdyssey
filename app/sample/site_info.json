@@ -209,5 +209,21 @@
       }
     ],
     "zoom": 13.5
+  },
+  "Tenoumer crater": {
+    "type": "missed",
+    "lat": 22.918,
+    "lng": -10.407,
+    "place": "Sahara Desert, Mauritania",
+    "why": "A confirmed impact crater about 1.9 km wide and about 110 m deep from rim crest to floor (300–400 m when it formed, before sand filled it). Our search covered it (region arid_tenoumer, cell r001c001) but found no crater there.",
+    "breaks": "Our pipeline measures a crater's spill depth: how deep it is up to the lowest point of its rim, where water would overflow. Tenoumer's rim is low or sanded over on one side, so its spill depth is only 44 m, just under our 50 m minimum (settings config-v1). We kept the limit: changing it to let a known crater through would be tuning the method to the answer.",
+    "helps": "It shows a real limitation of config-v1 and the fix for the next version: filter by rim-crest depth instead of the lowest saddle, so old, sand-filled craters like Tenoumer are not dropped.",
+    "sources": [
+      {
+        "label": "Wikipedia: Tenoumer crater",
+        "url": "https://en.wikipedia.org/wiki/Tenoumer_crater"
+      }
+    ],
+    "zoom": 13.5
   }
 }
