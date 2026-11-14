@@ -1,4 +1,4 @@
-"""Polar terrain criteria v1 (DEM only): 7 bowl, 9 relief, 10 flat base spot, 11 steep walls,
+"""Polar terrain criteria v1 (DEM only): 7 bowl, 9 rim-to-floor depth, 10 flat base spot, 11 steep walls,
 13 roughness, 14 aspect. Numbers follow the team plan (docs/HANDOFF_terrain.md).
 
 A cell is scored as ONE coherent place: a depression (bowl) + the walls around it + a base
@@ -9,10 +9,11 @@ spot near it.
    wide whose low point (deepest pixel) lies INSIDE the cell (nothing is counted twice).
    No qualifying depression -> one fallback candidate anchored at the cell's lowest pixel with
    bowl = 0 (interpreted; polar.require_depression: true drops the cell instead).
-3. Per candidate: 7 depth/width, 9 relief at its low point, 10 flattest usable pad within
-   max_base_to_low_km of the low point (rejected if > max_base_slope_deg), 11 mean slope in the
-   wall ring around the low point, 14 pole-facing share of the steep pixels within the ring's
-   outer radius. 13 roughness is cell-wide.
+3. Per candidate: 7 depth/width, 9 rim-to-floor depth (median rim crest - low point), 10 flattest usable pad "on the rim"
+   = outside the bowl, centre within max_base_to_bowl_km of the bowl's edge (fallback without a
+   bowl: within max_base_to_low_km of the low point; rejected if > max_base_slope_deg), 11 mean
+   slope in a ring of wall_ring_rel x bowl radius around the low point (fallback: wall_ring_m),
+   13 roughness over the bowl + rim ring (within rim_search_rel x r), 14 pole-facing share (display only).
 4. The best candidate (highest weighted score) is the cell's result. In run_pipeline, rank
    scores are computed across ALL candidates of the run before choosing (select_best).
 
@@ -30,7 +31,7 @@ from dem.terrain import compute_terrain
 from pipeline.scoring import apply_rank, score_direct, weighted_score
 
 CRITERIA = ("c7_bowl", "c9_relief", "c10_flat_base", "c11_walls", "c13_roughness", "c14_aspect")
-PLACE_CRITERIA = ("c7_bowl", "c9_relief", "c10_flat_base", "c11_walls", "c14_aspect")
+PLACE_CRITERIA = CRITERIA                          # all criteria are per place (13 too, since 14 Nov)
 
 
 def _f(v):
@@ -67,8 +68,23 @@ def fill_depressions(z: np.ndarray) -> np.ndarray:
     return filled
 
 
+def longest_axis_m(mask: np.ndarray, res_m: float) -> float:
+    """Largest distance between two pixels of the mask (via the convex hull of its pixel centres)."""
+    pts = np.argwhere(mask).astype(float)
+    if len(pts) < 3:
+        return res_m * max(len(pts), 1)
+    try:
+        from scipy.spatial import ConvexHull
+        pts = pts[ConvexHull(pts).vertices]
+    except Exception:                                    # degenerate (all pixels on one line)
+        pass
+    diff = pts[:, None, :] - pts[None, :, :]
+    return float(np.sqrt((diff ** 2).sum(-1)).max() * res_m + res_m)
+
+
 def find_depressions(z: np.ndarray, in_cell: np.ndarray, res_m: float, pcfg: dict) -> list[dict]:
-    """Qualifying closed depressions whose low point lies inside the cell."""
+    """Qualifying closed depressions whose low point lies inside the cell. Size limits: depth,
+    equivalent diameter, and elongation = longest axis / equivalent diameter (circle = 1)."""
     depth = fill_depressions(z) - z
     labels, n = ndimage.label(np.nan_to_num(depth) > 1e-6, structure=np.ones((3, 3), bool))
     if n == 0:
@@ -84,9 +100,35 @@ def find_depressions(z: np.ndarray, in_cell: np.ndarray, res_m: float, pcfg: dic
         r, c = (int(v) for v in low[k])
         if (max_depth[k] >= pcfg["min_depression_depth_m"] and width >= pcfg["min_depression_width_m"]
                 and in_cell[r, c]):
+            mask = labels == k + 1
+            elong = longest_axis_m(mask, res_m) / width
+            if elong > pcfg["max_elongation"]:
+                continue
             out.append({"low": (r, c), "depth_m": float(max_depth[k]), "width_m": float(width),
-                        "extends_outside_cell": bool(((labels == k + 1) & ~in_cell).any())})
+                        "elongation": float(elong),
+                        "extends_outside_cell": bool((mask & ~in_cell).any()), "mask": mask})
     return out
+
+
+def rim_to_floor_m(z: np.ndarray, low, search_m: float, res_m: float):
+    """Criterion 9: median over 1-degree azimuth sectors of the highest elevation within search_m of
+    the low point, minus the low point's elevation. None if fewer than half the sectors have data."""
+    r0, c0 = low
+    k = int(np.ceil(search_m / res_m))
+    r1, r2, c1, c2 = max(r0 - k, 0), min(r0 + k + 1, z.shape[0]), max(c0 - k, 0), min(c0 + k + 1, z.shape[1])
+    sub = z[r1:r2, c1:c2]
+    rr, cc = np.indices(sub.shape)
+    dr, dc = rr + r1 - r0, cc + c1 - c0
+    inside = (np.hypot(dr, dc) * res_m <= search_m) & np.isfinite(sub) & ((dr != 0) | (dc != 0))
+    if not inside.any():
+        return None
+    sector = (np.degrees(np.arctan2(-dr, dc)) % 360).astype(int)
+    labels = np.where(inside, sector + 1, 0)
+    present = np.unique(labels[labels > 0])
+    if present.size < 180:
+        return None
+    crest = ndimage.maximum(sub, labels, present)
+    return _f(np.median(crest) - z[r0, c0])
 
 
 # --- per-place criteria -------------------------------------------------------------------------
@@ -112,24 +154,52 @@ class _Cell:
         return np.hypot(self.rr - low[0], self.cc - low[1]) * self.mg.res_m
 
     def place(self, low, dep: dict | None) -> dict:
-        p, t, crit = self.p, self.t, self.p["criteria"]
+        p, t, crit, res = self.p, self.t, self.p["criteria"], self.mg.res_m
         d = self.dist_m(low)
         raw = {}
         raw["c7_bowl"] = dep["depth_m"] / dep["width_m"] if dep else 0.0
-        raw["c9_relief"] = _f(t.relief_m[low])
-        # 10: flattest usable pad whose centre is within max_base_to_low_km of the low point
-        pads = np.where(d <= p["max_base_to_low_km"] * 1000, self.pad_mean, np.inf)
+        # 9: rim-to-floor depth of the bowl; no bowl -> 0 (data exists, there is no bowl)
+        raw["c9_relief"] = rim_to_floor_m(self.mg.dem, low, dep["width_m"] / 2 * p["rim_search_rel"], res) if dep else 0.0
+        # 10: flattest usable pad "on the rim": outside the bowl (not on its floor) with its centre
+        # within max_base_to_bowl_km of the bowl's edge. No bowl: within max_base_to_low_km of the low point.
+        if dep:
+            to_bowl = ndimage.distance_transform_edt(~dep["mask"]) * res     # 0 inside the bowl
+            zone = (to_bowl > 0) & (to_bowl <= p["max_base_to_bowl_km"] * 1000)
+            where = f"on the rim (outside the bowl, within {p['max_base_to_bowl_km']:g} km of it)"
+        else:
+            to_bowl = None
+            zone = d <= p["max_base_to_low_km"] * 1000
+            where = f"within {p['max_base_to_low_km']:g} km"
+        pads = np.where(zone, self.pad_mean, np.inf)
         if np.isfinite(pads).any():
-            br, bc = np.unravel_index(np.argmin(pads), pads.shape)
+            # ties (within 0.01 deg of the flattest) -> the pad nearest the bowl edge / low point
+            near_min = pads <= pads.min() + 0.01
+            dist = to_bowl if to_bowl is not None else d
+            br, bc = np.unravel_index(np.argmin(np.where(near_min, dist, np.inf)), pads.shape)
             raw["c10_flat_base"], base = float(pads[br, bc]), (int(br), int(bc))
         else:
             raw["c10_flat_base"], base = None, None
-        # 11: walls = ring around the low point (never masked by slope)
-        ring = (d >= p["wall_ring_m"][0]) & (d <= p["wall_ring_m"][1])
+        # 11: walls = ring around the low point, relative to the bowl radius (never masked by slope).
+        # Needs >= half of the full ring inside the grid and with data, else no data.
+        if dep:
+            r_eq = dep["width_m"] / 2
+            r_in, r_out = (f * r_eq for f in p["wall_ring_rel"])
+        else:
+            r_in, r_out = p["wall_ring_m"]
+        # 13: roughness over the same zone on Earth and Moon: bowl + rim ring = the bowl plus everything
+        # within rim_search_rel x r of the low point (the zone criterion 9 searches for the rim crest).
+        # No bowl (only with require_depression: false): the whole cell.
+        z13 = (dep["mask"] | (d <= p["rim_search_rel"] * r_eq)) if dep else self.in_cell
+        rough = t.roughness_m[z13]
+        rough = rough[np.isfinite(rough)]
+        raw["c13_roughness"] = _f(np.median(rough)) if rough.size else None
+        ring = (d >= r_in) & (d <= r_out)
         s = t.slope_deg[ring]
-        raw["c11_walls"] = _f(np.nanmean(s)) if ring.any() and np.isfinite(s).mean() >= 0.5 else None
+        full_px = np.pi * (r_out ** 2 - r_in ** 2) / res ** 2
+        covered = np.isfinite(s).sum() / full_px if full_px > 0 else 0.0
+        raw["c11_walls"] = _f(np.nanmean(s)) if covered >= 0.5 else None
         # 14: steep pixels within the ring's outer radius that face the nearer pole
-        near = d <= p["wall_ring_m"][1]
+        near = d <= r_out
         sl, a = t.slope_deg[near], t.aspect_deg[near]
         steep = np.isfinite(sl) & (sl > p["steep_slope_deg"]) & np.isfinite(a)
         n_steep = int(steep.sum())
@@ -142,7 +212,7 @@ class _Cell:
 
         reasons = []
         if raw["c10_flat_base"] is None:
-            reasons.append(f"no usable base pad within {p['max_base_to_low_km']:g} km")
+            reasons.append(f"no usable base pad {where}")
         elif raw["c10_flat_base"] > p["max_base_slope_deg"]:
             reasons.append(f"base-spot slope {raw['c10_flat_base']:.1f}>{p['max_base_slope_deg']:g} deg")
 
@@ -152,8 +222,12 @@ class _Cell:
                "base_row": base[0] if base else None, "base_col": base[1] if base else None,
                "base_elev_m": round(float(self.mg.dem[base]), 1) if base else None,
                "base_to_low_km": round(float(d[base]) / 1000, 2) if base else None,
+               "base_to_bowl_km": round(float(to_bowl[base]) / 1000, 2) if base and to_bowl is not None else None,
+               "wall_ring_km": [round(r_in / 1000, 2), round(r_out / 1000, 2)],
+               "c11_ring_covered": round(float(covered), 3),
                "c7_depth_m": round(dep["depth_m"], 1) if dep else 0.0,
                "c7_width_m": round(dep["width_m"], 0) if dep else 0.0,
+               "c7_elongation": round(dep["elongation"], 2) if dep else None,
                "depression_extends_outside_cell": dep["extends_outside_cell"] if dep else None,
                "c14_n_steep": n_steep}
         for name in PLACE_CRITERIA:
@@ -174,30 +248,21 @@ def polar_candidates(mg, in_cell: np.ndarray, usable: np.ndarray | None, lat: fl
     cell = _Cell(mg, in_cell, usable, lat, cfg)
     deps = find_depressions(mg.dem, in_cell, mg.res_m, p)
 
-    rough = cell.t.roughness_m[in_cell]
-    rough = rough[np.isfinite(rough)]
-    c13 = _f(np.median(rough)) if rough.size else None
-    s13 = score_direct(c13, p["criteria"]["c13_roughness"])
-    info = {"keep": True, "reason": "", "n_depressions": len(deps),
-            "c13_roughness": None if c13 is None else round(c13, 4),
-            "s_c13_roughness": None if s13 is None else round(s13, 4)}
+    info = {"keep": True, "reason": "", "n_depressions": len(deps)}
 
     if deps:
         cands = [cell.place(dp["low"], dp) for dp in deps]
     elif p["require_depression"]:
         info.update(keep=False, reason="no depression >= "
-                    f"{p['min_depression_depth_m']:g} m deep and >= {p['min_depression_width_m']:g} m wide")
+                    f"{p['min_depression_depth_m']:g} m deep, >= {p['min_depression_width_m']:g} m wide and elongation <= {p['max_elongation']:g}")
         return info, []
     else:
         zc = np.where(in_cell & np.isfinite(mg.dem), mg.dem, np.inf)
         low = np.unravel_index(np.argmin(zc), zc.shape)
         cands = [cell.place((int(low[0]), int(low[1])), None)]
-    for c in cands:
-        c["c13_roughness"], c["s_c13_roughness"] = info["c13_roughness"], info["s_c13_roughness"]
     if not any(c["keep"] for c in cands):
         info.update(keep=False, reason=cands[0]["reason"] if len(cands) == 1
-                    else f"none of {len(cands)} depressions has a flat usable base within "
-                         f"{p['max_base_to_low_km']:g} km")
+                    else f"none of {len(cands)} depressions has a valid base pad ({cands[0]['reason']}, ...)")
     return info, cands
 
 

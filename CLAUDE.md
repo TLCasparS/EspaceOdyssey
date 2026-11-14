@@ -14,6 +14,8 @@ DRAFT, not yet agreed: Which places on Earth best stand in for lunar base sites 
 - Lunar target for Polar: Shackleton rim area (LOLA 5 m site DEMs + LROC WAC illumination map). Targets for Mare/Cave: to be decided (e.g. Mare Tranquillitatis pit).
 - Earth candidates: not chosen by hand. They come out of the pipeline (filter → score → rank).
 - Test run done: Kali Gandaki (bbox 83.6 28.7 84.0 29.1) → median slope 28.75°, only 3.7 % of the area under 5° → too steep for a base site.
+- **Meteor Crater** (bbox -111.2 34.85 -110.85 35.15, `out/meteor_crater/`) is a **sanity/tuning site** with a known bowl. It is used to check and tune the pipeline and does **not** count for the later validation.
+- **Mustang** (bbox 83 28 85 30, `out/mustang_polar/`) stays as the example of a region without good analogs (deep valleys, almost no closed bowls).
 
 ## Data we use
 Full list and caveats: `docs/Moon_Analog_Criteria_and_Datasets.md`.
@@ -38,6 +40,12 @@ Full list and caveats: `docs/Moon_Analog_Criteria_and_Datasets.md`.
 | 14 Nov 2026 | Version 1 = Polar, terrain criteria 7, 9, 10, 11, 13, 14 first | all come from the DEM we already load |
 | 14 Nov 2026 | Compare Earth and Moon on one common metric grid (60 m, local UTM) | slope and roughness depend on resolution and projection |
 | 14 Nov 2026 | Missing data shows as "no data", never 0 | some datasets don't cover the poles |
+| 14 Nov 2026 | Polar lunar target = Shackleton, computed by `src/compute_lunar_target.py` from LOLA `LDEM_80S_20MPP_ADJ` (20 m → 60 m) with the same code as the Earth cells | same definitions on both sides; crater found from the data |
+| 14 Nov 2026 | Similarity rule: score = exp(−((earth − moon) / tolerance)²), tolerance per criterion in `pipeline.yaml` (team choice); criteria without a verified lunar value keep rank scoring | scores comparable across runs; no spread from the run's cells |
+| 14 Nov 2026 | Compare by shape, not size: c7 depth/width, c10 base slope, c11 inner-wall slope, c13 roughness are scored; c9 rim-to-floor depth is display only (weight 0) | Shackleton (≈21 km) is far bigger than Earth bowls |
+| 14 Nov 2026 | Zones relative to the bowl (r = equivalent radius of the filled depression): c11 ring 0.5–1.0 × r; c13 over bowl + 1.3 × r; c10 pad outside the bowl, centre ≤ 1 km from its edge | fixed km windows missed Shackleton's walls and rim |
+| 14 Nov 2026 | c14 aspect display only (weight 0) | at Shackleton "toward the pole" is no fixed direction; shadow comes from light criteria 1–5 |
+| 14 Nov 2026 | Bowl filter: require a closed depression ≥ 50 m deep, ≥ 1 km wide, elongation (longest axis / equivalent diameter) ≤ 2 | bowl-less cells and valleys outranked real bowls (Mustang run) |
 
 ## Who does what
 - Caspar: data pipeline (DEM, filters, terrain scoring)
