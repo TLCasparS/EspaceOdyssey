@@ -80,12 +80,14 @@ polar:
   # as similar. Size-dependent c9 gets a deliberately large tolerance (scale decision 14 Nov).
   # Weights: (team start value) all equal; adjustable for the jury demo.
   criteria:
-    # light criteria 1-4: weights and tolerances are team start values (14 Nov), until Mateo's lunar targets exist
-    # they are rank-scored (no lunar value yet)
-    c1_sunny_ridge: {weight: 1.0, direction: higher, tolerance: 0.1}  # max lit fraction in rim zone / flat-land lit fraction
-    c2_dark_floor:  {weight: 1.0, direction: higher, tolerance: 0.2}  # p99 terrain shadow fraction (1 - lit / flat_lit) in the floor zone
+    # light criteria 1-4: lunar values from PGDA (Mateo, lunar_light.py) since 14 Nov; weights/tolerances = team start values
+    # c1/c2 tolerances widened 14 Nov: with 0.1 / 0.2 every mid-latitude site scored ~0 and differences between sites vanished
+    c1_sunny_ridge: {weight: 1.0, direction: higher, tolerance: 0.4}  # max lit fraction in rim zone / flat-land lit fraction (tolerance: team start value 14 Nov)
+    c2_dark_floor:  {weight: 1.0, direction: higher, tolerance: 0.5}  # p99 terrain shadow fraction (1 - lit / flat_lit) in the floor zone (tolerance: team start value 14 Nov)
     c3_light_dark:  {weight: 1.0, direction: lower, tolerance: 0.5}   # distance darkest floor px -> sunniest rim px, / r
-    c4_grazing_sun: {weight: 1.0, direction: lower, tolerance: 5}     # deg, max Sun elevation over the year (latitude only)
+    c4_grazing_sun: {weight: 0.0, direction: lower, tolerance: 5}     # deg, max Sun elevation over the year. DISPLAY ONLY (team choice 14 Nov):
+                                                                      # purely latitude; Earth's lowest possible value is 23.4 deg (at the poles) vs
+                                                                      # 1.9 deg at Shackleton -> unreachable, no Earth analog possible
     c5_sky_view:   {weight: 0.0, direction: lower, tolerance: 0.1}    # share of sky visible from the floor. DISPLAY ONLY (team choice 14 Nov):
                                                                       # duplicates c7 for simple bowls (r -0.91 over 6 bowl cells) and overlaps c2
                                                                       # (r -0.91), which has the lunar comparison. Still computed for the radar charts.

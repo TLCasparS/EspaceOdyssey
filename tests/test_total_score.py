@@ -40,14 +40,14 @@ def _one_cell_run():
 
 
 def test_display_only_criteria_have_weight_zero():
-    for c in ("c5_sky_view", "c9_relief", "c14_aspect"):
+    for c in ("c4_grazing_sun", "c5_sky_view", "c9_relief", "c14_aspect"):
         assert CRIT[c]["weight"] == 0, c
 
 
 def test_one_cell_run_rank_scores_do_not_enter_the_total():
     best, crit = _one_cell_run()
     rank_crit = [c for c in crit if method(crit[c]) == "rank" and crit[c]["weight"] > 0]
-    assert set(rank_crit) >= {"c1_sunny_ridge", "c2_dark_floor", "c3_light_dark", "c4_grazing_sun"}
+    assert set(rank_crit) >= {"c1_sunny_ridge", "c2_dark_floor", "c3_light_dark"}   # c4 weight 0
     assert all(best[f"s_{c}"] == 0.5 for c in rank_crit)              # 1 cell -> middle value
     in_total = [c for c in crit if method(crit[c]) == "target" and crit[c]["weight"] > 0]
     expect = sum(crit[c]["weight"] * best[f"s_{c}"] for c in in_total) / sum(crit[c]["weight"] for c in in_total)
@@ -67,6 +67,7 @@ def test_total_ignores_rank_and_display_scores():
     assert rank_score(changed, crit)[0] != pytest.approx(best["rank_score"])
 
 
-def test_real_config_scores_c1_to_c4_against_the_moon():
-    for c in ("c1_sunny_ridge", "c2_dark_floor", "c3_light_dark", "c4_grazing_sun"):
+def test_real_config_scores_c1_to_c3_against_the_moon():
+    for c in ("c1_sunny_ridge", "c2_dark_floor", "c3_light_dark"):
         assert method(CRIT[c]) == "target" and CRIT[c]["weight"] > 0, c
+    assert method(CRIT["c4_grazing_sun"]) == "target" and CRIT["c4_grazing_sun"]["weight"] == 0   # no Earth analog

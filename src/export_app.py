@@ -54,6 +54,10 @@ DISC_VS_CENTRE = ("Known limitation: on the Moon 'lit' is the visible fraction o
                   "flat land at the pole; on terrain they can differ where the Sun stays partly hidden for long "
                   "stretches (disc fraction > 0 while the centre is already below the horizon).")
 LIMITATIONS = {"c1_sunny_ridge": DISC_VS_CENTRE, "c2_dark_floor": DISC_VS_CENTRE, "c3_light_dark": DISC_VS_CENTRE}
+# facts for the pitch: criteria where no place on Earth can match the Moon
+FACTS = {"c4_grazing_sun": ("No Earth analog possible: the Sun's highest elevation is purely a matter of latitude. "
+                            "On Earth it is at least 23.4 deg (at the poles, from the axial tilt); at Shackleton it is "
+                            "1.9 deg (1.5 deg at the lunar pole). Shown for information, weight 0.")}
 EXTRA_RAW = {"c7_depth_m": "DEPTH_SPILL_M", "c7_width_m": "DIAMETER_EQUIV_M", "low_elev_m": "LOW_ELEV_M",
              "base_lat": "BASE_LAT", "base_lon": "BASE_LON", "base_elev_m": "BASE_ELEV_M",
              "max_dark_days": "MAX_DARK_DAYS", "near_permanent_shadow_share": "NEAR_PERMANENT_SHADOW_SHARE",
@@ -182,6 +186,7 @@ def main():
             "tolerance": ax.get("tolerance") if ax else None,
             "earth_unit": UNITS.get(crit),
             "limitation": LIMITATIONS.get(crit),
+            "fact": FACTS.get(crit),
             "moon": {"value": lt.get("value") if lt.get("verified") else None, "unit": lt.get("unit"),
                      "source": lt.get("source") if lt.get("verified") else None,
                      "zone": lt.get("zone"), "note": lt.get("note")} if lt else None,
@@ -261,6 +266,9 @@ Status counts here: {', '.join(f"{s} {sum(c['status'] == s for c in cells)}" for
   {(', '.join(by['rank']) + '. They get a similarity once their lunar value exists.') if by['rank'] else 'none (every scored criterion has a lunar value).'}
 - **Not computed by the pipeline yet:** {', '.join(by['not computed']) or 'none'}
 - Only the polar base type exists so far; `cave` and `mare` have no targets yet.
+
+## No Earth analog possible: GRAZING_SUN
+{FACTS["c4_grazing_sun"]} (`targets.json` → `fact`.)
 
 ## Known limitation: Sun disc vs Sun centre (SUNNY_RIDGE, DARK_FLOOR, LIGHT_NEAR_DARK)
 {DISC_VS_CENTRE} The same text is in `targets.json` (`limitation`) for these three criteria.

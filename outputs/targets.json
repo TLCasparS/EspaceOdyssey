@@ -12,9 +12,10 @@
         "weight": 1.0,
         "score_method": "target",
         "in_scores_csv": true,
-        "tolerance": 0.1,
+        "tolerance": 0.4,
         "earth_unit": "lit fraction / flat-land lit fraction",
         "limitation": "Known limitation: on the Moon 'lit' is the visible fraction of the solar DISC (PGDA AVGVISIB, extended Sun); on Earth it is the Sun's CENTRE above the horizon (point Sun). Both give 0.5 on flat land at the pole; on terrain they can differ where the Sun stays partly hidden for long stretches (disc fraction > 0 while the centre is already below the horizon).",
+        "fact": null,
         "moon": {
           "value": 1.5617,
           "unit": "lit fraction / flat-land lit fraction",
@@ -31,9 +32,10 @@
         "weight": 1.0,
         "score_method": "target",
         "in_scores_csv": true,
-        "tolerance": 0.2,
+        "tolerance": 0.5,
         "earth_unit": "terrain shadow fraction (p99 of floor)",
         "limitation": "Known limitation: on the Moon 'lit' is the visible fraction of the solar DISC (PGDA AVGVISIB, extended Sun); on Earth it is the Sun's CENTRE above the horizon (point Sun). Both give 0.5 on flat land at the pole; on terrain they can differ where the Sun stays partly hidden for long stretches (disc fraction > 0 while the centre is already below the horizon).",
+        "fact": null,
         "moon": {
           "value": 1.0,
           "unit": "share",
@@ -53,6 +55,7 @@
         "tolerance": 0.5,
         "earth_unit": "distance / bowl radius",
         "limitation": "Known limitation: on the Moon 'lit' is the visible fraction of the solar DISC (PGDA AVGVISIB, extended Sun); on Earth it is the Sun's CENTRE above the horizon (point Sun). Both give 0.5 on flat land at the pole; on terrain they can differ where the Sun stays partly hidden for long stretches (disc fraction > 0 while the centre is already below the horizon).",
+        "fact": null,
         "moon": {
           "value": 0.7849,
           "unit": "distance / r",
@@ -65,13 +68,14 @@
         "column": "GRAZING_SUN",
         "criterion": "c4_grazing_sun",
         "label": "4 Grazing sun",
-        "counts": true,
-        "weight": 1.0,
-        "score_method": "target",
+        "counts": false,
+        "weight": 0.0,
+        "score_method": "display",
         "in_scores_csv": true,
         "tolerance": 5,
         "earth_unit": "deg (max Sun elevation)",
         "limitation": null,
+        "fact": "No Earth analog possible: the Sun's highest elevation is purely a matter of latitude. On Earth it is at least 23.4 deg (at the poles, from the axial tilt); at Shackleton it is 1.9 deg (1.5 deg at the lunar pole). Shown for information, weight 0.",
         "moon": {
           "value": 1.91,
           "unit": "deg",
@@ -91,6 +95,7 @@
         "tolerance": 0.1,
         "earth_unit": "share of sky hemisphere",
         "limitation": null,
+        "fact": null,
         "moon": {
           "value": 0.6306,
           "unit": "share of sky hemisphere",
@@ -110,6 +115,7 @@
         "tolerance": 0.05,
         "earth_unit": "depth / width",
         "limitation": null,
+        "fact": null,
         "moon": {
           "value": 0.1973,
           "unit": "depth/width",
@@ -129,6 +135,7 @@
         "tolerance": null,
         "earth_unit": null,
         "limitation": null,
+        "fact": null,
         "moon": null
       },
       {
@@ -142,6 +149,7 @@
         "tolerance": 1500,
         "earth_unit": "m (rim to floor)",
         "limitation": null,
+        "fact": null,
         "moon": {
           "value": 4077.2251,
           "unit": "m",
@@ -161,6 +169,7 @@
         "tolerance": 3,
         "earth_unit": "deg (base pad slope)",
         "limitation": null,
+        "fact": null,
         "moon": {
           "value": 0.664,
           "unit": "deg",
@@ -180,6 +189,7 @@
         "tolerance": 5,
         "earth_unit": "deg (inner wall slope)",
         "limitation": null,
+        "fact": null,
         "moon": {
           "value": 27.2221,
           "unit": "deg",
@@ -199,6 +209,7 @@
         "tolerance": null,
         "earth_unit": null,
         "limitation": null,
+        "fact": null,
         "moon": null
       },
       {
@@ -212,6 +223,7 @@
         "tolerance": 10,
         "earth_unit": "m (elevation std, 3x3 px at 60 m)",
         "limitation": null,
+        "fact": null,
         "moon": {
           "value": 24.5428,
           "unit": "m",
@@ -231,6 +243,7 @@
         "tolerance": 0.15,
         "earth_unit": "share of steep slopes facing the pole",
         "limitation": null,
+        "fact": null,
         "moon": {
           "value": 0.3979,
           "unit": "share",
