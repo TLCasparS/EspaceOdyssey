@@ -54,6 +54,7 @@ Full list and caveats: `docs/Moon_Analog_Criteria_and_Datasets.md`.
 | 14 Nov 2026 | Total score = "score (vs Moon)": weighted mean of target-scored criteria with weight > 0 only. Rank-scored criteria are shown as raw value + rank score and as a separate "rank score (within run)", never in the total, until a lunar target exists | rank scores depend on the run (1 cell → 0.5) and distorted the total |
 | 14 Nov 2026 | Shared rim zone `light.rim_zone` for c1 and c10, Earth and Moon: outside the bowl, out to max(edge + 1 km, 1.3 × r) | Shackleton's rim crest lies more than 1 km outside the filled bowl; one function so both sides stay the same |
 | 14 Nov 2026 | Lunar c1–c3 from PGDA illumination map (visible solar disc) vs Earth (Sun centre): accepted as known limitation (option a), shown in criteria doc, targets.json and app card | no Sun-centre lunar map available; both agree on flat land |
+| 14 Nov 2026 | **Freeze: git tag `config-v1`** (commit 9be7be9). No changes to thresholds, weights, tolerances or lunar values after it; `tests/test_config_freeze.py` guards it. Anything that looks wrong is reported, not changed; a change means config-v2 and a new validation | validation (Iceland, Devon Island) must run on an untuned config |
 | 14 Nov 2026 | c5 sky-view factor display only (weight 0) | duplicates c7 for simple bowls and overlaps c2 (r −0.91 each over 6 bowl cells); c2 has the lunar comparison |
 
 ## Who does what
