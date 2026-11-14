@@ -14,7 +14,7 @@ from rasterio.transform import from_origin  # noqa: E402
 from dem.grid import MetricGrid  # noqa: E402
 from pipeline.config import load_config  # noqa: E402
 from pipeline.polar import evaluate_polar_cell, fill_depressions  # noqa: E402
-from pipeline.scoring import apply_rank, percentile_ranks, weighted_score  # noqa: E402
+from pipeline.scoring import apply_rank, percentile_ranks, rank_score, total_score  # noqa: E402
 
 CFG = load_config()                                  # real config, incl. verified lunar targets
 CFG["light"]["sun"] = False                          # terrain tests: no year of Sun (tests/test_light.py covers it)
@@ -165,12 +165,12 @@ def test_rank_scoring_direction_and_none_never_zero():
     assert [r["s_c7_bowl"] for r in rows[:3]] == [0.0, 0.5, 1.0]                     # higher = better
     assert [r["s_c9_relief"] for r in rows[:3]] == [0.5, 0.5, 0.5]                   # ties
     assert "s_c7_bowl" not in rows[3]
-    score, n = weighted_score(rows[2], crit)
-    w = {k: crit[k]["weight"] for k in ("c7_bowl", "c9_relief", "c10_flat_base", "c11_walls")}
-    expect = (w["c7_bowl"] * 1.0 + w["c9_relief"] * 0.5 + w["c10_flat_base"] * 1.0 + w["c11_walls"] * 1.0) / sum(w.values())
-    assert n == 4 and score == pytest.approx(expect)                                  # None (13, 14) skipped, not 0
-    assert crit["c9_relief"]["weight"] == 0                                         # c9 display only
-    assert weighted_score({}, crit) == (None, 0)
+    # no lunar targets in CFG_RANK: no total score; rank score = rank criteria with weight > 0 only
+    assert total_score(rows[2], crit) == (None, 0)
+    rs, n = rank_score(rows[2], crit)
+    assert crit["c9_relief"]["weight"] == 0                                         # c9 display only: not counted
+    assert crit["c10_flat_base"].get("scale") and n == 2 and rs == pytest.approx(1.0)  # c7, c11 (c10 is linear)
+    assert rank_score({}, crit) == (None, 0)
 
 
 def test_percentile_ranks():

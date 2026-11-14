@@ -51,7 +51,11 @@ def scoring_note(criteria: dict) -> str:
              "rank = percentile among the candidate places of THIS run only" if "rank" in ms.values() else None,
              "linear = fixed scale" if "linear" in ms.values() else None,
              "none = no score yet (null = no data, not 0)" if "none" in ms.values() else None]
-    return "; ".join(x for x in parts if x) + ". Methods: " + ", ".join(f"{k} {v}" for k, v in ms.items())
+    in_total = [k for k, c in criteria.items() if ms[k] == "target" and c["weight"] > 0]
+    return ("; ".join(x for x in parts if x)
+            + f". TOTAL score (vs Moon) = weighted mean of target-scored criteria with weight > 0 only: {', '.join(in_total) or 'none'}"
+            + ". rank_score (within run) is shown separately and never enters the total"
+            + ". Methods: " + ", ".join(f"{k} {v} (w {criteria[k]['weight']:g})" for k, v in ms.items()))
 
 
 def percentile_ranks(values: list[float]) -> list[float]:
@@ -81,15 +85,31 @@ def apply_rank(rows: list[dict], criteria: dict) -> None:
             rows[i][f"s_{name}"] = round(p if ccfg["direction"] == "higher" else 1 - p, 4)
 
 
-def weighted_score(row: dict, criteria: dict):
-    """(score, n_scored). Weights renormalised over criteria that have a score; None if none do."""
+def weighted_score(row: dict, criteria: dict, methods=("target",)):
+    """(score, n). Weighted mean of s_<name> over criteria whose method is in `methods`, weight > 0
+    and a score present; weights renormalised over those. None if none qualify.
+
+    The TOTAL score ("score vs Moon") uses methods=("target",) only (team decision 14 Nov 2026):
+    rank scores depend on the other cells of the run (a run with 1 cell gives 0.5) and linear
+    scales are not a lunar comparison, so neither may enter the total. Weight-0 criteria (display
+    only: c5, c9, c14) never count, not even in n."""
     num = den = 0.0
     n = 0
     for name, ccfg in criteria.items():
         s = row.get(f"s_{name}")
-        if s is None:
+        if s is None or ccfg["weight"] <= 0 or method(ccfg) not in methods:
             continue
         num += ccfg["weight"] * s
         den += ccfg["weight"]
         n += 1
     return (round(num / den, 4) if den > 0 else None), n
+
+
+def total_score(row: dict, criteria: dict):
+    """(score vs Moon, n): target-scored criteria only."""
+    return weighted_score(row, criteria, ("target",))
+
+
+def rank_score(row: dict, criteria: dict):
+    """(rank score within run, n): rank-scored criteria only, shown separately, never in the total."""
+    return weighted_score(row, criteria, ("rank",))

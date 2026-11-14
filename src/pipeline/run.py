@@ -134,7 +134,7 @@ def run(bbox, name, cfg, dem_res=30, pop_path=None, out_root="out", log=print):
             if best is None:
                 reason = info["reason"] or "no valid candidate"
                 row.update({**(cands[0] if cands else {}), "keep": False, "reason": reason,
-                            "terrain_reason": reason, "score": None})
+                            "terrain_reason": reason, "score": None, "rank_score": None})
             else:
                 row.update({k: v for k, v in best.items() if k != "cell_id"})
         else:
@@ -144,10 +144,12 @@ def run(bbox, name, cfg, dem_res=30, pop_path=None, out_root="out", log=print):
             row.setdefault(f"s_{c}", None)
             row[f"method_{c}"] = method(crit[c])
         if not row["keep"]:
-            row["score"], row["n_scored"] = None, 0
+            row["score"], row["n_scored"], row["rank_score"], row["n_ranked"] = None, 0, None, 0
         out_rows.append(row)
 
-    ranked = sorted([r for r in out_rows if r["keep"] and r.get("score") is not None], key=lambda r: -r["score"])
+    # order by score vs Moon; rank_score only breaks ties (or orders cells if no lunar target exists at all)
+    ranked = sorted([r for r in out_rows if r["keep"] and (r.get("score") is not None or r.get("rank_score") is not None)],
+                    key=lambda r: (r.get("score") is None, -(r.get("score") or 0.0), -(r.get("rank_score") or 0.0)))
     for k, r in enumerate(ranked, 1):
         r["rank"] = k
     out_dir = os.path.join(out_root, name)
@@ -158,7 +160,8 @@ def run(bbox, name, cfg, dem_res=30, pop_path=None, out_root="out", log=print):
 
 # --- outputs ----------------------------------------------------------------------------------
 
-RANK_COLS = (["rank", "id", "score", "n_scored", "lon", "lat"]
+# score = score vs Moon (target-scored criteria, weight > 0); rank_score = within run (rank criteria), not in the total
+RANK_COLS = (["rank", "id", "score", "n_scored", "rank_score", "n_ranked", "lon", "lat"]
              + [x for c in CRITERIA for x in (c, f"s_{c}", f"method_{c}")]
              + ["anchor", "c7_depth_m", "c7_width_m", "c7_elongation", "depression_extends_outside_cell", "n_depressions",
                 "n_candidates", "n_valid_candidates", "c14_n_steep", "low_lon", "low_lat", "low_elev_m",
@@ -203,9 +206,13 @@ def write_outputs(out_dir, bbox, dem_res, cfg, rows, ranked):
         "note": scoring_note(crit),
         "axes": [{"id": c, "label": LABELS[c][0], "unit": LABELS[c][1], "direction": crit[c]["direction"],
                   "method": method(crit[c]), "weight": crit[c]["weight"],
-                  "target": crit[c].get("target"), "tolerance": crit[c].get("tolerance")} for c in CRITERIA],
+                  "target": crit[c].get("target"), "tolerance": crit[c].get("tolerance"),
+                  "in_total": method(crit[c]) == "target" and crit[c]["weight"] > 0} for c in CRITERIA],
+        "score_label": "score (vs Moon): weighted mean of the axes with in_total = true",
+        "rank_score_label": "rank score (within run): weighted mean of the rank-method axes; NOT in the total",
         "lunar_target": cfg["lunar_targets"]["polar"],    # raw values in the same units; null = TODO
-        "cells": [{"id": r["id"], "rank": r["rank"], "score": r["score"], "lon": r["lon"], "lat": r["lat"],
+        "cells": [{"id": r["id"], "rank": r["rank"], "score": r["score"], "rank_score": r.get("rank_score"),
+                   "lon": r["lon"], "lat": r["lat"],
                    "scores": {c: _clean(r.get(f"s_{c}")) for c in CRITERIA},
                    "raw": {c: _clean(r.get(c)) for c in CRITERIA}} for r in ranked],
     }

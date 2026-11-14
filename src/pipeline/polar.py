@@ -29,7 +29,7 @@ from scipy import ndimage
 
 from dem.terrain import compute_terrain
 from pipeline.light import place_light
-from pipeline.scoring import apply_rank, score_direct, weighted_score
+from pipeline.scoring import apply_rank, rank_score, score_direct, total_score
 
 CRITERIA = ("c1_sunny_ridge", "c2_dark_floor", "c3_light_dark", "c4_grazing_sun", "c5_sky_view", "c7_bowl", "c9_relief", "c10_flat_base", "c11_walls", "c13_roughness", "c14_aspect")
 PLACE_CRITERIA = CRITERIA                          # all criteria are per place (13 too, since 14 Nov)
@@ -276,18 +276,25 @@ def polar_candidates(mg, in_cell: np.ndarray, usable: np.ndarray | None, lat: fl
 
 
 def select_best(cands: list[dict], criteria: dict) -> None:
-    """Rank all valid candidates against each other, add weighted score; marks 'best' per call."""
+    """Rank all valid candidates against each other; add score (vs Moon, target criteria only) and,
+    separately, rank_score (within run, rank criteria only; never part of the total)."""
     valid = [c for c in cands if c["keep"]]
     apply_rank(valid, criteria)
     for c in valid:
-        c["score"], c["n_scored"] = weighted_score(c, criteria)
+        c["score"], c["n_scored"] = total_score(c, criteria)
+        c["rank_score"], c["n_ranked"] = rank_score(c, criteria)
 
 
 def best_of(cands: list[dict]) -> dict | None:
-    valid = [c for c in cands if c["keep"] and c.get("score") is not None]
+    """Best valid candidate by score vs Moon. Only if no candidate has one (no lunar target set at
+    all, e.g. tests) the rank score decides; it is never mixed into the total."""
+    valid = [c for c in cands if c["keep"] and (c.get("score") is not None or c.get("rank_score") is not None)]
     if not valid:
         return None
-    return max(valid, key=lambda c: (c["score"], c["c7_depth_m"]))
+    if any(c.get("score") is not None for c in valid):
+        valid = [c for c in valid if c.get("score") is not None]
+        return max(valid, key=lambda c: (c["score"], c.get("rank_score") or 0.0, c["c7_depth_m"]))
+    return max(valid, key=lambda c: (c["rank_score"], c["c7_depth_m"]))
 
 
 def evaluate_polar_cell(mg, in_cell, usable, lat, cfg) -> dict:

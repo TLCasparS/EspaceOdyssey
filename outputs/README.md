@@ -1,0 +1,36 @@
+# outputs/ for the app
+
+Written by `src/export_app.py` from: meteor_crater, pinacate. Base type: polar.
+Re-create with `python src/export_app.py out/meteor_crater out/pinacate` (site names need
+`--sites-info` / `--sites-coords`, default `app/sample/site_info.json` and `app/sample/scores.csv` from Sofia's app).
+Known sites matched this time: Meteor Crater.
+
+| File | What it is |
+|---|---|
+| `scores.csv` | one row per ranked cell: `SITE,LAT,LON`, one 0–1 column per criterion, then `RUN,CELL,BASE_TYPE,SCORE_TOTAL,RANK` |
+| `raw_values.csv` | same rows, raw Earth values (units in `targets.json` → `earth_unit`) plus depth, diameter, base pad, dark days |
+| `targets.json` | per base type: each criterion's column, `counts`, `weight`, `score_method`, raw Moon value + unit + source |
+| `heatmap.json` | `[{lat, lng, weight}]`, one point per ranked cell at the **cell centre**, weight = `SCORE_TOTAL` |
+| `cells.json` | every searched cell of these runs (25): centre, `bbox` [W,S,E,N], `status` (ranked / no_bowl / filtered / dropped) + `reason`, for drawing the searched area |
+
+**Why bowl-less cells are not in the heatmap with weight 0:** a weighted heatmap adds up the weights, so a
+point with weight 0 adds nothing and would be invisible. To show where we searched and found nothing, draw
+`cells.json` (e.g. faint outlines for `no_bowl` / `filtered`) under the heatmap instead.
+Status counts here: ranked 3, no_bowl 17, filtered 5, dropped 0.
+
+## How to read the numbers
+- **A 0–1 value in `scores.csv` is already the similarity to the Moon**: exp(−((Earth − Moon) / tolerance)²),
+  1 = same as the Moon. Do not compare it with a target again.
+- **Empty = no data** or no similarity yet. Never 0.
+- **`SCORE_TOTAL`** = score vs Moon: weighted mean of the criteria with `counts: true` only
+  (BOWL_SHAPE, SLOPE_BASE, STEEP_WALLS, ROUGHNESS). Comparable across runs. **`RANK`** = rank of `SCORE_TOTAL` over all rows in this file.
+- **`LAT`/`LON`** = the crater's low point (centre of the bowl), for the 3D view. The base pad is in `raw_values.csv`.
+- **`SITE`** = a known site from `site_info.json` when its (approximate) point lies inside the cell, else `<run> <cell>`.
+
+## Which criteria count
+- **Counted (target, weight > 0):** BOWL_SHAPE, SLOPE_BASE, STEEP_WALLS, ROUGHNESS
+- **Display only (similarity shown, weight 0):** SKY_VIEW, RELIEF, ASPECT
+- **Rank-scored, no lunar value yet** (empty in `scores.csv`, raw value in `raw_values.csv`):
+  SUNNY_RIDGE, DARK_FLOOR, LIGHT_NEAR_DARK, GRAZING_SUN. They get a similarity once the lunar light targets (Mateo) are in.
+- **Not computed by the pipeline yet:** CRATER_SIZE, DRIVABLE
+- Only the polar base type exists so far; `cave` and `mare` have no targets yet.
