@@ -97,5 +97,7 @@ team name, EspaceOdyssey. NASA imagery (Blue Marble) is used as data, with credi
   - Imagery: [Sentinel-2 cloudless 2020](https://s2maps.eu) by EOX (modified Copernicus Sentinel data),
     CC BY-NC-SA 4.0, fine for a non-commercial hackathon.
   - Clicking a site (list or globe) spins the globe to it, then flies into 3D terrain and orbits slowly.
+    A values panel (top right) shows that site's numbers, Earth vs Moon with a match bar, grouped into
+    Light, Shape and On the ground; open on desktop, folded behind a "Values" button on phones.
     "Moon colours" turns the imagery grey. Esc or "Back to globe" returns. How close it flies in is
     the `zoom` value per site in `site_info.json`.

@@ -77,7 +77,8 @@ const state = {
   heat: null, cells: [], // pipeline heatmap points and searched cells
   base: 'polar', group: 'all', active: new Set(), threshold: 0.7,
   typeFilter: 'all', selected: null, globe: null,
-  knownOpen: false,      // the folded "Known analog sites" box under the ranking
+  knownOpen: false,
+  valuesOpen: null,      // values panel over the 3D view (null = decide by screen width)      // the folded "Known analog sites" box under the ranking
   view: 'globe', moonColours: false,   // 'globe' or 'terrain' (3D close-up of the selected site)
 };
 
@@ -1018,6 +1019,56 @@ function applyMoonColours() {
   terrainMap.addLayer({ ...layer, paint: moonPaint() }, 'shade');
 }
 
+/* ---------- Values panel over the 3D view ---------- */
+
+// The selected site's numbers next to its terrain: score, light and shape (Earth vs Moon with a match bar),
+// and the "on the ground" values. Folded by default on narrow screens.
+function terrainValuesHTML(s) {
+  const open = state.valuesOpen;
+  const head = `<div class="tv-head">
+    <span><b>${esc(nameOf(s))}</b>${s.sim != null ? `<span class="tv-score">${pct(s.sim)} similar to the Moon · rank ${s.RANK ?? s.rank} of ${scoredCount()}</span>` : ''}</span>
+    <button type="button" class="tv-toggle" data-tv-toggle aria-expanded="${open}">${open ? 'Hide' : 'Values'}</button>
+  </div>`;
+  if (!open) return head;
+  const info = state.info[s.SITE] ?? {};
+  if (s.sim == null) {
+    const why = s.type === 'missed' ? 'A known crater our method missed (config-v1), so it has no values.'
+      : info.validation ? `Tested in our validation run: ${info.validation.result}, so it has no values.`
+      : 'Not scored yet: our pipeline hasn’t searched this region.';
+    return head + `<p class="tv-note">${esc(why)} See the card for details.</p>`;
+  }
+  const row = d => `<li class="tv-row${d.counts ? '' : ' is-display'}" title="${esc(chipTitle(d))}${d.counts ? '' : ' · not in score'}">
+      <span class="tv-label">${esc(d.label)}</span>
+      <span class="tv-val">${esc(vsText(d))}</span>
+      <span class="tv-bar" aria-hidden="true"><i style="width:${Math.round(d.sim * 100)}%"></i></span>
+    </li>`;
+  const group = (title, ds) => (ds.length ? `<p class="tv-group">${title}</p><ul>${ds.map(row).join('')}</ul>` : '');
+  const withVal = s.details.filter(d => d.sim != null);
+  const raw = s.raw ?? {};
+  const ground = groundCriteria().filter(c => meta(c.key).kind === 'more is better' && s[c.key] != null);
+  const groundRows = ground.map(c => `<li class="tv-row"><span class="tv-label">${esc(c.label)}</span>
+      <span class="tv-val">${Math.round(s[c.key] * 100)}%</span>
+      <span class="tv-bar is-plain" aria-hidden="true"><i style="width:${Math.round(s[c.key] * 100)}%"></i></span></li>`).join('');
+  const impact = s.IMPACT_CRATER == null ? '' : `<li class="tv-row"><span class="tv-label">Impact crater</span>
+      <span class="tv-val tv-wide">${s.IMPACT_CRATER === 1 ? `Yes${raw.IMPACT_NAME ? ` (${esc(raw.IMPACT_NAME)})` : ''}` : 'Not in the list'}</span></li>`;
+  return head + `<div class="tv-body">
+    ${group('Light', withVal.filter(d => d.group === 'light'))}
+    ${group('Shape', withVal.filter(d => d.group === 'terrain'))}
+    ${group('Other', withVal.filter(d => d.group !== 'light' && d.group !== 'terrain'))}
+    ${groundRows || impact ? `<p class="tv-group">On the ground</p><ul>${groundRows}${impact}</ul>` : ''}
+    <p class="tv-note">${isPipeline() ? 'Earth vs Moon. ' : ''}Bar = match with the Moon. Faded rows are shown but not in the score.</p>
+  </div>`;
+}
+
+function renderTerrainValues(s) {
+  const el = document.getElementById('terrainValues');
+  el.hidden = !s;
+  if (!s) return;
+  if (state.valuesOpen == null) state.valuesOpen = window.innerWidth >= 900;   // open on desktop, folded on phones
+  el.innerHTML = terrainValuesHTML(s);
+  el.classList.toggle('is-open', !!state.valuesOpen);
+}
+
 function syncViewUI() {
   const inTerrain = state.view === 'terrain';
   const s = currentSite();
@@ -1032,6 +1083,7 @@ function syncViewUI() {
   fly.disabled = !inTerrain && !s;
   const cap = document.getElementById('terrainCaption');
   cap.hidden = !inTerrain || !s;
+  renderTerrainValues(inTerrain ? s : null);
   if (s) cap.innerHTML = `<b>${esc(nameOf(s))}</b><br>3D terrain, heights ×${TERRAIN.exaggeration}. Drag to look around, scroll to zoom.`
     + (state.cells.length ? `<br><span class="cell-key"><i style="border-color:${CELL_COLORS.ranked}"></i>scored crater <i style="border-color:${CELL_COLORS.filtered}"></i>skipped (edge or sea) <i style="border-color:${CELL_COLORS.no_bowl}"></i>no crater found${state.cells.some(c => c.status === 'ice_floor') ? ` <i style="border-color:${CELL_COLORS.ice_floor}"></i>ice-filled floor` : ''}</span>` : '');
 }
@@ -1040,6 +1092,11 @@ function wireViewTools() {
   document.getElementById('flyBtn').addEventListener('click', () => (state.view === 'terrain' ? closeTerrain() : openTerrain()));
   document.getElementById('moonBtn').addEventListener('click', () => { state.moonColours = !state.moonColours; applyMoonColours(); syncViewUI(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.view === 'terrain') closeTerrain(); });
+  document.getElementById('terrainValues').addEventListener('click', e => {
+    if (!e.target.closest('[data-tv-toggle]')) return;
+    state.valuesOpen = !state.valuesOpen;
+    renderTerrainValues(currentSite());
+  });
 }
 
 /* ---------- Wiring ---------- */
