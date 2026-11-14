@@ -29,10 +29,16 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dem.grid import reproject_dem  # noqa: E402
 from pipeline.config import TARGETS_PATH, load_config  # noqa: E402
 from pipeline.polar import _Cell, find_depressions  # noqa: E402
+from pipeline.lunar_light import AVGVISIB_SOURCE, moon_light, read_on_grid  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 WINDOW = ROOT / "data" / "moon" / "shackleton_20m_window.tif"
 FIG = ROOT / "figures" / "shackleton_target.png"
+# light c1-c4 (src/pipeline/lunar_light.py): PGDA product 69 maps, downloaded once (32 MB + 0.6 MB):
+#   curl -L -o data/moon/AVGVISIB_85S_060M_201608.TIF https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608.TIF
+#   curl -L -o data/moon/LPSR_85S_060M_201608.TIF https://pgda.gsfc.nasa.gov/data/MoonIllumination/LPSR_85S_060M_201608.TIF
+AVGVISIB = ROOT / "data" / "moon" / "AVGVISIB_85S_060M_201608.TIF"
+LPSR = ROOT / "data" / "moon" / "LPSR_85S_060M_201608.TIF"
 SEARCH_KM = 15
 # pipeline definitions (same text the Earth side uses), refreshed on every run
 DEFINITIONS = {
@@ -98,13 +104,38 @@ def main():
     # 3. display zones from the data: floor, walls, rim crest (not used in scoring)
     zones = crater_zones(mg, X, Y, dep, low, cell.t.slope_deg)
 
+    # 4. light c1-c4: same zones and formulas as on Earth (light.place_light), lit map from PGDA
+    light = None
+    if AVGVISIB.exists():
+        psr = read_on_grid(str(LPSR), mg, resampling="nearest") if LPSR.exists() else None
+        light = moon_light(mg, dep, low, cell.t.slope_deg, lat, cfg, read_on_grid(str(AVGVISIB), mg), psr)
+    else:
+        print(f"WARNING: {AVGVISIB.relative_to(ROOT)} missing (download command at the top of this file): "
+              "c1-c4 stay null")
+
 
     today = date.today().isoformat()
     grid_note = f"bilinear to {cfg['grid']['res_m']} m (dem.grid.reproject_dem)"
     win_dem = f"data/moon/shackleton_20m_window.tif, {grid_note}"
     ring = f"{place['wall_ring_km'][0]}-{place['wall_ring_km'][1]} km"
-    # name: (value, DEM, zone, stat)
+    # name: (value, DEM, zone, stat[, source]); source defaults to SRC_WINDOW
+    lz = (f"floor = bowl pixels < {cfg['light']['floor_max_slope_deg']:g} deg connected to the low point; "
+          f"rim = outside the bowl, at most {p['max_base_to_bowl_km']:g} km from its edge (criterion-10 zone)")
+    lit_dem = f"{AVGVISIB.name} (60 m, own scale x 4e-5) on the 60 m grid; zones from {win_dem.split(',')[0]}"
+    lv = (lambda k: light[k]) if light else (lambda k: None)
+    flat_txt = f"flat-land lit fraction {lv('flat_lit_fraction')} (light.flat_lit_fraction, lunar tilt)"
     values = {
+        "c1_sunny_ridge": (lv("c1_sunny_ridge"), lit_dem, lz, "max lit fraction in the rim zone / " + flat_txt,
+                           AVGVISIB_SOURCE),
+        "c2_dark_floor": (lv("c2_dark_floor"), lit_dem, lz,
+                          "p99 over the floor zone of 1 - lit / flat_lit (not clipped); " + flat_txt, AVGVISIB_SOURCE),
+        "c3_light_dark": (lv("c3_light_dark"), lit_dem, lz,
+                          "distance darkest floor px -> sunniest rim px (closest pair) / bowl radius r",
+                          AVGVISIB_SOURCE),
+        "c4_grazing_sun": (lv("c4_grazing_sun"), "none (latitude only)", f"low point, latitude {lat:.3f}",
+                           "light.max_sun_elevation_deg(lat, MOON_EQUATOR_TILT_DEG) = 90 - max(0, |lat| - tilt)",
+                           "geometry: low-point latitude from the LOLA window + lunar equator tilt "
+                           "(light.MOON_EQUATOR_TILT_DEG, NSSDC Moon Fact Sheet)"),
         "c5_sky_view": (place["c5_sky_view"], win_dem,
                         f"floor zone ({place['c5_floor_px']} px: bowl pixels < {cfg['light']['floor_max_slope_deg']:g} "
                         f"deg connected to the low point); horizons out to {place['c5_horizon_km']} km "
@@ -143,11 +174,11 @@ def main():
                    "resampling": cfg["grid"]["resampling"]}
     pol["window"] = (f"{cfg['grid']['cell_km']} km square centred on the crater low point, found from the data "
                      f"(largest depth x width depression within {SEARCH_KM} km of the pole)")
-    for name, (v, dem, zone, stat) in values.items():
+    for name, (v, dem, zone, stat, *src_opt) in values.items():
         c = pol["criteria"][name]
         for k in ("why_not_verified", "note", "how", "computed"):
             c.pop(k, None)
-        src = SRC_WINDOW
+        src = src_opt[0] if src_opt else SRC_WINDOW
         c.update(value=None if v is None else round(float(v), 4), source=src, dem=dem, zone=zone, stat=stat,
                  date=today, verified=v is not None)
         c.update(DEFINITIONS.get(name, {}))
@@ -165,6 +196,16 @@ def main():
         "zones_how": "floor = bowl pixels < 10 deg connected to the low point; inner wall = bowl pixels between "
                      "floor and rim crest; rim crest = highest point within 1.3 x bowl radius per 1 deg azimuth",
     }
+    if light:
+        pol["place"]["light"] = {
+            "_note": ("display values from src/pipeline/lunar_light.py. PGDA counts the visible fraction of the "
+                      "solar disc, light.py (Earth) the Sun's centre; flat land gives 0.5 either way at the pole"),
+            **{k: v for k, v in light.items() if not k.startswith(("_", "c1_", "c2_", "c3_", "c4_"))},
+            "sunniest_rim_xy_m": [round(float(X[tuple(light["sunniest_rim_px"])])),
+                                  round(float(Y[tuple(light["sunniest_rim_px"])]))],
+            "darkest_floor_xy_m": [round(float(X[tuple(light["darkest_floor_px"])])),
+                                   round(float(Y[tuple(light["darkest_floor_px"])]))],
+        }
     Path(TARGETS_PATH).write_text(json.dumps(t, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     for name, (v, *_rest) in values.items():
