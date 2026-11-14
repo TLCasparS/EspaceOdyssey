@@ -173,6 +173,51 @@
       "base_to_bowl_km": 0.54,
       "base_to_low_km": 11.45,
       "zones_how": "floor = bowl pixels < 10 deg connected to the low point; inner wall = bowl pixels between floor and rim crest; rim crest = highest point within 1.3 x bowl radius per 1 deg azimuth"
+    },
+    "cross_check": {
+      "_note": "Independent computation by Mateo on branch moon-targets (src/moon_targets.py, src/moon_dem.py), merged 14 Nov 2026. Same source file (LDEM_80S_20MPP_ADJ.TIF) but the OLD pipeline definitions (c9 5 km window, c11 fixed 0.5-3 km ring, c10 within 5 km of the low point), cell centred on IAU coordinates of Shackleton. Not used for scoring; kept to compare.",
+      "moon_targets_py": {
+        "c7_bowl": {
+          "value": 0.1972
+        },
+        "c9_relief": {
+          "value": 1400.6382
+        },
+        "c10_flat_base": {
+          "value": 0.6284,
+          "note": "TODO: with max_base_to_low_km = 5 the pad is searched within 5 km of the low point, i.e. on Shackleton's floor/lower wall (permanently dark), not on the rim where NASA's base sites are (~10 km out). Kept as is for v1; revisit the search radius."
+        },
+        "c11_walls": {
+          "value": 14.7109,
+          "note": "TODO: the wall ring (polar.wall_ring_m = 500-3000 m from the low point) covers Shackleton's floor and the foot of its walls; the steep inner walls run ~3-10 km out, so this value understates them. Kept as is for v1; revisit a ring scaled to the depression size."
+        },
+        "c13_roughness": {
+          "value": 28.6108
+        },
+        "c14_aspect": {
+          "value": null,
+          "note": "Shackleton's rim touches the lunar south pole and the Sun circles the whole horizon there, so 'facing the pole' does not mean 'less sun' as it does on Earth. Computed value kept in the note for reference only. Computed: 0.415."
+        }
+      },
+      "moon_targets_py_status": "computed by src/moon_targets.py; verified=false until a person checks each value against the quicklook and the definition",
+      "moon_targets_py_computed": {
+        "n_depressions_in_cell": 1,
+        "spill_depth_m": 3752.5,
+        "depression_width_m": 19031.0,
+        "low_elev_m": -2868.2,
+        "base_to_low_km": 2.66,
+        "base_elev_m": -2813.1
+      },
+      "moon_dem_py_rim_to_floor": {
+        "value": 3987,
+        "unit": "m",
+        "zone": "median rim to floor minimum",
+        "source": "LOLA LDEM_80S_20MPP_ADJ.TIF via src/moon_dem.py (30 m crop): rim median 1115 m, floor min -2872 m (data/results/moon_dem_summary.json)",
+        "verified": false,
+        "why_unused": "crater rim-to-floor depth, not c9 (5 km window at the low point); recompute c9 from LOLA",
+        "note": "replaces a 4100 m placeholder from a chat format example. Spill depth (lowest rim saddle to floor) is 3752.5 m, see polar.computed.spill_depth_m."
+      },
+      "agreement": "c7 0.1972 identical; spill depth 3752.5 vs 3752.9 m; equivalent diameter 19031 vs 19030 m; rim diameter 20.9 km both. Rim-to-floor differs: 3987 m (moon_dem.py, 30 m, rim median on a ring around a fitted centre) vs 4073 m (compute_lunar_target.py, 60 m, highest point per 1-deg azimuth within 1.3 x r). Unresolved; both are LOLA-based."
     }
   }
 }
