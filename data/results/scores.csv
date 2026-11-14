@@ -1,0 +1,2 @@
+name,lat,lon,half_width_km,dem_source,crs,res_m,valid_dem_frac,elev_min_m,elev_max_m,slope_median_deg,slope_p90_deg,frac_slope_lt_5deg,frac_slope_lt_10deg,frac_slope_gt_30deg,relief5km_median_m,relief5km_max_m,roughness3px_median_m,roughness3px_p90_m,tri_median_m,tri_p90_m,frac_bare_sparse,frac_snow_ice,frac_water,frac_vegetated,dominant_landcover
+haughton_crater,75.383,-89.667,15.0,planetary_computer,EPSG:32616,30.0,1.0,8.5,407.6,4.07,13.37,0.607,0.849,0.02,178.5,400.3,1.82,6.05,1.73,5.74,0.366,0.002,0.008,0.624,moss_lichen
