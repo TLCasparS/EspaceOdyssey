@@ -45,11 +45,11 @@ The "Base type" column says which lunar base a criterion matters for; "Any" appl
 | 7 | Bowl shape | Polar | closed, deep crater | closed depression; depth to width ratio | DEM | Core |
 | 8 | Crater size match | Polar | Shackleton rim crest 20.9 km wide, rim to floor 4073 m (LOLA LDEM\_80S\_20MPP\_ADJ, resampled to 60 m, measured 14 Nov 2026)¹ | diameter and depth vs. target crater | DEM | Secondary |
 | 9 | Rim-to-floor depth | Any | Shackleton 4073 m (LOLA, 14 Nov 2026)¹; low relief on mare | rim-to-floor depth of the bowl: median rim crest elevation minus the floor low point (changed 14 Nov 2026 from "max minus min within \~5 km", which did not reach Shackleton's rim and was scale-dependent). Size-dependent, so display only (weight 0) | DEM | Core |
-| 10 | Flat base spot | Any | landing and building | slope at the candidate cell (low is good) | DEM | Core |
+| 10 | Flat base spot | Any | landing and building; Shackleton 0.6° on the south rim (LOLA, 14 Nov 2026)¹ | mean slope of the flattest ~200 m pad whose centre lies outside the bowl and at most 1 km from its edge (low is good; same rule on Earth and Moon since 14 Nov 2026) | DEM | Core |
 | 11 | Steep walls | Polar | Shackleton inner wall mean slope 29.0° (LOLA LDEM\_80S\_20MPP\_ADJ at 60 m, measured 14 Nov 2026)¹ | mean slope of walls around the low point (high is good) | DEM | Core |
 | 12 | Drivable share | Any | rover routes around the base | share of cells within \~5 km under 15–20° | DEM | Secondary |
-| 13 | Roughness | Any | traverse difficulty | spread of elevation in a moving window | DEM | Core |
-| 14 | Aspect | Polar | pole-facing slopes hold shadow | share of steep terrain facing the nearer pole | DEM | Core |
+| 13 | Roughness | Any | traverse difficulty; Shackleton 24.5 m (LOLA, 14 Nov 2026)¹ | spread of elevation in a moving window (3×3 px at 60 m), median over the bowl + rim ring: the bowl plus everything within 1.3 × its equivalent radius of the low point. Same zone on Earth and Moon (changed 14 Nov 2026 from the whole cell) | DEM | Core |
+| 14 | Aspect | Polar | pole-facing slopes hold shadow | share of steep terrain facing the nearer pole. **Display only (weight 0) since 14 Nov 2026**: Shackleton sits practically on the pole, so "toward the pole" is a different direction for each part of its wall and the lunar value is not comparable with Earth. Shadow is measured directly by the light criteria 1–5 | DEM | Core |
 |  | **Environment** |  |  |  |  |  |
 | 15 | Cold | Polar | shadowed floors at 25–70 K | annual minimum and mean land surface temperature | MODIS LST | Secondary |
 | 16 | Day–night swing | Mare | near 400 K at noon, under 100 K at night at the equator | daytime minus night-time land surface temperature | MODIS LST | Core |
@@ -133,6 +133,7 @@ Traps we found while checking the data:
 - **Temperature scale.** MODIS at 1 km describes the region, not one shadowed hollow. Score "cold" as climate and let the shadow simulation carry the local effect.
 - **Coverage gaps.** Travel time stops at 60°S, the permafrost map is Northern Hemisphere only, and CHIRPS stops at 50° latitude. Polar candidates lose some criteria; show them as "no data", not zero.
 - **Caves have no global map.** Criterion 25 is a hand check on shortlisted basalt fields.
+- **Small craters at 60 m (known limitation, found 14 Nov 2026).** A bowl only ~1 km wide is ~19 pixels across on the common grid, so its walls are smoothed and criterion 11 comes out too low (Meteor Crater: 23.9° on the 0.5–1.0 × r ring). Bowls near the size limit (1 km equivalent diameter) can also drop out of the bowl filter. Treat wall slope of small bowls as a lower bound.
 
 ## Open decisions
 

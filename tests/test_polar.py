@@ -234,14 +234,23 @@ def test_depression_crossing_cell_edge_counted_once_by_its_low_point():
 
 
 def test_base_spot_must_be_within_max_distance_of_bowl_edge():
-    z = _bowl_at(0, 0, 3000, 1000)                     # bowl edge at 3 km
+    z = _bowl_at(0, 0, 3000, 1000)                     # bowl edge at 3 km; limit max_base_to_bowl_km = 1
+    assert CFG["polar"]["max_base_to_bowl_km"] == 1
     usable = np.zeros((N, N), bool)
-    usable[195:205, 200 + 145:200 + 155] = True        # plain 8.7-9.3 km east = 5.7-6.3 km from the edge: too far
+    usable[195:205, 200 + 70:200 + 80] = True          # plain 4.2-4.8 km east = 1.2-1.8 km from the edge: too far
     r = evaluate_polar_cell(_grid(z), _cell_mask(), usable, 28.5, CFG)
     assert not r["keep"] and r["reason"].startswith("no usable base pad on the rim")
-    usable[195:205, 200 + 110:200 + 120] = True        # 6.6-7.2 km east = 3.6-4.2 km from the edge: allowed
+    usable[195:205, 200 + 53:200 + 63] = True          # 3.2-3.8 km east = 0.2-0.8 km from the edge: allowed
     r = evaluate_polar_cell(_grid(z), _cell_mask(), usable, 28.5, CFG)
-    assert r["keep"] and 3.5 <= r["base_to_bowl_km"] <= 5 and r["c10_flat_base"] == pytest.approx(0, abs=0.05)
+    assert r["keep"] and 0 < r["base_to_bowl_km"] <= 1 and r["c10_flat_base"] == pytest.approx(0, abs=0.05)
+
+
+def test_c13_roughness_is_bowl_plus_rim_ring_not_whole_cell():
+    x, y = _xy()
+    rough_far = np.where(np.abs(x) > 6000, 30 * np.sin(x / 90.0) * np.sin(y / 90.0), 0.0)   # rough terrain far away
+    r_smooth = evaluate_polar_cell(_grid(_bowl()), _cell_mask(), None, 28.5, CFG_RANK)
+    r_far = evaluate_polar_cell(_grid(_bowl() + rough_far), _cell_mask(), None, 28.5, CFG_RANK)
+    assert r_far["c13_roughness"] == pytest.approx(r_smooth["c13_roughness"], abs=0.5)   # outside 1.3 r: ignored
 
 
 def test_no_bowl_fallback_keeps_fixed_ring_and_low_point_radius():

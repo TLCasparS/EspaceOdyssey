@@ -43,7 +43,8 @@ polar:
   relief_window_m: 5000       # local relief layer of compute_terrain; NOT used for criterion 9 any more
   rim_search_rel: 1.3         # (interpreted) criterion 9: rim crest = highest point per 1 deg azimuth
                               # within 1.3 x bowl radius of the low point (the filled edge lies inside the crest)
-  roughness_window_px: 3      # criterion 13: std of elevation in 3x3 px (180 m at 60 m), cell-wide
+  roughness_window_px: 3      # criterion 13: std of elevation in 3x3 px (180 m at 60 m), median over the
+                              # bowl + rim ring (bowl plus everything within rim_search_rel x r), Earth and Moon
 
   min_depression_depth_m: 50     # (team start value) criterion 7: shallower depressions are ignored
   min_depression_width_m: 1000   # (team start value) criterion 7: narrower depressions are ignored
@@ -53,8 +54,8 @@ polar:
   max_elongation: 2.0            # (interpreted start value) criterion 7: longest axis / equivalent diameter
                                  # of the filled depression; above this it is a valley, not a bowl (circle = 1)
   pad_m: 200                  # criterion 10: base pad ~200 m -> 3x3 px at 60 m
-  max_base_to_bowl_km: 5      # (team choice 14 Nov) criterion 10: base pad "on the rim" = outside the bowl
-                              # (not on its floor), pad centre within 5 km of the bowl's edge
+  max_base_to_bowl_km: 1      # (team choice 14 Nov) criterion 10: base pad "on the rim" = outside the bowl
+                              # (not on its floor), pad centre at most 1 km outside the bowl edge (Earth and Moon)
   max_base_to_low_km: 5       # (team start value) criterion 10, places WITHOUT a bowl only: pad centre
                               # within 5 km of the lowest point
   max_base_slope_deg: 15      # criterion 10: candidate rejected if its flattest usable pad is steeper (only slope filter)
@@ -81,5 +82,5 @@ polar:
     c9_relief:     {weight: 0.0, direction: higher, tolerance: 1500}  # m, rim-to-floor depth of the bowl. DISPLAY ONLY (team choice 14 Nov: size-dependent)
     c10_flat_base: {weight: 1.0, direction: lower, scale: [0, 15], tolerance: 3}  # deg, flattest usable pad on the rim
     c11_walls:     {weight: 1.0, direction: higher, tolerance: 5}     # deg, mean slope in ring 0.5-1.0 x bowl radius
-    c13_roughness: {weight: 1.0, direction: target, tolerance: 10}    # m, median std of elevation
-    c14_aspect:    {weight: 1.0, direction: higher, scale: [0, 1], tolerance: 0.15}  # share of steep pixels facing the nearer pole
+    c13_roughness: {weight: 1.0, direction: target, tolerance: 10}    # m, median std of elevation over bowl + rim ring
+    c14_aspect:    {weight: 0.0, direction: higher, scale: [0, 1], tolerance: 0.15}  # share of steep pixels facing the nearer pole. DISPLAY ONLY (team choice 14 Nov: "toward the pole" is no fixed direction at Shackleton)

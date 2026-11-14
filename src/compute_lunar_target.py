@@ -5,8 +5,8 @@ into config/lunar_targets.json, plus a preview figure.
     python src/compute_lunar_target.py       # -> config/lunar_targets.json, figures/shackleton_target.png
 
 Sources per criterion:
-    c7, c9, c10, c11, c14  LDEM_80S_20MPP_ADJ (window)  - they need the whole crater
-    c13                    Site04 5 m tile (Shackleton rim) - roughness over one ~15 km cell
+    all criteria           LDEM_80S_20MPP_ADJ (window) - they need the whole crater
+    (c13 came from the Site04 5 m tile until 14 Nov; now bowl + rim ring, same zone as on Earth)
 Both resampled to the common 60 m grid (config grid.res_m / resampling) with dem.grid.reproject_dem.
 
 The crater is found from the data, not from known coordinates: the qualifying closed depression
@@ -32,7 +32,6 @@ from pipeline.polar import _Cell, find_depressions  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 WINDOW = ROOT / "data" / "moon" / "shackleton_20m_window.tif"
-SITE04 = ROOT / "data" / "moon" / "Site04_final_adj_5mpp_surf.tif"
 FIG = ROOT / "figures" / "shackleton_target.png"
 SEARCH_KM = 15
 # pipeline definitions (same text the Earth side uses), refreshed on every run
@@ -41,7 +40,9 @@ DEFINITIONS = {
                   "median over 1-deg azimuth sectors of the highest elevation within rim_search_rel x bowl radius "
                   "of the low point, minus the low point; no bowl -> 0"},
     "c10_flat_base": {"definition": "mean slope of the flattest ~200 m pad (3x3 px at 60 m) outside the bowl whose "
-                                    "centre is within max_base_to_bowl_km of the bowl edge"},
+                                    "centre is at most max_base_to_bowl_km outside the bowl edge"},
+    "c13_roughness": {"definition": "median std of elevation in 3x3 px windows over the bowl + rim ring (bowl "
+                                    "plus everything within rim_search_rel x r of the low point)"},
     "c11_walls": {"definition": "mean slope in a ring of wall_ring_rel x r around the low point, r = equivalent "
                                 "radius of the filled depression (inner walls only)"},
     "c14_aspect": {"definition": "share of steep pixels (> 20 deg) within the wall ring's outer radius facing the "
@@ -49,7 +50,6 @@ DEFINITIONS = {
 }
 SRC_WINDOW = ("LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), "
               "+-25 km window around the pole read via /vsicurl/")
-SRC_SITE04 = "LOLA 5 m site DEM Site04 'Shackleton rim' (Barker et al. 2021, PGDA LOLA_5mpp)"
 
 
 def load_grid(path, cfg):
@@ -95,11 +95,6 @@ def main():
     # 3. display zones from the data: floor, walls, rim crest (not used in scoring)
     zones = crater_zones(mg, X, Y, dep, low, cell.t.slope_deg)
 
-    # 4. c13 from Site04 (one ~15 km cell on the rim)
-    mg4 = load_grid(SITE04, cfg)
-    all4 = np.ones(mg4.dem.shape, bool)
-    r4 = _Cell(mg4, all4, all4, lat, cfg).t.roughness_m
-    c13 = float(np.median(r4[np.isfinite(r4)]))
 
     today = date.today().isoformat()
     grid_note = f"bilinear to {cfg['grid']['res_m']} m (dem.grid.reproject_dem)"
@@ -114,19 +109,20 @@ def main():
                       "median over 1-deg azimuth sectors of the highest elevation, minus the low point "
                       "(size-dependent: large tolerance)"),
         "c10_flat_base": (place["c10_flat_base"], win_dem,
-                          f"rim: outside the bowl, pad centre within {p['max_base_to_bowl_km']:g} km of the bowl edge",
+                          f"rim: outside the bowl, pad centre at most {p['max_base_to_bowl_km']:g} km outside the bowl edge",
                           "minimum over 3x3 px (180 m) pads of the mean slope"),
         "c11_walls": (place["c11_walls"], win_dem,
                       f"inner wall: ring {ring} around the low point (= {p['wall_ring_rel'][0]}-"
                       f"{p['wall_ring_rel'][1]} x bowl radius, r = equivalent radius of the filled depression)",
                       "mean slope"),
-        "c13_roughness": (c13, f"data/moon/Site04_final_adj_5mpp_surf.tif, {grid_note}",
-                          "whole Site04 tile, 16 x 16 km: west rim, inner wall, plateau",
+        "c13_roughness": (place["c13_roughness"], win_dem,
+                          f"bowl + rim ring: the bowl plus everything within {p['rim_search_rel']:g} x bowl radius "
+                          "of the low point (same zone as on Earth)",
                           "median of the 3x3 px elevation std"),
         "c14_aspect": (place["c14_aspect"], win_dem,
                        f"within {place['wall_ring_km'][1]} km (ring outer radius) of the low point",
                        "share of pixels steeper than 20 deg whose downslope direction is within +-45 deg of the pole "
-                       "direction (pixels right at the pole have no meaningful direction; few)"),
+                       "direction. DISPLAY ONLY (weight 0, 14 Nov): Shackleton sits practically on the pole, so 'toward the pole' is a different direction for each part of the wall; not comparable with Earth"),
     }
 
     t = json.loads(Path(TARGETS_PATH).read_text(encoding="utf-8"))
@@ -141,7 +137,7 @@ def main():
         c = pol["criteria"][name]
         for k in ("why_not_verified", "note", "how", "computed"):
             c.pop(k, None)
-        src = SRC_SITE04 if name == "c13_roughness" else SRC_WINDOW
+        src = SRC_WINDOW
         c.update(value=None if v is None else round(float(v), 4), source=src, dem=dem, zone=zone, stat=stat,
                  date=today, verified=v is not None)
         c.update(DEFINITIONS.get(name, {}))
@@ -222,10 +218,10 @@ def figure(mg, X, Y, dep, place, low, base, zones):
     ax.plot(lx, ly, "bv", ms=9, label=f"floor low point {place['low_elev_m']:.0f} m")
     ax.plot(X[base] / 1e3, Y[base] / 1e3, "r*", ms=14, label=f"base pad {place['c10_flat_base']:.1f} deg")
     ax.plot(0, 0, "w+", ms=14, mew=2, label="south pole")
-    ax.add_patch(plt.Rectangle((-9, -15), 16, 16, fill=False, ec="w", ls=":", lw=1))
+    r13 = 1.3 * place["c7_width_m"] / 2 / 1e3
+    ax.plot(lx + r13 * np.cos(th), ly + r13 * np.sin(th), "w:", lw=1, label=f"c13 zone edge (1.3 x r = {r13:.1f} km)")
     ax.plot([], [], "c-", label="bowl (filled depression)")
     ax.plot([], [], "y--", label=f"wall ring {place['wall_ring_km'][0]}-{place['wall_ring_km'][1]} km")
-    ax.plot([], [], "w:", label="Site04 tile (c13)")
     ax.set(xlabel="x km (polar stereographic)", ylabel="y km",
            title=f"Shackleton from LOLA 20 m -> 60 m: depth {place['c7_depth_m']:.0f} m, "
                  f"diam {place['c7_width_m'] / 1e3:.1f} km")

@@ -13,7 +13,7 @@ spot near it.
    = outside the bowl, centre within max_base_to_bowl_km of the bowl's edge (fallback without a
    bowl: within max_base_to_low_km of the low point; rejected if > max_base_slope_deg), 11 mean
    slope in a ring of wall_ring_rel x bowl radius around the low point (fallback: wall_ring_m),
-   14 pole-facing share of the steep pixels within the ring's outer radius. 13 is cell-wide.
+   13 roughness over the bowl + rim ring (within rim_search_rel x r), 14 pole-facing share (display only).
 4. The best candidate (highest weighted score) is the cell's result. In run_pipeline, rank
    scores are computed across ALL candidates of the run before choosing (select_best).
 
@@ -31,7 +31,7 @@ from dem.terrain import compute_terrain
 from pipeline.scoring import apply_rank, score_direct, weighted_score
 
 CRITERIA = ("c7_bowl", "c9_relief", "c10_flat_base", "c11_walls", "c13_roughness", "c14_aspect")
-PLACE_CRITERIA = ("c7_bowl", "c9_relief", "c10_flat_base", "c11_walls", "c14_aspect")
+PLACE_CRITERIA = CRITERIA                          # all criteria are per place (13 too, since 14 Nov)
 
 
 def _f(v):
@@ -186,6 +186,13 @@ class _Cell:
             r_in, r_out = (f * r_eq for f in p["wall_ring_rel"])
         else:
             r_in, r_out = p["wall_ring_m"]
+        # 13: roughness over the same zone on Earth and Moon: bowl + rim ring = the bowl plus everything
+        # within rim_search_rel x r of the low point (the zone criterion 9 searches for the rim crest).
+        # No bowl (only with require_depression: false): the whole cell.
+        z13 = (dep["mask"] | (d <= p["rim_search_rel"] * r_eq)) if dep else self.in_cell
+        rough = t.roughness_m[z13]
+        rough = rough[np.isfinite(rough)]
+        raw["c13_roughness"] = _f(np.median(rough)) if rough.size else None
         ring = (d >= r_in) & (d <= r_out)
         s = t.slope_deg[ring]
         full_px = np.pi * (r_out ** 2 - r_in ** 2) / res ** 2
@@ -241,13 +248,7 @@ def polar_candidates(mg, in_cell: np.ndarray, usable: np.ndarray | None, lat: fl
     cell = _Cell(mg, in_cell, usable, lat, cfg)
     deps = find_depressions(mg.dem, in_cell, mg.res_m, p)
 
-    rough = cell.t.roughness_m[in_cell]
-    rough = rough[np.isfinite(rough)]
-    c13 = _f(np.median(rough)) if rough.size else None
-    s13 = score_direct(c13, p["criteria"]["c13_roughness"])
-    info = {"keep": True, "reason": "", "n_depressions": len(deps),
-            "c13_roughness": None if c13 is None else round(c13, 4),
-            "s_c13_roughness": None if s13 is None else round(s13, 4)}
+    info = {"keep": True, "reason": "", "n_depressions": len(deps)}
 
     if deps:
         cands = [cell.place(dp["low"], dp) for dp in deps]
@@ -259,12 +260,9 @@ def polar_candidates(mg, in_cell: np.ndarray, usable: np.ndarray | None, lat: fl
         zc = np.where(in_cell & np.isfinite(mg.dem), mg.dem, np.inf)
         low = np.unravel_index(np.argmin(zc), zc.shape)
         cands = [cell.place((int(low[0]), int(low[1])), None)]
-    for c in cands:
-        c["c13_roughness"], c["s_c13_roughness"] = info["c13_roughness"], info["s_c13_roughness"]
     if not any(c["keep"] for c in cands):
         info.update(keep=False, reason=cands[0]["reason"] if len(cands) == 1
-                    else f"none of {len(cands)} depressions has a flat usable base within "
-                         f"{p['max_base_to_low_km']:g} km")
+                    else f"none of {len(cands)} depressions has a valid base pad ({cands[0]['reason']}, ...)")
     return info, cands
 
 
