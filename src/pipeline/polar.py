@@ -10,7 +10,7 @@ spot near it.
    No qualifying depression -> one fallback candidate anchored at the cell's lowest pixel with
    bowl = 0 (interpreted; polar.require_depression: true drops the cell instead).
 3. Per candidate: 7 depth/width, 9 rim-to-floor depth (median rim crest - low point), 10 flattest usable pad "on the rim"
-   = outside the bowl, centre within max_base_to_bowl_km of the bowl's edge (fallback without a
+   = light.rim_zone: outside the bowl, out to max(edge + max_base_to_bowl_km, rim_zone_rel x r) (fallback without a
    bowl: within max_base_to_low_km of the low point; rejected if > max_base_slope_deg), 11 mean
    slope in a ring of wall_ring_rel x bowl radius around the low point (fallback: wall_ring_m),
    13 roughness over the bowl + rim ring (within rim_search_rel x r), 14 pole-facing share (display only).
@@ -28,7 +28,7 @@ import numpy as np
 from scipy import ndimage
 
 from dem.terrain import compute_terrain
-from pipeline.light import place_light
+from pipeline.light import floor_zone, place_light, rim_zone
 from pipeline.scoring import apply_rank, rank_score, score_direct, total_score
 
 CRITERIA = ("c1_sunny_ridge", "c2_dark_floor", "c3_light_dark", "c4_grazing_sun", "c5_sky_view", "c7_bowl", "c9_relief", "c10_flat_base", "c11_walls", "c13_roughness", "c14_aspect")
@@ -137,10 +137,11 @@ def rim_to_floor_m(z: np.ndarray, low, search_m: float, res_m: float):
 class _Cell:
     """Arrays shared by all candidates of one cell (computed once)."""
 
-    def __init__(self, mg, in_cell, usable, lat, cfg, body: str = "earth"):
+    def __init__(self, mg, in_cell, usable, lat, cfg, body: str = "earth", ice=None):
         p = cfg["polar"]
         self.mg, self.in_cell, self.lat, self.cfg, self.p = mg, in_cell, lat, cfg, p
         self.body = body                                    # earth / moon: curvature + refraction for horizons
+        self.ice = ice                                      # bool snow/ice mask on the grid (Earth), None = unknown
         self.t = compute_terrain(mg, relief_window_m=p["relief_window_m"],
                                  roughness_window_px=p["roughness_window_px"])
         self.rr, self.cc = np.indices(mg.dem.shape)
@@ -165,9 +166,10 @@ class _Cell:
         # 10: flattest usable pad "on the rim": outside the bowl (not on its floor) with its centre
         # within max_base_to_bowl_km of the bowl's edge. No bowl: within max_base_to_low_km of the low point.
         if dep:
-            to_bowl = ndimage.distance_transform_edt(~dep["mask"]) * res     # 0 inside the bowl
-            zone = (to_bowl > 0) & (to_bowl <= p["max_base_to_bowl_km"] * 1000)
-            where = f"on the rim (outside the bowl, within {p['max_base_to_bowl_km']:g} km of it)"
+            # shared rim zone (light.rim_zone, also used for c1 on Earth and Moon)
+            zone, to_bowl = rim_zone(dep["mask"], low, dep["width_m"] / 2, res, p["max_base_to_bowl_km"], p["rim_zone_rel"])
+            where = (f"on the rim (outside the bowl, out to max(edge + {p['max_base_to_bowl_km']:g} km, "
+                     f"{p['rim_zone_rel']:g} x r))")
         else:
             to_bowl = None
             zone = d <= p["max_base_to_low_km"] * 1000
@@ -218,7 +220,16 @@ class _Cell:
                                             self.cfg["light"], self.body, fallback_dist_m=p["wall_ring_m"][1])
         raw.update(light_raw)
 
+        # ice shares of the floor and rim zones (display); ice floor -> place excluded (DEM = ice surface)
+        ice_floor = ice_rim = None
+        if self.ice is not None and dep is not None:
+            fz = floor_zone(dep["mask"], t.slope_deg, low, self.cfg["light"]["floor_max_slope_deg"])
+            ice_floor = float(self.ice[fz].mean()) if fz.any() else None
+            ice_rim = float(self.ice[zone].mean()) if zone.any() else None
+
         reasons = []
+        if ice_floor is not None and ice_floor > p["max_floor_ice_share"]:
+            reasons.append(f"ice floor, DEM measures ice surface ({ice_floor:.0%} snow/ice > {p['max_floor_ice_share']:.0%})")
         if raw["c10_flat_base"] is None:
             reasons.append(f"no usable base pad {where}")
         elif raw["c10_flat_base"] > p["max_base_slope_deg"]:
@@ -237,7 +248,9 @@ class _Cell:
                "c7_width_m": round(dep["width_m"], 0) if dep else 0.0,
                "c7_elongation": round(dep["elongation"], 2) if dep else None,
                "depression_extends_outside_cell": dep["extends_outside_cell"] if dep else None,
-               "c14_n_steep": n_steep, **light_info}
+               "c14_n_steep": n_steep, **light_info,
+               "ice_floor_share": None if ice_floor is None else round(ice_floor, 3),
+               "ice_rim_share": None if ice_rim is None else round(ice_rim, 3)}
         for name in PLACE_CRITERIA:
             v = raw[name]
             out[name] = None if v is None else round(v, 4)
@@ -247,14 +260,14 @@ class _Cell:
 
 
 def polar_candidates(mg, in_cell: np.ndarray, usable: np.ndarray | None, lat: float, cfg: dict,
-                     body: str = "earth"):
+                     body: str = "earth", ice: np.ndarray | None = None):
     """(cell-level dict, list of candidate places). Candidates carry raw values and direct
     scores; rank scores are filled later by select_best (per cell or across the whole run)."""
     p = cfg["polar"]
     usable = np.ones_like(in_cell) if usable is None else usable
     if not (in_cell & np.isfinite(mg.dem)).any():
         return {"keep": False, "reason": "no DEM data in cell", "n_depressions": 0}, []
-    cell = _Cell(mg, in_cell, usable, lat, cfg, body)
+    cell = _Cell(mg, in_cell, usable, lat, cfg, body, ice)
     deps = find_depressions(mg.dem, in_cell, mg.res_m, p)
 
     info = {"keep": True, "reason": "", "n_depressions": len(deps)}
@@ -271,7 +284,7 @@ def polar_candidates(mg, in_cell: np.ndarray, usable: np.ndarray | None, lat: fl
         cands = [cell.place((int(low[0]), int(low[1])), None)]
     if not any(c["keep"] for c in cands):
         info.update(keep=False, reason=cands[0]["reason"] if len(cands) == 1
-                    else f"none of {len(cands)} depressions has a valid base pad ({cands[0]['reason']}, ...)")
+                    else f"none of {len(cands)} depressions is valid ({cands[0]['reason']}, ...)")
     return info, cands
 
 

@@ -275,3 +275,22 @@ def test_elongated_valley_is_not_a_bowl():
     assert r["n_depressions"] == 0 and r["anchor"] == "lowest_point"
     bowl = evaluate_polar_cell(_grid(_bowl()), _cell_mask(), None, 28.5, CFG)
     assert bowl["c7_elongation"] == pytest.approx(1.0, abs=0.08)                   # circle ~ 1
+
+
+def test_ice_floor_excludes_place_and_ice_shares_are_shown():
+    from pipeline.polar import best_of, polar_candidates, select_best
+    z = _bowl()                                                          # bowl r = 3 km
+    x, y = _xy()
+    r = np.hypot(x, y)
+    for ice, expect_keep in ((r < 1500, False), ((r > 3000) & (r < 3500), True)):   # icy floor / icy rim ring
+        info, cands = polar_candidates(_grid(z), _cell_mask(), None, 28.5, CFG, ice=ice)
+        c = cands[0]
+        assert c["ice_floor_share"] is not None and c["ice_rim_share"] is not None
+        assert c["keep"] is expect_keep
+        if not expect_keep:
+            assert c["ice_floor_share"] > CFG["polar"]["max_floor_ice_share"]
+            assert c["reason"].startswith("ice floor, DEM measures ice surface")
+        else:
+            assert c["ice_floor_share"] == 0 and c["ice_rim_share"] > 0
+    info, cands = polar_candidates(_grid(z), _cell_mask(), None, 28.5, CFG)   # no ice data -> shares None
+    assert cands[0]["ice_floor_share"] is None and cands[0]["keep"]

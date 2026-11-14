@@ -8,7 +8,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from dem.grid import MetricGrid  # noqa: E402
 from pipeline.light import MOON_EQUATOR_TILT_DEG, flat_lit_fraction, max_sun_elevation_deg  # noqa: E402
-from pipeline.lunar_light import as_fraction, light_criteria, moon_light, read_on_grid, rim_zone  # noqa: E402
+from pipeline.light import rim_zone  # noqa: E402
+from pipeline.lunar_light import as_fraction, light_criteria, moon_light, read_on_grid  # noqa: E402
 
 MOON_SPS = "+proj=stere +lat_0=-90 +lon_0=0 +k=1 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs"
 RES, N, R_BOWL = 60.0, 201, 3000.0      # 12 km square, bowl radius 3 km
@@ -23,7 +24,7 @@ def scene():
     d = np.hypot(rr - C, cc - C) * RES
     bowl = d <= R_BOWL
     floor = d <= 1000
-    rim = rim_zone(bowl, RES, 1.0)                       # ring 0-1 km outside the bowl
+    rim, _ = rim_zone(bowl, (C, C), R_BOWL, RES, 1.0, 1.3)   # ring 0-1 km outside (1.3 r = edge + 0.9 km)
     lit = np.full((N, N), 0.5, np.float32)               # flat land everywhere ...
     lit[bowl] = 0.2                                       # ... shaded walls
     lit[floor] = 0.0                                      # ... dark floor
@@ -74,7 +75,7 @@ def test_missing_zone_gives_none_not_zero(scene):
 def test_moon_light_uses_the_shared_functions(scene):
     mg, lit, bowl, floor, rim, _ = scene
     cfg = {"light": {"floor_max_slope_deg": 10, "near_permanent_shadow": 0.9},
-           "polar": {"max_base_to_bowl_km": 1.0}}
+           "polar": {"max_base_to_bowl_km": 1.0, "rim_zone_rel": 1.3}}
     slope = np.where(np.hypot(*(np.indices((N, N)) - C)) * RES <= 1000, 2.0, 25.0)   # flat floor, steep walls
     dep = {"mask": bowl, "width_m": 2 * R_BOWL}
     out = moon_light(mg, dep, (C, C), slope, -89.624, cfg, lit)

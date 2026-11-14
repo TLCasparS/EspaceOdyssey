@@ -20,37 +20,49 @@
         "label": "1 Sunny ridge",
         "unit": "lit fraction / flat-land lit fraction",
         "definition": "max lit fraction in the rim zone (outside the bowl, <= 1 km from its edge) / flat-land lit fraction; lit = Sun centre above the horizon",
-        "value": null,
-        "source": null,
-        "verified": false,
-        "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+        "value": 1.5617,
+        "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+        "verified": true,
+        "dem": "AVGVISIB_85S_060M_201608.TIF (60 m, own scale x 4e-5) on the 60 m grid; zones from data/moon/shackleton_20m_window.tif",
+        "zone": "floor = bowl pixels < 10 deg connected to the low point; rim = outside the bowl, at most 1 km from its edge (criterion-10 zone)",
+        "stat": "max lit fraction in the rim zone / flat-land lit fraction 0.5 (light.flat_lit_fraction, lunar tilt)",
+        "date": "2026-11-14"
       },
       "c2_dark_floor": {
         "label": "2 Dark floor",
         "unit": "share",
         "definition": "p99 over the floor zone of the terrain shadow fraction 1 - lit / flat_lit",
-        "value": null,
-        "source": null,
-        "verified": false,
-        "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+        "value": 1.0,
+        "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+        "verified": true,
+        "dem": "AVGVISIB_85S_060M_201608.TIF (60 m, own scale x 4e-5) on the 60 m grid; zones from data/moon/shackleton_20m_window.tif",
+        "zone": "floor = bowl pixels < 10 deg connected to the low point; rim = outside the bowl, at most 1 km from its edge (criterion-10 zone)",
+        "stat": "p99 over the floor zone of 1 - lit / flat_lit (not clipped); flat-land lit fraction 0.5 (light.flat_lit_fraction, lunar tilt)",
+        "date": "2026-11-14"
       },
       "c3_light_dark": {
         "label": "3 Light next to dark",
         "unit": "distance / r",
         "definition": "distance from the darkest floor pixel to the sunniest rim pixel, divided by the bowl radius r",
-        "value": null,
-        "source": null,
-        "verified": false,
-        "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+        "value": 0.7849,
+        "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+        "verified": true,
+        "dem": "AVGVISIB_85S_060M_201608.TIF (60 m, own scale x 4e-5) on the 60 m grid; zones from data/moon/shackleton_20m_window.tif",
+        "zone": "floor = bowl pixels < 10 deg connected to the low point; rim = outside the bowl, at most 1 km from its edge (criterion-10 zone)",
+        "stat": "distance darkest floor px -> sunniest rim px (closest pair) / bowl radius r",
+        "date": "2026-11-14"
       },
       "c4_grazing_sun": {
         "label": "4 Grazing sun",
         "unit": "deg",
         "definition": "max Sun elevation over the year (latitude only)",
-        "value": null,
-        "source": null,
-        "verified": false,
-        "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+        "value": 1.91,
+        "source": "geometry: low-point latitude from the LOLA window + lunar equator tilt (light.MOON_EQUATOR_TILT_DEG, NSSDC Moon Fact Sheet)",
+        "verified": true,
+        "dem": "none (latitude only)",
+        "zone": "low point, latitude -89.625",
+        "stat": "light.max_sun_elevation_deg(lat, MOON_EQUATOR_TILT_DEG) = 90 - max(0, |lat| - tilt)",
+        "date": "2026-11-14"
       },
       "c5_sky_view": {
         "label": "5 Sky-view factor",
@@ -221,7 +233,35 @@
       "base_elev_m": 1030.9,
       "base_to_bowl_km": 0.55,
       "base_to_low_km": 11.45,
-      "zones_how": "floor = bowl pixels < 10 deg connected to the low point; inner wall = bowl pixels between floor and rim crest; rim crest = highest point within 1.3 x bowl radius per 1 deg azimuth"
+      "zones_how": "floor = bowl pixels < 10 deg connected to the low point; inner wall = bowl pixels between floor and rim crest; rim crest = highest point within 1.3 x bowl radius per 1 deg azimuth",
+      "light": {
+        "_note": "display values from src/pipeline/lunar_light.py. PGDA counts the visible fraction of the solar disc, light.py (Earth) the Sun's centre; flat land gives 0.5 either way at the pole",
+        "flat_lit_fraction": 0.5,
+        "rim_max_lit": 0.7808,
+        "floor_lit_median": 0.0,
+        "light_dark_distance_m": 7465.0,
+        "darkest_floor_px": [
+          642,
+          705
+        ],
+        "sunniest_rim_px": [
+          526,
+          660
+        ],
+        "near_permanent_shadow_share": 1.0,
+        "lpsr_share_of_floor": 1.0,
+        "near_permanent_vs_lpsr_iou": 1.0,
+        "floor_px": 6103,
+        "rim_px": 54609,
+        "sunniest_rim_xy_m": [
+          4630,
+          3410
+        ],
+        "darkest_floor_xy_m": [
+          7330,
+          -3550
+        ]
+      }
     },
     "cross_check": {
       "_note": "Independent computation by Mateo on branch moon-targets (src/moon_targets.py, src/moon_dem.py), merged 14 Nov 2026. Same source file (LDEM_80S_20MPP_ADJ.TIF) but the OLD pipeline definitions (c9 5 km window, c11 fixed 0.5-3 km ring, c10 within 5 km of the low point), cell centred on IAU coordinates of Shackleton. Not used for scoring; kept to compare.",

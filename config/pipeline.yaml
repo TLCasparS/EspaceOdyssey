@@ -48,14 +48,19 @@ polar:
 
   min_depression_depth_m: 50     # (team start value) criterion 7: shallower depressions are ignored
   min_depression_width_m: 1000   # (team start value) criterion 7: narrower depressions are ignored
+  ice_classes: [70]              # WorldCover snow & ice. Kept by the land-cover filter (polar analogs), but see:
+  max_floor_ice_share: 0.5       # (team choice 14 Nov) place excluded if more than this share of its floor zone is
+                                 # snow/ice: "ice floor, DEM measures ice surface". Floor and rim ice shares are display values
   require_depression: true       # (team choice 14 Nov) true: a cell with no qualifying bowl is dropped.
                                  # (false would score it, anchored at its lowest pixel, with bowl = 0;
                                  #  such bowl-less cells outranked bowls in the Mustang run of 14 Nov)
   max_elongation: 2.0            # (interpreted start value) criterion 7: longest axis / equivalent diameter
                                  # of the filled depression; above this it is a valley, not a bowl (circle = 1)
   pad_m: 200                  # criterion 10: base pad ~200 m -> 3x3 px at 60 m
-  max_base_to_bowl_km: 1      # (team choice 14 Nov) criterion 10: base pad "on the rim" = outside the bowl
-                              # (not on its floor), pad centre at most 1 km outside the bowl edge (Earth and Moon)
+  max_base_to_bowl_km: 1      # (team choice 14 Nov) rim zone (light.rim_zone) for criterion 10 base pad AND
+                              # criterion 1 sunny ridge, Earth and Moon: outside the bowl, out to
+                              # max(edge + 1 km, rim_zone_rel x r from the low point)
+  rim_zone_rel: 1.3           # (team choice 14 Nov) see above; big bowls (Shackleton) reach the rim crest
   max_base_to_low_km: 5       # (team start value) criterion 10, places WITHOUT a bowl only: pad centre
                               # within 5 km of the lowest point
   max_base_slope_deg: 15      # criterion 10: candidate rejected if its flattest usable pad is steeper (only slope filter)
@@ -78,12 +83,14 @@ polar:
   # as similar. Size-dependent c9 gets a deliberately large tolerance (scale decision 14 Nov).
   # Weights: (team start value) all equal; adjustable for the jury demo.
   criteria:
-    # light criteria 1-4: weights and tolerances are team start values (14 Nov), until Mateo's lunar targets exist
-    # they are rank-scored (no lunar value yet)
-    c1_sunny_ridge: {weight: 1.0, direction: higher, tolerance: 0.1}  # max lit fraction in rim zone / flat-land lit fraction
-    c2_dark_floor:  {weight: 1.0, direction: higher, tolerance: 0.2}  # p99 terrain shadow fraction (1 - lit / flat_lit) in the floor zone
+    # light criteria 1-4: lunar values from PGDA (Mateo, lunar_light.py) since 14 Nov; weights/tolerances = team start values
+    # c1/c2 tolerances widened 14 Nov: with 0.1 / 0.2 every mid-latitude site scored ~0 and differences between sites vanished
+    c1_sunny_ridge: {weight: 1.0, direction: higher, tolerance: 0.4}  # max lit fraction in rim zone / flat-land lit fraction (tolerance: team start value 14 Nov)
+    c2_dark_floor:  {weight: 1.0, direction: higher, tolerance: 0.5}  # p99 terrain shadow fraction (1 - lit / flat_lit) in the floor zone (tolerance: team start value 14 Nov)
     c3_light_dark:  {weight: 1.0, direction: lower, tolerance: 0.5}   # distance darkest floor px -> sunniest rim px, / r
-    c4_grazing_sun: {weight: 1.0, direction: lower, tolerance: 5}     # deg, max Sun elevation over the year (latitude only)
+    c4_grazing_sun: {weight: 0.0, direction: lower, tolerance: 5}     # deg, max Sun elevation over the year. DISPLAY ONLY (team choice 14 Nov):
+                                                                      # purely latitude; Earth's lowest possible value is 23.4 deg (at the poles) vs
+                                                                      # 1.9 deg at Shackleton -> unreachable, no Earth analog possible
     c5_sky_view:   {weight: 0.0, direction: lower, tolerance: 0.1}    # share of sky visible from the floor. DISPLAY ONLY (team choice 14 Nov):
                                                                       # duplicates c7 for simple bowls (r -0.91 over 6 bowl cells) and overlaps c2
                                                                       # (r -0.91), which has the lunar comparison. Still computed for the radar charts.
