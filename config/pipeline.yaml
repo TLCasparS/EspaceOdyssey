@@ -1,0 +1,29 @@
+# All thresholds and weights for the Moon-analog pipeline, in one place.
+#
+# Spec: docs/HANDOFF_terrain.md + team decisions of 14 Nov 2026
+# (docs/Moon_Analog_Criteria_and_Datasets.md is not in the repo yet).
+# "(interpreted)" = a rule the spec does not pin down; chosen by us, change freely.
+# "(team start value)" = a tunable number the team picked, not a measured fact.
+
+grid:
+  cell_km: 15                 # ~ size of an Artemis III candidate region
+
+# --- Step 1: hard filters per cell (land cover, settlements). NO slope filter here. --------
+filter:
+  landcover_res_m: 100        # WorldCover read resolution (COG overviews; 10 m native)
+
+  # ESA WorldCover 2021 v200 classes. Every class except 0 (no data) must be in exactly one list.
+  drop_classes: [10, 40, 50, 80, 90, 95]   # tree, cropland, built-up, water, herbaceous wetland, mangroves
+  keep_classes: [20, 30, 60, 70, 100]      # shrub, grass, bare/sparse, snow & ice, moss & lichen
+
+  built_up_classes: [50]
+  built_up_buffer_m: 2000     # mask everything within 2 km of built-up
+  water_classes: [80, 90]     # water + herbaceous wetland
+  water_buffer_m: 200         # (team start value)
+
+  min_land: 0.9               # min share of the cell with land-cover data; drops ocean / coast cells
+  min_usable: 0.5             # (team start value) min share of the cell that is usable after masking
+  min_patch_km2: 2.0          # (team start value) largest connected usable patch in the cell
+  patch_connectivity: 8       # (interpreted) 8 = diagonal neighbours connect, 4 = edges only
+
+  max_pop_per_km2: 10         # only applied when a GHS-POP raster is given (--pop)

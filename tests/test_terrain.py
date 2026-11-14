@@ -1,4 +1,4 @@
-"""Offline checks for src/dem, src/fetch_region.py, src/terrain.py shim, src/filter_cells.py (synthetic data only)."""
+"""Offline checks for src/dem, src/fetch_region.py, src/terrain.py shim, src/pipeline/cells.py (synthetic data only)."""
 import sys
 from pathlib import Path
 
@@ -66,17 +66,8 @@ def test_worldcover_tile_names():
     assert worldcover_url(-0.5, -0.5).endswith("ESA_WorldCover_10m_2021_v200_S03W003_Map.tif")
 
 
-def _filter_cells_module():
-    import importlib.util
-    path = Path(__file__).resolve().parents[1] / "src" / "filter_cells.py"
-    spec = importlib.util.spec_from_file_location("filter_cells", path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
 def test_filter_cells_grid_covers_bbox_without_gaps():
-    fc = _filter_cells_module()
+    from pipeline import cells as fc
     cells = fc.make_grid(82, 27, 86, 31, 15)
     total = sum(fc.cell_area_km2(c) for c in cells)
     bbox_area = fc.cell_area_km2({"west": 82, "south": 27, "east": 86, "north": 31})
@@ -86,7 +77,7 @@ def test_filter_cells_grid_covers_bbox_without_gaps():
 
 
 def test_filter_cells_window_picks_right_pixels():
-    fc = _filter_cells_module()
+    from pipeline import cells as fc
     tf = from_origin(10, 20, 0.1, 0.1)              # 0.1 deg pixels, NW corner at (10E, 20N)
     rs, cs = fc.window_of({"west": 10.2, "south": 19.5, "east": 10.5, "north": 19.8}, tf, (100, 100))
     assert (rs.start, rs.stop, cs.start, cs.stop) == (2, 5, 2, 5)

@@ -13,12 +13,13 @@ pip install -r requirements.txt          # or: conda env create -f environment.y
 ```bash
 python src/filter_cells.py --bbox 82 27 86 31 --name nepal_west
 # optional population grid (GHS-POP, WGS84 version) and polar classes:
-python src/filter_cells.py --bbox 82 27 86 31 --name nepal_west --pop data/GHS_POP_4326_30ss.tif --keep-classes 60 70 100
+python src/filter_cells.py --bbox 82 27 86 31 --name nepal_west --pop data/GHS_POP_4326_30ss.tif
 ```
-Cuts the area into 15 km cells and drops cells with too little bare ground (ESA WorldCover class 60),
-built-up area, water/wetland, ocean, or (with `--pop`) more than 5 people/km2. All thresholds are flags
-(`--min-usable`, `--max-built`, `--max-water`, `--max-pop`, `--cell-km`).
-Writes `out/<name>/cells.csv`, `cells.geojson` (open in QGIS / geojson.io) and `survivors.txt`
+Cuts the area into 15 km cells. Masks blacklisted WorldCover classes (tree, crop, built-up, water,
+wetland, mangrove), 2 km around built-up and 200 m around water/wetland; drops a cell if too little
+of it is usable, if its largest usable patch is too small, if it is ocean, or (with `--pop`) if it is
+populated. No slope filter. All thresholds are in `config/pipeline.yaml` (section `filter`).
+Writes `out/<name>/cells.csv`, `cells.geojson` (open in QGIS / geojson.io), `usable_mask.tif` and `survivors.txt`
 (one `analyze_bbox.py` command per kept cell).
 
 ## Step 2 — terrain analysis per cell (from repo root)
