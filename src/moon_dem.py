@@ -13,11 +13,14 @@ Outputs: data/dem/moon/shackleton_dem_<res>m.tif    elevation (m), same CRS, <re
          data/results/moon_dem_summary.json         numbers to check against sources
 
 Usage (from the repo root):
-         python src/moon_dem.py data/dem/moon/ldem_87s_5mpp.tif
+         python src/moon_dem.py data/dem/moon/Site04_final_adj_5mpp_surf.tif
+         python src/moon_dem.py https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_20MPP_ADJ.TIF
+           (whole south pole, 20 m, cloud-optimized: only the Shackleton window is downloaded)
          python src/moon_dem.py <dem.tif> --res 30 --half-width-km 18
 """
 import argparse
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -44,15 +47,17 @@ def lonlat_to_xy(crs: CRS, lon: float, lat: float) -> tuple[float, float]:
     return xs[0], ys[0]
 
 
-def load_crop(path: Path, half_width_m: float, res_m: float):
+def load_crop(path: str, half_width_m: float, res_m: float):
     """Windowed read around Shackleton, averaged down to res_m pixels.
 
     Only the crop is read from disk, so this works on the multi-GB mosaic.
     """
+    if path.startswith(("http://", "https://")):
+        path = "/vsicurl/" + path  # reads only the bytes of the crop window
     with rasterio.open(path) as src:
         crs = src.crs if src.crs else CRS.from_proj4(MOON_SPS)
         native_res = abs(src.transform.a)
-        print(f"file: {path.name}  native pixel: {native_res:.1f} m  size: {src.width}x{src.height}")
+        print(f"file: {os.path.basename(path)}  native pixel: {native_res:.1f} m  size: {src.width}x{src.height}")
         print(f"file extent (m): x {src.bounds.left:.0f}..{src.bounds.right:.0f}, "
               f"y {src.bounds.bottom:.0f}..{src.bounds.top:.0f}")
 
@@ -230,7 +235,7 @@ def write_tif(path, arr, transform, crs, dtype, nodata):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("dem", type=Path, help="LOLA LDEM GeoTIFF (south polar stereographic)")
+    ap.add_argument("dem", help="LOLA LDEM GeoTIFF path, or an https:// URL of a cloud-optimized one")
     ap.add_argument("--res", type=float, default=30.0, help="output pixel size in m (match the Earth DEM)")
     ap.add_argument("--half-width-km", type=float, default=18.0, help="half-size of the crop box")
     ap.add_argument("--out-dir", type=Path, default=Path("."), help="repo root")
@@ -242,7 +247,7 @@ def main():
 
     zones, info, profile = zone_crater(dem, transform, centre, args.half_width_km * 1000)
     info.update({
-        "source_file": args.dem.name,
+        "source_file": os.path.basename(args.dem),
         "output_pixel_m": args.res,
         "crop_half_width_km": args.half_width_km,
         "nodata_fraction": round(nan_frac, 4),
