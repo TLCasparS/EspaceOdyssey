@@ -1,5 +1,4 @@
-data/dem/
-data/region/
+data/
 .venv/
 out/
 __pycache__/

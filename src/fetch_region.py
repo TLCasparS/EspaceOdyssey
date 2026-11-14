@@ -28,7 +28,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from dem.fetch import open_tile, tiles_for_bbox, with_retries  # noqa: E402  (sets unsigned S3 access)
-from dem.landcover import worldcover_tiles  # noqa: E402
+from dem.landcover import CLASSES as WORLDCOVER_CLASSES, worldcover_tiles  # noqa: E402,F401  (one class table)
 
 PC_DEM_COLLECTION = {30: "cop-dem-glo-30", 90: "cop-dem-glo-90"}
 PC_STAC = "https://planetarycomputer.microsoft.com/api/stac/v1"
@@ -39,14 +39,6 @@ os.environ.setdefault("GDAL_HTTP_MAX_RETRY", "3")
 os.environ.setdefault("GDAL_HTTP_RETRY_DELAY", "1")
 os.environ.setdefault("GDAL_DISABLE_READDIR_ON_OPEN", "EMPTY_DIR")
 os.environ.setdefault("CPL_VSIL_CURL_ALLOWED_EXTENSIONS", ".tif")
-
-# ESA WorldCover v200 class codes
-WORLDCOVER_CLASSES = {
-    10: "tree_cover", 20: "shrubland", 30: "grassland", 40: "cropland", 50: "built_up",
-    60: "bare_sparse", 70: "snow_ice", 80: "water", 90: "herbaceous_wetland",
-    95: "mangroves", 100: "moss_lichen",
-}
-
 
 @dataclass
 class Region:

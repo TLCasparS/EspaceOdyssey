@@ -5,9 +5,9 @@ Moon analogs (vegetation, water, wetlands, built-up, populated, ocean), BEFORE t
 expensive DEM analysis.
 
 Examples (run from the repo root):
-    python scripts/filter_cells.py --bbox 82 27 86 31 --name nepal_west
-    python scripts/filter_cells.py --bbox -4 36.5 -1.5 38.5 --name andalusia --pop data/GHS_POP_4326_30ss.tif
-    python scripts/filter_cells.py --bbox 83 28 85 30 --name mustang --keep-classes 60 70 100 --min-usable 0.6
+    python src/filter_cells.py --bbox 82 27 86 31 --name nepal_west
+    python src/filter_cells.py --bbox -4 36.5 -1.5 38.5 --name andalusia --pop data/GHS_POP_4326_30ss.tif
+    python src/filter_cells.py --bbox 83 28 85 30 --name mustang --keep-classes 60 70 100 --min-usable 0.6
 
 Outputs in out/<name>/ :
     cells.csv        every cell: bounds, land-cover fractions, population, keep yes/no + reason
@@ -21,58 +21,15 @@ with --pop. Without it, WorldCover's built-up class is used as the only settleme
 import argparse
 import csv
 import json
-import math
 import os
 import sys
 
 import numpy as np
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
-# find the dem package whether it lives in <repo>/dem, <repo>/src/dem, or next to this script
-for _p in (_HERE, os.path.join(_HERE, ".."), os.path.join(_HERE, "..", "src")):
-    if os.path.isdir(os.path.join(_p, "dem")):
-        sys.path.insert(0, os.path.abspath(_p))
-        break
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # src/
 
 from dem.landcover import CLASSES, read_landcover  # noqa: E402
-
-
-def make_grid(west, south, east, north, cell_km):
-    """Roughly square cells of cell_km x cell_km, in degrees (lon width grows with latitude)."""
-    dlat = cell_km / 110.574
-    cells = []
-    lat = south
-    row = 0
-    while lat < north - 1e-9:
-        top = min(lat + dlat, north)
-        mid = (lat + top) / 2
-        dlon = cell_km / (111.320 * max(math.cos(math.radians(mid)), 0.01))
-        lon = west
-        col = 0
-        while lon < east - 1e-9:
-            right = min(lon + dlon, east)
-            cells.append({"id": f"r{row:03d}c{col:03d}", "west": lon, "south": lat,
-                          "east": right, "north": top})
-            lon = right
-            col += 1
-        lat = top
-        row += 1
-    return cells
-
-
-def cell_area_km2(c):
-    mid = math.radians((c["south"] + c["north"]) / 2)
-    return ((c["east"] - c["west"]) * 111.320 * math.cos(mid)) * ((c["north"] - c["south"]) * 110.574)
-
-
-def window_of(c, transform, shape):
-    """Row/col slice of a lat/lon raster covering cell c."""
-    inv = ~transform
-    c0, r0 = inv * (c["west"], c["north"])
-    c1, r1 = inv * (c["east"], c["south"])
-    r0, r1 = max(0, int(math.floor(r0))), min(shape[0], int(math.ceil(r1)))
-    c0, c1 = max(0, int(math.floor(c0))), min(shape[1], int(math.ceil(c1)))
-    return slice(r0, r1), slice(c0, c1)
+from pipeline.cells import cell_area_km2, make_grid, window_of  # noqa: E402
 
 
 class Population:
@@ -178,7 +135,7 @@ def main():
 
     with open(os.path.join(out_dir, "survivors.txt"), "w") as f:
         for r in kept:
-            f.write(f"python scripts/analyze_bbox.py --bbox {r['west']:.5f} {r['south']:.5f} "
+            f.write(f"python src/analyze_bbox.py --bbox {r['west']:.5f} {r['south']:.5f} "
                     f"{r['east']:.5f} {r['north']:.5f} --res {a.dem_res} --name {a.name}_{r['id']}\n")
 
     # Summary of why cells were dropped

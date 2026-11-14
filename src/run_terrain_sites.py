@@ -2,7 +2,7 @@
 
 Usage (from the repo root):
     python src/run_terrain_sites.py --only haughton_crater
-    python src/run_terrain_sites.py                    # all sites in data/sites.csv
+    python src/run_terrain_sites.py                    # all sites in config/sites.csv
 
 Each site: fetch DEM + WorldCover for the analysis square plus a buffer, reproject to
 a metric grid, compute terrain metrics, summarise them over the analysis square.
@@ -75,7 +75,7 @@ def upsert(path: Path, row: dict):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--sites", default="data/sites.csv")
+    p.add_argument("--sites", default="config/sites.csv")
     p.add_argument("--only", help="run just this site name")
     p.add_argument("--half-km", type=float, default=15.0, help="half-width of the analysis square")
     p.add_argument("--res-m", type=float, default=30.0, help="pixel size of the metric grid")

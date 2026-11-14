@@ -11,9 +11,9 @@ pip install -r requirements.txt          # or: conda env create -f environment.y
 
 ## Step 1 — filter a large area (land cover + population)
 ```bash
-python scripts/filter_cells.py --bbox 82 27 86 31 --name nepal_west
+python src/filter_cells.py --bbox 82 27 86 31 --name nepal_west
 # optional population grid (GHS-POP, WGS84 version) and polar classes:
-python scripts/filter_cells.py --bbox 82 27 86 31 --name nepal_west --pop data/GHS_POP_4326_30ss.tif --keep-classes 60 70 100
+python src/filter_cells.py --bbox 82 27 86 31 --name nepal_west --pop data/GHS_POP_4326_30ss.tif --keep-classes 60 70 100
 ```
 Cuts the area into 15 km cells and drops cells with too little bare ground (ESA WorldCover class 60),
 built-up area, water/wetland, ocean, or (with `--pop`) more than 5 people/km2. All thresholds are flags
@@ -23,8 +23,8 @@ Writes `out/<name>/cells.csv`, `cells.geojson` (open in QGIS / geojson.io) and `
 
 ## Step 2 — terrain analysis per cell (from repo root)
 ```bash
-python scripts/analyze_bbox.py --bbox 83.6 28.7 84.0 29.1 --name mustang
-python scripts/analyze_bbox.py --bbox 83 28 85 30 --res 90 --name mustang_wide --no-tifs
+python src/analyze_bbox.py --bbox 83.6 28.7 84.0 29.1 --name mustang
+python src/analyze_bbox.py --bbox 83 28 85 30 --res 90 --name mustang_wide --no-tifs
 ```
 Writes `out/<name>/summary.json` plus GeoTIFFs (elevation, slope_deg, roughness_m, relief_m, tri_m)
 that open in QGIS.
@@ -32,18 +32,18 @@ that open in QGIS.
 ## Site scores (metric grid, one row per named site)
 
 `src/fetch_region.py` + `src/terrain.py` are a second way to get terrain metrics, used for
-the named candidate sites in `data/sites.csv`:
+the named candidate sites in `config/sites.csv`:
 
-| | `dem` package + `scripts/` | `src/fetch_region.py` + `src/terrain.py` |
+| | `dem` package + `src/filter_cells.py`, `src/analyze_bbox.py` | `src/fetch_region.py` + `src/terrain.py` |
 |---|---|---|
 | Data | DEM (AWS), WorldCover (AWS) | DEM + WorldCover, Planetary Computer (AWS fallback) |
 | Grid | native lon/lat, pixel size converted to metres | reprojected to UTM, square metric pixels |
 | Metrics | slope, roughness (5x5), relief (1 km), TRI | slope, true-north aspect, relief (5 km), roughness (3x3), TRI |
 | Output | `out/<name>/` (CSV, GeoJSON, JSON, GeoTIFFs) | one row per site in `data/results/scores.csv` |
-| Run | `python scripts/filter_cells.py ...`, `python scripts/analyze_bbox.py ...` | `python src/run_terrain_sites.py --only <site>` |
+| Run | `python src/filter_cells.py ...`, `python src/analyze_bbox.py ...` | `python src/run_terrain_sites.py --only <site>` |
 
-Shared code: `fetch_region` uses `dem.fetch.tiles_for_bbox` and `dem.landcover.worldcover_tiles`
-for the AWS tiles, and `terrain.compute_terrain` uses `dem.terrain.tri`.
+Shared code: `fetch_region` uses `dem.fetch.tiles_for_bbox`, `dem.landcover.worldcover_tiles` and `dem.landcover.CLASSES`.
+The metric-grid code lives in `dem/grid.py` (`to_metric_grid`) and `dem/terrain.py` (`compute_terrain`); `src/terrain.py` only re-exports them.
 
 ## In Python
 The package lives in `src/`, so put that folder on the path first:

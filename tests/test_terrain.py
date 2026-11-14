@@ -1,4 +1,4 @@
-"""Offline checks for src/dem, src/fetch_region.py and src/terrain.py (synthetic data only)."""
+"""Offline checks for src/dem, src/fetch_region.py, src/terrain.py shim, src/filter_cells.py (synthetic data only)."""
 import sys
 from pathlib import Path
 
@@ -68,7 +68,7 @@ def test_worldcover_tile_names():
 
 def _filter_cells_module():
     import importlib.util
-    path = Path(__file__).resolve().parents[1] / "scripts" / "filter_cells.py"
+    path = Path(__file__).resolve().parents[1] / "src" / "filter_cells.py"
     spec = importlib.util.spec_from_file_location("filter_cells", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
