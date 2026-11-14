@@ -1,0 +1,229 @@
+{
+  "_note": "Sofia's research file: what each site is, where the analogy breaks down, and how it helps exploration. Known sites: 'helps' = what has been tested there, with source links in 'sources'. New candidates: 'helps' = what we could test there (write it once the pipeline ranks them; only the ~5 shown in the demo). [brackets] = still to research or check. Coordinates in scores.csv are approximate. Gorafe and Kali Gandaki are parked per the criteria doc. 'zoom' = how close the 3D terrain view flies in (11 shows about 20 km, 14 about 2 km).",
+  "Haughton Crater": {
+    "type": "known",
+    "place": "Devon Island, Nunavut, Canada",
+    "why": "About 20 km impact crater in a cold polar desert; long-running NASA analog site.",
+    "breaks": "24-hour sun during the summer field season, so no lasting shadow while crews are there.",
+    "helps": "Haughton-Mars Project (since 1997, NASA-supported, run by the Mars Institute): field tests of rovers, including a pressurized rover with suit ports, robotic drills, cameras and spectrometers, spacesuit gear such as a smart glove, and long traverses planned like Moon and Mars expeditions.",
+    "sources": [
+      {
+        "label": "NASA: Haughton-Mars Project",
+        "url": "https://www.nasa.gov/mission/haughton-mars-project-hmp"
+      },
+      {
+        "label": "Mars Institute: HMP",
+        "url": "https://marsinstitute.no/hmp"
+      },
+      {
+        "label": "Aerospace Testing International: Testing for Mars in the High Arctic",
+        "url": "https://www.aerospacetestinginternational.com/features/testing-for-mars-in-the-high-arctic.html"
+      }
+    ],
+    "zoom": 11
+  },
+  "Atacama (Yungay area)": {
+    "type": "known",
+    "place": "Antofagasta Region, Chile",
+    "why": "One of the driest places on Earth, with very high UV.",
+    "breaks": "Warm and near the tropics: no polar lighting and no long shadows.",
+    "helps": "NASA's ARADS project (from 2016) drove the KREX-2 prototype rover near Yungay, drilled up to 2 m and tested life-detection instruments (SOLID, Wet Chemistry Lab) to rehearse a search for life on Mars.",
+    "sources": [
+      {
+        "label": "NASA Astrobiology: life detection drill in the Atacama (2017)",
+        "url": "https://astrobiology.nasa.gov/news/nasa-tests-life-detection-drill-in-the-atacama-desert/"
+      },
+      {
+        "label": "Space.com: NASA tests life-detecting rover tech in Chile",
+        "url": "https://www.space.com/36106-nasa-tests-life-detecting-mars-rover-tech.html"
+      }
+    ],
+    "zoom": 11.5
+  },
+  "Meteor Crater": {
+    "type": "known",
+    "place": "Arizona, USA",
+    "why": "About 1.2 km wide impact crater; Apollo astronauts trained in geology here.",
+    "breaks": "Hot desert at mid-latitude: no polar light, far smaller than Shackleton.",
+    "helps": "Apollo astronauts did geology field training here from 1963, taught by USGS scientists such as Gene Shoemaker. The crater is still used to train astronauts for missions to the lunar south pole.",
+    "sources": [
+      {
+        "label": "USGS: In the footsteps of the Apollo astronauts (field guide)",
+        "url": "https://www.usgs.gov/publications/walk-footsteps-apollo-astronauts-a-field-guide-northern-arizona-astronaut-training"
+      },
+      {
+        "label": "NASA ALSJ: Astronaut geology training",
+        "url": "https://www.nasa.gov/wp-content/uploads/static/history/alsj/AstronautGeologyTraining.pdf"
+      },
+      {
+        "label": "Phys.org: Training future explorers of the Moon (2018)",
+        "url": "https://phys.org/news/2018-10-future-explorers-moon.html"
+      }
+    ],
+    "zoom": 14
+  },
+  "Craters of the Moon": {
+    "type": "known",
+    "place": "Idaho, USA",
+    "why": "Young basalt lava field with lava tubes; Apollo astronauts trained here in 1969.",
+    "breaks": "Young, fresh lava with plants, air and weather. Lunar basalt is buried under fine dust (regolith) built up over billions of years of impacts.",
+    "helps": "On 22 August 1969, Apollo 14 crew Alan Shepard and Edgar Mitchell, with Joe Engle and Eugene Cernan, learned volcanic geology here to pick the most valuable rock samples on the Moon. NASA scientists still do research here.",
+    "sources": [
+      {
+        "label": "National Park Service: Space exploration research and astronaut training",
+        "url": "https://www.nps.gov/crmo/learn/historyculture/space-exploration-research-and-astronaut-training.htm"
+      }
+    ],
+    "zoom": 11.5
+  },
+  "Lava Beds": {
+    "type": "known",
+    "place": "Lava Beds National Monument, California, USA",
+    "why": "Hundreds of lava-tube caves in basalt.",
+    "breaks": "Earth caves have air, moisture, ice and microbes, and they are much smaller than the lava tubes thought to exist on the Moon.",
+    "helps": "NASA Ames's BRAILLE project (2019) drove the CaveR rover in Valentine Cave to map the cave with a laser scanner and look for signs of microbial life on the walls, showing that a remotely operated rover can explore a lava tube.",
+    "sources": [
+      {
+        "label": "NASA Astrobiology: Using a cave rover, NASA learns to search for life underground (2019)",
+        "url": "https://astrobiology.nasa.gov/news/using-a-cave-rover-nasa-learns-to-search-for-life-underground/"
+      }
+    ],
+    "zoom": 12
+  },
+  "Lanzarote lava tubes": {
+    "type": "known",
+    "place": "Canary Islands, Spain",
+    "why": "Lava tubes and volcanic plains; ESA trains astronauts in planetary geology on the island.",
+    "breaks": "Mild ocean climate with air and weather, and a tourist island with roads and towns, so it is far easier to reach than a lunar cave.",
+    "helps": "ESA's PANGAEA course trains astronauts from ESA, NASA and JAXA in planetary geology here, including work inside the Corona lava tube, one of the largest volcanic caves on Earth.",
+    "sources": [
+      {
+        "label": "ESA: Turning astronauts into planetary explorers (2023)",
+        "url": "https://www.esa.int/ESA_Multimedia/Images/2023/02/Turning_astronauts_into_planetary_explorers"
+      },
+      {
+        "label": "Phys.org: 'Like the Moon': astronauts flock to Spanish isle to train (2022)",
+        "url": "https://phys.org/news/2022-11-moon-astronauts-flock-spanish-isle.html"
+      }
+    ],
+    "zoom": 11.5
+  },
+  "Rjukan valley": {
+    "type": "candidate",
+    "place": "Vestfold og Telemark, Norway",
+    "why": "Deep east-west valley; the town gets no direct sun for about six months a year.",
+    "breaks": "Green, wet and inhabited: nothing like bare lunar ground.",
+    "helps": "[to write once ranked: the town's sun mirrors as a model for lighting dark craters]",
+    "zoom": 12
+  },
+  "Viganella": {
+    "type": "candidate",
+    "place": "Piedmont, Italy",
+    "why": "Alpine village without direct sun from November to February.",
+    "breaks": "[to research]",
+    "helps": "[to write once ranked: what we could test here]",
+    "zoom": 13
+  },
+  "Seydisfjordur fjord": {
+    "type": "candidate",
+    "place": "East Iceland",
+    "why": "Narrow fjord with little sun even in summer.",
+    "breaks": "[to research]",
+    "helps": "[to write once ranked: what we could test here]",
+    "zoom": 11.5
+  },
+  "Kagbeni (Upper Mustang)": {
+    "type": "candidate",
+    "place": "Mustang District, Nepal",
+    "why": "Dry, high valley in the Himalayan rain shadow (team photos).",
+    "breaks": "[to research]",
+    "helps": "[to write once ranked: what we could test here]",
+    "zoom": 12
+  },
+  "pinacate r001c002": {
+    "type": "candidate",
+    "name": "El Elegante crater",
+    "place": "El Pinacate y Gran Desierto de Altar, Sonora, Mexico",
+    "why": "A near-circular volcanic crater (maar) about 1.6 km wide and 244 m deep, with steep inner walls and a flat floor: our pipeline's closest bowl after Meteor Crater.",
+    "breaks": "It is a volcanic maar, made by steam explosions, not an impact crater. Hot, low-latitude desert: no polar light or permanent shadow, and far smaller than Shackleton (about 21 km).",
+    "helps": "[to write once ranked: what we could test here]",
+    "sources": [
+      {
+        "label": "GSA abstract: Crater Elegante, Pinacate volcanic field (2006)",
+        "url": "https://gsa.confex.com/gsa/2006RM/webprogram/Paper104697.html"
+      },
+      {
+        "label": "OpenTopography: Crater Elegante lidar survey report",
+        "url": "https://opentopography.s3.sdsc.edu/dataspace/OTDS.122025.6340.1/docs/Crater_Elegante_FullReport.pdf"
+      }
+    ],
+    "zoom": 13.5
+  },
+  "pinacate r002c001": {
+    "type": "candidate",
+    "name": "Pinacate NW crater",
+    "place": "El Pinacate y Gran Desierto de Altar, Sonora, Mexico",
+    "why": "A second crater bowl in the Pinacate volcanic field, about 1.6 km wide and 100 m deep (our pipeline). [check: probably MacDougal crater]",
+    "breaks": "Volcanic maar, not an impact crater; shallower than Elegante. Hot, low-latitude desert with no polar light. [check]",
+    "helps": "[to write once ranked: what we could test here]",
+    "zoom": 13.5
+  },
+  "arid_al_wahbah r001c001": {
+    "type": "candidate",
+    "name": "Al Wahbah crater",
+    "place": "Harrat Kishb, Makkah Province, Saudi Arabia",
+    "why": "A deep, round volcanic crater (maar) about 2 km wide and 220–250 m deep, with a white salt floor; about 1.1 million years old. Our pipeline measured it at 2.2 km wide and 163 m deep (its spill point).",
+    "breaks": "Volcanic maar from a steam explosion, not an impact crater. At 23° N the Sun climbs to the zenith, so there is no low polar light and no lasting shadow on the floor.",
+    "helps": "[to write once ranked: what we could test here]",
+    "sources": [
+      {
+        "label": "Abdel Wahab et al.: Al Wahbah maar, EGU 2013 abstract",
+        "url": "https://meetingorganizer.copernicus.org/EGU2013/EGU2013-13320-1.pdf"
+      },
+      {
+        "label": "Geotourism journal: The Al Wahbah crater of Saudi Arabia",
+        "url": "https://journals.agh.edu.pl/geotour/article/view/7139"
+      },
+      {
+        "label": "Wikipedia: Al Wahbah crater",
+        "url": "https://en.wikipedia.org/wiki/Al_Wahbah_crater"
+      }
+    ],
+    "zoom": 13.5
+  },
+  "arid_roter_kamm r001c001": {
+    "type": "candidate",
+    "name": "Roter Kamm crater",
+    "place": "Namib Desert, ǁKaras Region, Namibia",
+    "why": "A real impact crater, about 2.5 km wide and 4–5 million years old, with a rim about 130 m above its floor. Our pipeline measured it at 2.0 km wide and 70 m deep (its spill point).",
+    "breaks": "Wind-blown sand fills the floor at least 100 m deep, so it is much shallower than when it formed. Low-latitude desert (28° S): high Sun, no polar light. [check: access, it lies in a restricted diamond-mining area]",
+    "helps": "[to write once ranked: what we could test here]",
+    "sources": [
+      {
+        "label": "Wikipedia: Roter Kamm crater",
+        "url": "https://en.wikipedia.org/wiki/Roter_Kamm_crater"
+      },
+      {
+        "label": "Solar Views: Roter Kamm impact crater",
+        "url": "https://solarviews.com/cap/earth/roter.htm"
+      }
+    ],
+    "zoom": 13.5
+  },
+  "Tenoumer crater": {
+    "type": "missed",
+    "lat": 22.918,
+    "lng": -10.407,
+    "place": "Sahara Desert, Mauritania",
+    "why": "A confirmed impact crater about 1.9 km wide and about 110 m deep from rim crest to floor (300–400 m when it formed, before sand filled it). Our search covered it (region arid_tenoumer, cell r001c001) but found no crater there.",
+    "breaks": "Our pipeline measures a crater's spill depth: how deep it is up to the lowest point of its rim, where water would overflow. Tenoumer's rim is low or sanded over on one side, so its spill depth is only 44 m, just under our 50 m minimum (settings config-v1). We kept the limit: changing it to let a known crater through would be tuning the method to the answer.",
+    "helps": "It shows a real limitation of config-v1 and the fix for the next version: filter by rim-crest depth instead of the lowest saddle, so old, sand-filled craters like Tenoumer are not dropped.",
+    "sources": [
+      {
+        "label": "Wikipedia: Tenoumer crater",
+        "url": "https://en.wikipedia.org/wiki/Tenoumer_crater"
+      }
+    ],
+    "zoom": 13.5
+  }
+}
