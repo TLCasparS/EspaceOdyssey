@@ -1,0 +1,231 @@
+{
+  "_note": "Lunar reference per base type. The 0-1 values in scores.csv ARE the similarity to the Moon (1 = equal to the Moon); there are no 0-1 target values. Moon values are raw, in earth_unit. score_method: target = similarity, counts in SCORE_TOTAL if weight > 0; display = similarity shown but weight 0; rank = no lunar value yet, rank within one run, NOT in scores.csv; not computed = no pipeline value yet.",
+  "polar": {
+    "label": "Polar base · Shackleton rim + floor (lunar south pole)",
+    "total_rule": "score (vs Moon): weighted mean of the axes with in_total = true",
+    "criteria": [
+      {
+        "column": "SUNNY_RIDGE",
+        "criterion": "c1_sunny_ridge",
+        "label": "1 Sunny ridge",
+        "counts": false,
+        "weight": 1.0,
+        "score_method": "rank",
+        "in_scores_csv": false,
+        "tolerance": 0.1,
+        "earth_unit": "lit fraction / flat-land lit fraction",
+        "moon": {
+          "value": null,
+          "unit": "lit fraction / flat-land lit fraction",
+          "source": null,
+          "zone": null,
+          "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+        }
+      },
+      {
+        "column": "DARK_FLOOR",
+        "criterion": "c2_dark_floor",
+        "label": "2 Dark floor",
+        "counts": false,
+        "weight": 1.0,
+        "score_method": "rank",
+        "in_scores_csv": false,
+        "tolerance": 0.2,
+        "earth_unit": "terrain shadow fraction (p99 of floor)",
+        "moon": {
+          "value": null,
+          "unit": "share",
+          "source": null,
+          "zone": null,
+          "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+        }
+      },
+      {
+        "column": "LIGHT_NEAR_DARK",
+        "criterion": "c3_light_dark",
+        "label": "3 Light next to dark",
+        "counts": false,
+        "weight": 1.0,
+        "score_method": "rank",
+        "in_scores_csv": false,
+        "tolerance": 0.5,
+        "earth_unit": "distance / bowl radius",
+        "moon": {
+          "value": null,
+          "unit": "distance / r",
+          "source": null,
+          "zone": null,
+          "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+        }
+      },
+      {
+        "column": "GRAZING_SUN",
+        "criterion": "c4_grazing_sun",
+        "label": "4 Grazing sun",
+        "counts": false,
+        "weight": 1.0,
+        "score_method": "rank",
+        "in_scores_csv": false,
+        "tolerance": 5,
+        "earth_unit": "deg (max Sun elevation)",
+        "moon": {
+          "value": null,
+          "unit": "deg",
+          "source": null,
+          "zone": null,
+          "note": "Moon value from src/pipeline/lunar_light.py (Mateo), called by compute_lunar_target.py; interface agreed 14 Nov 2026"
+        }
+      },
+      {
+        "column": "SKY_VIEW",
+        "criterion": "c5_sky_view",
+        "label": "5 Sky-view factor (floor)",
+        "counts": false,
+        "weight": 0.0,
+        "score_method": "display",
+        "in_scores_csv": true,
+        "tolerance": 0.1,
+        "earth_unit": "share of sky hemisphere",
+        "moon": {
+          "value": 0.6306,
+          "unit": "share of sky hemisphere",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "floor zone (6103 px: bowl pixels < 10 deg connected to the low point); horizons out to 19.02 km (= 2 x r); nearest window edge 25.0 km from the low point (covers the full look-out distance)",
+          "note": null
+        }
+      },
+      {
+        "column": "BOWL_SHAPE",
+        "criterion": "c7_bowl",
+        "label": "7 Bowl shape",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 0.05,
+        "earth_unit": "depth / width",
+        "moon": {
+          "value": 0.1973,
+          "unit": "depth/width",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "whole crater = filled closed depression (cyan outline)",
+          "note": null
+        }
+      },
+      {
+        "column": "CRATER_SIZE",
+        "criterion": "c8_crater_size",
+        "label": null,
+        "counts": false,
+        "weight": null,
+        "score_method": "not computed",
+        "in_scores_csv": false,
+        "tolerance": null,
+        "earth_unit": null,
+        "moon": null
+      },
+      {
+        "column": "RELIEF",
+        "criterion": "c9_relief",
+        "label": "9 Rim-to-floor depth",
+        "counts": false,
+        "weight": 0.0,
+        "score_method": "display",
+        "in_scores_csv": true,
+        "tolerance": 1500,
+        "earth_unit": "m (rim to floor)",
+        "moon": {
+          "value": 4077.2251,
+          "unit": "m",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "whole bowl: rim crest within 1.3 x bowl radius of the floor low point",
+          "note": null
+        }
+      },
+      {
+        "column": "SLOPE_BASE",
+        "criterion": "c10_flat_base",
+        "label": "10 Flat base spot",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 3,
+        "earth_unit": "deg (base pad slope)",
+        "moon": {
+          "value": 0.664,
+          "unit": "deg",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "rim: outside the bowl, pad centre at most 1 km outside the bowl edge",
+          "note": null
+        }
+      },
+      {
+        "column": "STEEP_WALLS",
+        "criterion": "c11_walls",
+        "label": "11 Steep walls",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 5,
+        "earth_unit": "deg (inner wall slope)",
+        "moon": {
+          "value": 27.2221,
+          "unit": "deg",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "inner wall: ring 4.76-9.51 km around the low point (= 0.5-1.0 x bowl radius, r = equivalent radius of the filled depression)",
+          "note": null
+        }
+      },
+      {
+        "column": "DRIVABLE",
+        "criterion": "c12_drivable",
+        "label": null,
+        "counts": false,
+        "weight": null,
+        "score_method": "not computed",
+        "in_scores_csv": false,
+        "tolerance": null,
+        "earth_unit": null,
+        "moon": null
+      },
+      {
+        "column": "ROUGHNESS",
+        "criterion": "c13_roughness",
+        "label": "13 Roughness",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 10,
+        "earth_unit": "m (elevation std, 3x3 px at 60 m)",
+        "moon": {
+          "value": 24.5428,
+          "unit": "m",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "bowl + rim ring: the bowl plus everything within 1.3 x bowl radius of the low point (same zone as on Earth)",
+          "note": null
+        }
+      },
+      {
+        "column": "ASPECT",
+        "criterion": "c14_aspect",
+        "label": "14 Pole-facing slopes",
+        "counts": false,
+        "weight": 0.0,
+        "score_method": "display",
+        "in_scores_csv": true,
+        "tolerance": 0.15,
+        "earth_unit": "share of steep slopes facing the pole",
+        "moon": {
+          "value": 0.3979,
+          "unit": "share",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "within 9.51 km (ring outer radius) of the low point",
+          "note": null
+        }
+      }
+    ]
+  }
+}

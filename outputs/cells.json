@@ -1,0 +1,402 @@
+[
+ {
+  "run": "meteor_crater",
+  "cell": "r000c000",
+  "lat": 34.91783,
+  "lng": -111.11783,
+  "bbox": [
+   -111.2,
+   34.85,
+   -111.03567,
+   34.98566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "meteor_crater",
+  "cell": "r000c001",
+  "lat": 34.91783,
+  "lng": -110.95351,
+  "bbox": [
+   -111.03567,
+   34.85,
+   -110.87134,
+   34.98566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "meteor_crater",
+  "cell": "r000c002",
+  "lat": 34.91783,
+  "lng": -110.86067,
+  "bbox": [
+   -110.87134,
+   34.85,
+   -110.85,
+   34.98566
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 13% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "meteor_crater",
+  "cell": "r001c000",
+  "lat": 35.05349,
+  "lng": -111.1177,
+  "bbox": [
+   -111.2,
+   34.98566,
+   -111.0354,
+   35.12131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "meteor_crater",
+  "cell": "r001c001",
+  "lat": 35.05349,
+  "lng": -110.95309,
+  "bbox": [
+   -111.0354,
+   34.98566,
+   -110.87079,
+   35.12131
+  ],
+  "status": "ranked",
+  "reason": "",
+  "site": "Meteor Crater",
+  "score_total": 0.4858
+ },
+ {
+  "run": "meteor_crater",
+  "cell": "r001c002",
+  "lat": 35.05349,
+  "lng": -110.86039,
+  "bbox": [
+   -110.87079,
+   34.98566,
+   -110.85,
+   35.12131
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 13% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "meteor_crater",
+  "cell": "r002c000",
+  "lat": 35.13565,
+  "lng": -111.11762,
+  "bbox": [
+   -111.2,
+   35.12131,
+   -111.03523,
+   35.15
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 21% of full size; usable 41%<50%",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "meteor_crater",
+  "cell": "r002c001",
+  "lat": 35.13565,
+  "lng": -110.95284,
+  "bbox": [
+   -111.03523,
+   35.12131,
+   -110.87046,
+   35.15
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 21% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "meteor_crater",
+  "cell": "r002c002",
+  "lat": 35.13565,
+  "lng": -110.86023,
+  "bbox": [
+   -110.87046,
+   35.12131,
+   -110.85,
+   35.15
+  ],
+  "status": "filtered",
+  "reason": "edge-cell 3% of full size",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r000c000",
+  "lat": 31.66783,
+  "lng": -113.72084,
+  "bbox": [
+   -113.8,
+   31.6,
+   -113.64168,
+   31.73566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r000c001",
+  "lat": 31.66783,
+  "lng": -113.56252,
+  "bbox": [
+   -113.64168,
+   31.6,
+   -113.48336,
+   31.73566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r000c002",
+  "lat": 31.66783,
+  "lng": -113.4042,
+  "bbox": [
+   -113.48336,
+   31.6,
+   -113.32504,
+   31.73566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r000c003",
+  "lat": 31.66783,
+  "lng": -113.26252,
+  "bbox": [
+   -113.32504,
+   31.6,
+   -113.2,
+   31.73566
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r001c000",
+  "lat": 31.80349,
+  "lng": -113.72073,
+  "bbox": [
+   -113.8,
+   31.73566,
+   -113.64145,
+   31.87131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r001c001",
+  "lat": 31.80349,
+  "lng": -113.56217,
+  "bbox": [
+   -113.64145,
+   31.73566,
+   -113.4829,
+   31.87131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r001c002",
+  "lat": 31.80349,
+  "lng": -113.40363,
+  "bbox": [
+   -113.4829,
+   31.73566,
+   -113.32435,
+   31.87131
+  ],
+  "status": "ranked",
+  "reason": "",
+  "site": "pinacate r001c002",
+  "score_total": 0.3793
+ },
+ {
+  "run": "pinacate",
+  "cell": "r001c003",
+  "lat": 31.80349,
+  "lng": -113.26217,
+  "bbox": [
+   -113.32435,
+   31.73566,
+   -113.2,
+   31.87131
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r002c000",
+  "lat": 31.93914,
+  "lng": -113.72061,
+  "bbox": [
+   -113.8,
+   31.87131,
+   -113.64121,
+   32.00697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r002c001",
+  "lat": 31.93914,
+  "lng": -113.56182,
+  "bbox": [
+   -113.64121,
+   31.87131,
+   -113.48243,
+   32.00697
+  ],
+  "status": "ranked",
+  "reason": "",
+  "site": "pinacate r002c001",
+  "score_total": 0.2478
+ },
+ {
+  "run": "pinacate",
+  "cell": "r002c002",
+  "lat": 31.93914,
+  "lng": -113.40303,
+  "bbox": [
+   -113.48243,
+   31.87131,
+   -113.32364,
+   32.00697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r002c003",
+  "lat": 31.93914,
+  "lng": -113.26182,
+  "bbox": [
+   -113.32364,
+   31.87131,
+   -113.2,
+   32.00697
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r003c000",
+  "lat": 32.05349,
+  "lng": -113.72051,
+  "bbox": [
+   -113.8,
+   32.00697,
+   -113.64102,
+   32.1
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r003c001",
+  "lat": 32.05349,
+  "lng": -113.56152,
+  "bbox": [
+   -113.64102,
+   32.00697,
+   -113.48203,
+   32.1
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r003c002",
+  "lat": 32.05349,
+  "lng": -113.40254,
+  "bbox": [
+   -113.48203,
+   32.00697,
+   -113.32305,
+   32.1
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ },
+ {
+  "run": "pinacate",
+  "cell": "r003c003",
+  "lat": 32.05349,
+  "lng": -113.26153,
+  "bbox": [
+   -113.32305,
+   32.00697,
+   -113.2,
+   32.1
+  ],
+  "status": "no_bowl",
+  "reason": "no depression >= 50 m deep, >= 1000 m wide and elongation <= 2",
+  "site": null,
+  "score_total": null
+ }
+]

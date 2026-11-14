@@ -1,0 +1,26 @@
+{
+  "centre_xy_m": [
+    7938.0,
+    -6655.4
+  ],
+  "centre_refined_from_dem": true,
+  "rim_radius_km": 10.45,
+  "rim_diameter_km": 20.9,
+  "rim_median_elev_m": 1115.1,
+  "floor_min_elev_m": -2872.0,
+  "depth_rim_to_floor_m": 3987.1,
+  "depth_to_diameter": 0.191,
+  "lowest_point_inside_rim_m": -2872.0,
+  "depth_lower_bound_m": 3987.1,
+  "coverage": {
+    "rim_ring": 1.0,
+    "floor_disc": 1.0
+  },
+  "floor_pixels": 38082,
+  "rim_pixels": 145907,
+  "source_file": "LDEM_80S_20MPP_ADJ.TIF (PGDA LOLA_20mpp), via its 30 m crop shackleton_dem_30m.tif",
+  "output_pixel_m": 30.0,
+  "crop_half_width_km": 18.0,
+  "nodata_fraction": 0.0,
+  "elevation_reference": "height above 1737.4 km sphere (LOLA convention)"
+}
