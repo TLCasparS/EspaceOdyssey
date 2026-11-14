@@ -10,7 +10,7 @@ grid:
   res_m: 60                   # common metric grid for Earth and Moon (decision 14 Nov)
   resampling: bilinear        # unsure: for 5 m LOLA -> 60 m, 'average' may be better; compare later
 
-# --- Step 1: hard filters per cell (land cover, settlements). NO slope filter here. --------
+# --- Stage 1: hard filters per cell (land cover, settlements). NO slope filter here. --------
 filter:
   landcover_res_m: 100        # WorldCover read resolution (COG overviews; 10 m native)
 
@@ -30,3 +30,32 @@ filter:
   patch_connectivity: 8       # (interpreted) 8 = diagonal neighbours connect, 4 = edges only
 
   max_pop_per_km2: 10         # only applied when a GHS-POP raster is given (--pop)
+
+# --- Stage 2: Polar terrain criteria (DEM only), per surviving cell, on the 60 m grid --------
+# Criterion numbers follow the team plan (HANDOFF_terrain.md table).
+polar:
+  buffer_m: 3500              # DEM read around each cell: >= relief_window/2 and >= wall ring outer radius
+  relief_window_m: 5000       # criterion 9: relief within ~5 km
+  roughness_window_px: 3      # criterion 13: std of elevation in 3x3 px (180 m at 60 m)
+
+  min_depression_depth_m: 2   # (interpreted) criterion 7: shallower closed depressions = DEM noise, ignored
+  pad_m: 200                  # criterion 10: base pad ~200 m -> 3x3 px at 60 m
+  max_base_slope_deg: 15      # criterion 10: cell dropped if the flattest usable pad is steeper (only slope filter)
+  wall_ring_m: [500, 3000]    # (interpreted) criterion 11: ring around the low point counted as "walls"
+  steep_slope_deg: 20         # (interpreted) criterion 14: what counts as steep terrain
+  pole_sector_deg: 45         # (interpreted) criterion 14: facing the pole = aspect within +-45 deg of it
+
+  # How each raw value becomes a 0-1 score (src/pipeline/scoring.py):
+  #   scale: [a, b]   -> direct linear score, a -> 1 ... b -> 0 if direction lower (reverse if higher)
+  #   target: value   -> similarity to the lunar value (not implemented until targets exist)
+  #   neither, direction higher/lower -> percentile rank among the surviving cells of THIS run
+  #                                      (score_method=rank: only comparable within one run)
+  #   direction target, target null   -> score None ("no data") until the lunar value exists
+  # Weights: (team start value) all equal; adjustable for the jury demo.
+  criteria:
+    c7_bowl:       {weight: 1.0, direction: higher, target: null}   # depth / width of closed depression. TODO lunar target (LOLA)
+    c9_relief:     {weight: 1.0, direction: higher, target: null}   # m, max-min in 5 km window at the low point. TODO lunar target
+    c10_flat_base: {weight: 1.0, direction: lower, scale: [0, 15]}  # deg, mean slope of flattest usable pad
+    c11_walls:     {weight: 1.0, direction: higher, target: null}   # deg, mean slope in ring around low point. TODO lunar target
+    c13_roughness: {weight: 1.0, direction: target, target: null}   # m, median std of elevation. TODO lunar target
+    c14_aspect:    {weight: 1.0, direction: higher, scale: [0, 1]}  # share of steep pixels facing the nearer pole
