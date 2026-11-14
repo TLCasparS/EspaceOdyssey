@@ -16,4 +16,7 @@ dependencies:
 - jupyterlab
 - folium
 - streamlit
+- plotly
+- pystac-client
+- planetary-computer
 - pytest

@@ -1,0 +1,20 @@
+# Shared Python packages for EspaceOdyssey
+# Install: pip install -r requirements.txt
+# Keep in sync with environment.yml: add new packages to both files.
+
+# Core data
+numpy==2.4.6
+pandas==3.1.1
+rasterio==1.4.4
+
+# Earth data from Microsoft Planetary Computer
+pystac-client==0.9.1
+planetary-computer==1.0.0
+
+# App and charts
+streamlit==1.67.0
+plotly==7.1.0
+matplotlib==3.11.2
+
+# Tests
+pytest==9.2.0
