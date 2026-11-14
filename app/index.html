@@ -55,7 +55,7 @@
   <main class="layout">
     <aside class="panel list-panel" aria-label="Ranked sites">
       <div class="panel-head">
-        <h2>Ranked sites</h2>
+        <h2>Earth twins</h2>
         <div class="seg" role="group" aria-label="Filter sites by type">
           <button type="button" data-filter="all" aria-pressed="true">All</button>
           <button type="button" data-filter="candidate" aria-pressed="false">New</button>
@@ -65,6 +65,15 @@
       <p class="hint" id="listHint"></p>
       <ol id="siteList" class="site-list"></ol>
     </aside>
+
+    <section class="panel moon-wrap" aria-label="The Moon: pick a lunar base">
+      <div class="moon-globe-box">
+        <div id="moonGlobe" class="globe"></div>
+        <p class="moon-label">The Moon</p>
+      </div>
+      <div class="moon-bases" id="moonBases" role="group" aria-label="Lunar base"></div>
+      <div class="moon-info" id="moonInfo" aria-live="polite"></div>
+    </section>
 
     <section class="globe-wrap" aria-label="Globe">
       <div id="globe" class="globe"></div>
@@ -92,7 +101,7 @@
 
   <footer class="footer">
     <span>Team EspaceOdyssey · 2026 hackathon project</span>
-    <span>Globe imagery: <a href="https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/">NASA Blue Marble Next Generation</a> (NASA Earth Observatory) · <span id="footNote"></span></span>
+    <span>Globe imagery: <a href="https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/">NASA Blue Marble Next Generation</a> (NASA Earth Observatory); Moon: <a href="https://svs.gsfc.nasa.gov/4720">CGI Moon Kit</a> (NASA's Scientific Visualization Studio, from LRO camera data) · <span id="footNote"></span></span>
     <p class="ai-note"><b>AI use:</b> the app's code was written with help from an AI assistant (Claude, by Anthropic), and the site notes were drafted with it and checked against the linked sources. The scores come from our team's pipeline, computed from elevation data; the optional sample view (<code>?sample</code>) uses fake values made by a script, for design only. No images or video are AI-generated: the globe, terrain and satellite views are real data from NASA, ESA/EOX and AWS.</p>
   </footer>
 

@@ -69,14 +69,19 @@ a { color: var(--earth); }
 .link-btn { background: none; border: 0; color: var(--earth); text-decoration: underline; cursor: pointer; padding: 8px 4px; font-size: 13px; }
 .chip-x { background: var(--signal); color: var(--on-signal); border: 0; border-radius: 999px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
 
-/* Layout: list | globe | card */
-.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr) 430px; gap: 16px; padding: 16px 24px; min-height: calc(100vh - 230px); }
+/* Layout: Moon | Earth on top (both turning), then the Earth twins list | the site card */
+.layout { display: grid; grid-template-columns: minmax(300px, 1fr) minmax(0, 2fr); grid-template-rows: minmax(480px, 62vh) auto;
+  grid-template-areas: "moon earth" "list card"; gap: 16px; padding: 16px 24px; }
+.moon-wrap { grid-area: moon; }
+.globe-wrap { grid-area: earth; }
+.list-panel { grid-area: list; }
+.card-panel { grid-area: card; }
 .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); }
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .panel-head h2 { font-size: 20px; text-transform: uppercase; }
 
 /* Site list */
-.list-panel { padding: 16px; display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 230px); min-height: 520px; overflow: auto; }
+.list-panel { padding: 16px; display: flex; flex-direction: column; gap: 8px; max-height: 80vh; min-height: 420px; overflow: auto; }
 .hint { margin: 0; font-size: 12px; color: var(--muted); }
 .site-list { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .site-btn { width: 100%; text-align: left; display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--panel-2); border: 2px solid transparent; cursor: pointer; }
@@ -93,7 +98,7 @@ a { color: var(--earth); }
 .empty { font-size: 13px; color: var(--muted); padding: 8px 2px; }
 
 /* Globe */
-.globe-wrap { position: relative; min-height: 520px; border-radius: var(--radius); overflow: hidden; background: #030A12; border: 1px solid var(--border); }
+.globe-wrap { position: relative; min-height: 420px; border-radius: var(--radius); overflow: hidden; background: #030A12; border: 1px solid var(--border); }
 .globe { position: absolute; inset: 0; }
 .globe-legend { position: absolute; left: 12px; bottom: 12px; background: rgba(6,18,28,.85); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; max-width: 240px; }
 .legend-title { font-weight: 600; }
@@ -144,7 +149,7 @@ a { color: var(--earth); }
 .globe-error { position: absolute; inset: auto 16px 50% 16px; text-align: center; color: var(--muted); }
 
 /* Card */
-.card-panel { padding: 20px; max-height: calc(100vh - 230px); min-height: 520px; overflow: auto; }
+.card-panel { padding: 20px; max-height: 80vh; min-height: 420px; overflow: auto; }
 .card { display: flex; flex-direction: column; gap: 16px; }
 .card-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
 .card-title h2 { font-size: 28px; line-height: 1.1; }
@@ -190,13 +195,12 @@ a { color: var(--earth); }
 
 /* Narrower screens: stack */
 @media (max-width: 1180px) {
-  .layout { grid-template-columns: 280px minmax(0, 1fr); }
-  .card-panel { grid-column: 1 / -1; max-height: none; min-height: 0; }
+  .layout { grid-template-columns: minmax(260px, 1fr) minmax(0, 1.6fr); }
 }
 @media (max-width: 760px) {
-  .layout { grid-template-columns: minmax(0, 1fr); padding: 12px 16px; }
-  .globe-wrap { min-height: 380px; order: -1; }
-  .list-panel { max-height: none; min-height: 0; }
+  .layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "moon" "earth" "list" "card"; padding: 12px 16px; }
+  .globe-wrap { min-height: 380px; }
+  .list-panel, .card-panel { max-height: none; min-height: 0; }
   .topbar, .filters { padding-left: 16px; padding-right: 16px; }
   .brand h1 { font-size: 24px; }
   .team-mark { align-items: flex-start; }
@@ -237,3 +241,33 @@ a { color: var(--earth); }
 .impact-line > span:first-child { display: inline-block; min-width: 110px; color: var(--muted); }
 .impact-line a { color: var(--signal-soft); }
 .region-btn .muted { color: var(--muted); font-weight: 400; }
+
+/* Moon panel: globe, base buttons, the lunar target in a few lines */
+.moon-wrap { display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.moon-globe-box { position: relative; flex: 1 1 auto; min-height: 220px; background: #030A12; border-bottom: 1px solid var(--border); }
+.moon-label { position: absolute; top: 10px; left: 12px; margin: 0; font-family: var(--title); font-size: 18px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--moon); pointer-events: none; }
+.moon-bases { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px 0; }
+.moon-btn { flex: 1 1 140px; text-align: left; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font-size: 12.5px; cursor: pointer; line-height: 1.3; }
+.moon-btn b { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--signal); }
+.moon-btn[aria-pressed="true"] { border-color: var(--signal); box-shadow: inset 0 0 0 1px var(--signal); }
+.moon-btn[data-soon] b { color: var(--muted); }
+.moon-btn .soon { display: block; font-size: 11px; color: var(--muted); font-style: italic; }
+.moon-btn:hover, .moon-btn:focus-visible { border-color: var(--signal); }
+.moon-info { padding: 8px 12px 12px; font-size: 12.5px; color: var(--muted); overflow: auto; max-height: 42%; flex: none; }
+.moon-info p { margin: 0 0 6px; }
+.moon-title { color: var(--text); font-size: 14px; }
+.moon-title b { color: var(--moon); }
+.moon-why { line-height: 1.45; }
+.moon-sub { margin-top: 8px !important; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.moon-vals { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; }
+.moon-vals li { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; border-bottom: 1px solid rgba(36,70,94,.6); }
+.moon-vals li span { color: var(--text); }
+.moon-vals b { color: var(--moon); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.moon-vals .is-fact { grid-column: 1 / -1; flex-wrap: wrap; }
+.moon-vals .is-fact em { flex-basis: 100%; font-size: 11px; color: var(--accent); }
+.moon-soon { color: var(--accent); }
+.moon-fig { font-size: 12px; }
+@media (max-width: 760px) {
+  .moon-globe-box { flex: none; height: 260px; }
+  .moon-info { max-height: none; }
+}

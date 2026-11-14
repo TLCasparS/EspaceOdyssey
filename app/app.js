@@ -68,6 +68,20 @@ const BASES = [
   { id: 'cave', label: 'Lava tube' },
   { id: 'mare', label: 'Mare' },
 ];
+// Where each base type sits on the Moon (from Mateo's lunar targets, config/lunar_targets.json). The Moon globe
+// shows one marker per entry; a base can be picked once outputs/targets.json has its values. To add the
+// lava-tube base later, add an entry with id 'cave' (candidate: Mare Tranquillitatis pit, 8.336°N, 33.222°E).
+const MOON_BASES = [
+  { id: 'polar', name: 'Shackleton crater', place: 'Lunar south pole', lat: -89.625, lng: 118.8,
+    facts: '21 km wide, 4,077 m from rim crest to floor',
+    why: 'Its rim is one of the sunniest places on the Moon (best spot lit 78% of the time: solar power), while its floor never sees the Sun (permanent shadow: water ice). Power and ice are about 7.5 km apart.',
+    figure: '../figures/shackleton_target.png' },
+  { id: 'mare', name: 'Apollo 11 site', place: 'Mare Tranquillitatis', lat: 0.674, lng: 23.473,
+    note: 'Typical lunar mare plain (Apollo 11 site shown): the target is the median of 20 sample areas in four maria.',
+    why: 'Flat, smooth volcanic plains near the equator: easy to land and drive on, but with a huge day–night temperature swing.',
+    figure: '../figures/moon/mare_cells.png' },
+];
+const moonBase = id => MOON_BASES.find(b => b.id === id);
 const byKey = Object.fromEntries(CRITERIA.map(c => [c.key, c]));
 const COLORS = { earth: '#6CB4EE', moon: '#E8E3D3', newSite: '#F0C85D', known: '#A7BAC7', signal: '#3CC8B4' };
 
@@ -76,9 +90,9 @@ const state = {
   crit: {},              // per base: { KEY: { counts, weight, method, moon, unit, earthUnit } }, same shape for both data formats
   heat: null, cells: [], // pipeline heatmap points and searched cells
   base: 'polar', group: 'all', active: new Set(), threshold: 0.7,
-  typeFilter: 'all', selected: null, globe: null,
-  knownOpen: false,
-  valuesOpen: null,      // values panel over the 3D view (null = decide by screen width)      // the folded "Known analog sites" box under the ranking
+  typeFilter: 'all', selected: null, globe: null, moon: null,
+  knownOpen: false,      // the folded "Known analog sites" box under the ranking
+  valuesOpen: null,      // values panel over the 3D view (null = decide by screen width)
   view: 'globe', moonColours: false,   // 'globe' or 'terrain' (3D close-up of the selected site)
 };
 
@@ -319,13 +333,20 @@ function renderFilters() {
   document.getElementById('thresholdOut').textContent = Math.round(state.threshold * 100) + '%';
 }
 
+// Pick a lunar base type (from the filter bar or the Moon globe): Earth sites are re-ranked against it.
+function setBase(id, fly) {
+  if (!state.targets[id]) { state.moonInfo = id; renderMoonInfo(); updateMoon(fly); return; }   // no values yet
+  state.base = id;
+  state.moonInfo = id;
+  // Drop filters that do not apply to the new base type
+  [...state.active].forEach(k => { if (!byKey[k].bases.includes(state.base)) state.active.delete(k); });
+  refresh();
+  updateMoon(fly);
+}
+
 function wireFilters() {
   document.getElementById('baseSeg').addEventListener('click', e => {
-    const b = e.target.closest('[data-base]'); if (!b) return;
-    state.base = b.dataset.base;
-    // Drop filters that do not apply to the new base type
-    [...state.active].forEach(k => { if (!byKey[k].bases.includes(state.base)) state.active.delete(k); });
-    refresh();
+    const b = e.target.closest('[data-base]'); if (b) setBase(b.dataset.base, true);
   });
   document.getElementById('groupTabs').addEventListener('click', e => {
     const t = e.target.closest('[data-group]'); if (!t) return;
@@ -361,7 +382,7 @@ function renderList() {
   const total = scoredCount(), shown = visibleSites().filter(s => s.sim != null).length;
   document.getElementById('listHint').textContent = state.active.size
     ? `${shown} of ${total} sites pass the filters. Ranked by similarity to a ${baseLabel().toLowerCase()} base.`
-    : `Ranked by similarity to a ${baseLabel().toLowerCase()} base on the ${similarityCriteria().length} criteria that count.`;
+    : `Ranked by similarity to ${moonBase(state.base) ? `${moonBase(state.base).name} (${baseLabel().toLowerCase()} base)` : `a ${baseLabel().toLowerCase()} base`} on the ${similarityCriteria().length} criteria that count.`;
   list.innerHTML = rows.length ? rows.map(s => `
     <li>
       <button type="button" class="site-btn" data-site="${esc(s.SITE)}" aria-current="${s.SITE === state.selected}">
@@ -736,7 +757,8 @@ const labelTextOf = d => (d.sim == null && d.SITE !== state.selected ? '' : labe
 
 function declutterLabels(sites) {
   labelHidden = new Map();
-  const order = sites.filter(s => s.sim != null || s.SITE === state.selected)   // unnamed dots don't count.sort((a, b) => (b.SITE === state.selected) - (a.SITE === state.selected) || (a.rank ?? 1e9) - (b.rank ?? 1e9));
+  const order = sites.filter(s => s.sim != null || s.SITE === state.selected)   // unnamed dots don't count
+    .sort((a, b) => (b.SITE === state.selected) - (a.SITE === state.selected) || (a.rank ?? 1e9) - (b.rank ?? 1e9));
   const kept = [];
   const minGap = 3 * labelScale;     // degrees; about three label heights
   for (const s of order) {
@@ -797,6 +819,91 @@ function updateGlobe(fly) {
     g.pointOfView({ lat: s.lat, lng: s.lng, altitude: 1.4 }, 1200);
     setTimeout(onGlobeZoom, 1300);   // a programmed move doesn't fire the controls' 'change'
   }
+}
+
+/* ---------- Moon globe: pick the lunar base the Earth sites are compared with ---------- */
+
+const moonReady = id => !!state.targets[id];
+function initMoon() {
+  const el = document.getElementById('moonGlobe');
+  if (!hasWebGL() || typeof Globe !== 'function') return;
+  const m = Globe()(el)
+    // NASA SVS CGI Moon Kit colour map (LRO camera, LROC WAC mosaic by ASU), 4096x2048, converted to JPEG.
+    .globeImageUrl('assets/lroc-moon-color-4096.jpg')
+    .backgroundColor('#030A12')
+    .showAtmosphere(false)
+    .labelLat('lat')
+    .labelLng('lng')
+    .labelText(b => b.name)
+    .labelSize(b => (b.id === state.moonInfo ? 4.2 : 3.4))
+    .labelDotRadius(b => (b.id === state.moonInfo ? 1.6 : 1.2))
+    .labelColor(b => (b.id === state.moonInfo ? '#FFFFFF' : moonReady(b.id) ? COLORS.signal : 'rgba(167,186,199,0.75)'))
+    .labelAltitude(0.01)
+    .labelResolution(3)
+    .labelLabel(b => `${esc(b.name)} · ${esc(baseLabelOf(b.id))} base${moonReady(b.id) ? '' : ' (values coming)'}`)
+    .onLabelClick(b => setBase(b.id, true))
+    .ringColor(() => t => `rgba(255,255,255,${1 - t})`)
+    .ringMaxRadius(6)
+    .ringPropagationSpeed(3)
+    .ringRepeatPeriod(1400);
+  const c = m.controls();
+  c.autoRotate = true;
+  c.autoRotateSpeed = 0.5;
+  c.addEventListener('start', () => { c.autoRotate = false; clearTimeout(moonResume); });
+  c.addEventListener('end', () => { clearTimeout(moonResume); moonResume = setTimeout(() => { c.autoRotate = true; }, 4000); });
+  const fit = () => m.width(el.clientWidth).height(el.clientHeight);
+  new ResizeObserver(fit).observe(el);
+  fit();
+  state.moon = m;
+  document.getElementById('moonBases').addEventListener('click', e => {
+    const b = e.target.closest('[data-moon]'); if (b) setBase(b.dataset.moon, true);
+  });
+  updateMoon(true);
+}
+let moonResume = null;
+const baseLabelOf = id => BASES.find(b => b.id === id)?.label ?? id;
+
+// Markers, ring and camera. The south pole is seen from below, so its marker stays in view while the Moon turns.
+function updateMoon(fly) {
+  const m = state.moon;
+  const b = moonBase(state.moonInfo);
+  renderMoonButtons();
+  if (!m) return;
+  m.labelsData(MOON_BASES.map(x => ({ ...x })));
+  m.ringsData(b ? [{ lat: b.lat, lng: b.lng }] : []);
+  if (b && fly) {
+    m.controls().autoRotate = false;
+    clearTimeout(moonResume);
+    moonResume = setTimeout(() => { m.controls().autoRotate = true; }, 5000);
+    m.pointOfView({ lat: Math.max(-70, Math.min(70, b.lat)), lng: b.lng, altitude: 1.25 }, 1200);
+  }
+}
+
+function renderMoonButtons() {
+  document.getElementById('moonBases').innerHTML = MOON_BASES.map(b => `<button type="button" class="moon-btn" data-moon="${b.id}"
+      aria-pressed="${b.id === state.moonInfo}"${moonReady(b.id) ? '' : ' data-soon'}>
+      <b>${esc(baseLabelOf(b.id))}</b> ${esc(b.name)}${moonReady(b.id) ? '' : ' <span class="soon">values coming</span>'}</button>`).join('');
+  renderMoonInfo();
+}
+
+// The lunar target in a few lines: why it is a base site, its counted values, and the facts no Earth place can match.
+function renderMoonInfo() {
+  const el = document.getElementById('moonInfo');
+  const b = moonBase(state.moonInfo);
+  if (!b) { el.innerHTML = '<p class="hint">Click a base on the Moon to find its Earth twins.</p>'; return; }
+  const crit = state.crit[b.id];
+  const rows = crit ? CRITERIA.filter(c => crit[c.key]?.counts && crit[c.key].moon != null && !crit[c.key].kind)
+    .map(c => `<li><span>${esc(c.label)}</span><b>${esc(fmtVal(crit[c.key].moon, crit[c.key].earthUnit || crit[c.key].unit))}</b></li>`).join('') : '';
+  const facts = crit ? CRITERIA.filter(c => crit[c.key]?.fact && crit[c.key].moon != null)
+    .map(c => `<li class="is-fact"><span>${esc(c.label)}</span><b>${esc(fmtVal(crit[c.key].moon, crit[c.key].earthUnit || crit[c.key].unit))}</b><em>no Earth analog possible</em></li>`).join('') : '';
+  el.innerHTML = `
+    <p class="moon-title"><b>${esc(b.name)}</b> · ${esc(b.place)}</p>
+    ${b.facts ? `<p class="moon-facts">${esc(b.facts)}</p>` : ''}
+    ${b.note ? `<p class="moon-facts">${esc(b.note)}</p>` : ''}
+    <p class="moon-why">${esc(b.why)}</p>
+    ${crit ? `<p class="moon-sub">Target values (what Earth sites are compared with)</p><ul class="moon-vals">${rows}${facts}</ul>`
+      : '<p class="moon-soon">Values coming: Earth sites are not compared with this base yet.</p>'}
+    ${b.figure && crit ? `<a class="moon-fig" href="${esc(b.figure)}" target="_blank" rel="noopener">See the target figure</a>` : ''}`;
 }
 
 /* ---------- 3D terrain: MapLibre GL with free tiles (no account, no key) ---------- */
@@ -1146,6 +1253,9 @@ function refresh() {
   wireFilters();
   wireViewTools();
   initGlobe();
+  state.moonInfo = state.base;
+  initMoon();
+  renderMoonButtons();
   state.selected = ranked()[0]?.SITE ?? null;
   refresh();
   // Load the 3D map quietly behind the globe, so the first fly-in doesn't wait for it.
