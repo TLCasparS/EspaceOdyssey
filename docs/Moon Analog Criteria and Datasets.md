@@ -136,6 +136,16 @@ Traps we found while checking the data:
 - **Coverage gaps.** Travel time stops at 60°S, the permafrost map is Northern Hemisphere only, and CHIRPS stops at 50° latitude. Polar candidates lose some criteria; show them as "no data", not zero.
 - **Caves have no global map.** Criterion 25 is a hand check on shortlisted basalt fields.
 - **Small craters at 60 m (known limitation, found 14 Nov 2026).** A bowl only ~1 km wide is ~19 pixels across on the common grid, so its walls are smoothed and criterion 11 comes out too low (Meteor Crater: 23.9° on the 0.5–1.0 × r ring). Bowls near the size limit (1 km equivalent diameter) can also drop out of the bowl filter. Treat wall slope of small bowls as a lower bound. The bowl filter keeps a minimum equivalent diameter of **1 km for all regions** (decision 14 Nov 2026): a smaller bowl is < ~17 pixels across at 60 m, its walls are smoothed and its depth/width and wall slope are not reliable. This is a resolution limit, not a statement that small craters are poor analogs; it removes most maar craters in the Pinacate field and leaves Meteor Crater (1.1 km) just above the limit.
+- **Spill depth and filled craters (known limitation, found 14 Nov 2026).** The bowl filter's minimum depth (50 m, kept for all regions) uses the **spill depth**: from the floor up to the lowest saddle in the rim, not to the rim crest. Craters with a low gap in the rim, or partly filled with sand or sediment, fall below it. Example: Tenoumer crater (Mauritania) shows up as a round closed depression, 1.75 km wide, elongation 1.07, but only 44 m spill depth, so it is not scored (crater position matched from memory, unchecked).
+
+## Future work
+
+- **"Open bowl" mode for polar analogs at high latitude (cirques).** The bowl filter needs a *closed* depression
+  (≥ 50 m deep, ≥ 1 km wide, elongation ≤ 2). In the first high-latitude screening (Svalbard, Ellesmere,
+  Peary Land, Kangerlussuaq; 14 Nov 2026) no place passed it. Glacial terrain has cirques: bowls open on the
+  downhill side, with steep head walls that hold shadow. A mode that accepts open bowls, with depth measured
+  from the head wall and not to the spill point, could find polar analogs there. Not built; it needs its own
+  definitions for c7, c9 and c11.
 
 ## Open decisions
 
