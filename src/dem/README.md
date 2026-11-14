@@ -22,7 +22,18 @@ populated. No slope filter. All thresholds are in `config/pipeline.yaml` (sectio
 Writes `out/<name>/cells.csv`, `cells.geojson` (open in QGIS / geojson.io), `usable_mask.tif` and `survivors.txt`
 (one `analyze_bbox.py` command per kept cell).
 
-## Step 2 — terrain analysis per cell (from repo root)
+## Polar pipeline, one command (filter -> terrain criteria -> ranking)
+```bash
+python src/run_pipeline.py --bbox 83 28 85 30 --name mustang_polar          # GLO-30, ~2 min
+python src/run_pipeline.py --bbox 83 28 85 30 --name mustang_polar --res 90
+```
+Land-cover filter (above), then per surviving cell on a local-UTM 60 m grid the Polar terrain criteria
+7, 9, 10, 11, 13, 14 (`src/pipeline/polar.py`), scored and weighted per `config/pipeline.yaml`.
+Writes `out/<name>/ranking.csv`, `cells.geojson` (all cells, for the map), `radar.json` (0-1 score per
+criterion per ranked cell, lunar target placeholders) and `run_info.json`. Rank-based scores are only
+comparable within one run until lunar target values (LOLA) are filled in.
+
+## Quick look — terrain summary for one bbox (from repo root)
 ```bash
 python src/analyze_bbox.py --bbox 83.6 28.7 84.0 29.1 --name mustang
 python src/analyze_bbox.py --bbox 83 28 85 30 --res 90 --name mustang_wide --no-tifs
