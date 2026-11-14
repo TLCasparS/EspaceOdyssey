@@ -167,5 +167,47 @@
     "breaks": "Volcanic maar, not an impact crater; shallower than Elegante. Hot, low-latitude desert with no polar light. [check]",
     "helps": "[to write once ranked: what we could test here]",
     "zoom": 13.5
+  },
+  "arid_al_wahbah r001c001": {
+    "type": "candidate",
+    "name": "Al Wahbah crater",
+    "place": "Harrat Kishb, Makkah Province, Saudi Arabia",
+    "why": "A deep, round volcanic crater (maar) about 2 km wide and 220–250 m deep, with a white salt floor; about 1.1 million years old. Our pipeline measured it at 2.2 km wide and 163 m deep (its spill point).",
+    "breaks": "Volcanic maar from a steam explosion, not an impact crater. At 23° N the Sun climbs to the zenith, so there is no low polar light and no lasting shadow on the floor.",
+    "helps": "[to write once ranked: what we could test here]",
+    "sources": [
+      {
+        "label": "Abdel Wahab et al.: Al Wahbah maar, EGU 2013 abstract",
+        "url": "https://meetingorganizer.copernicus.org/EGU2013/EGU2013-13320-1.pdf"
+      },
+      {
+        "label": "Geotourism journal: The Al Wahbah crater of Saudi Arabia",
+        "url": "https://journals.agh.edu.pl/geotour/article/view/7139"
+      },
+      {
+        "label": "Wikipedia: Al Wahbah crater",
+        "url": "https://en.wikipedia.org/wiki/Al_Wahbah_crater"
+      }
+    ],
+    "zoom": 13.5
+  },
+  "arid_roter_kamm r001c001": {
+    "type": "candidate",
+    "name": "Roter Kamm crater",
+    "place": "Namib Desert, ǁKaras Region, Namibia",
+    "why": "A real impact crater, about 2.5 km wide and 4–5 million years old, with a rim about 130 m above its floor. Our pipeline measured it at 2.0 km wide and 70 m deep (its spill point).",
+    "breaks": "Wind-blown sand fills the floor at least 100 m deep, so it is much shallower than when it formed. Low-latitude desert (28° S): high Sun, no polar light. [check: access, it lies in a restricted diamond-mining area]",
+    "helps": "[to write once ranked: what we could test here]",
+    "sources": [
+      {
+        "label": "Wikipedia: Roter Kamm crater",
+        "url": "https://en.wikipedia.org/wiki/Roter_Kamm_crater"
+      },
+      {
+        "label": "Solar Views: Roter Kamm impact crater",
+        "url": "https://solarviews.com/cap/earth/roter.htm"
+      }
+    ],
+    "zoom": 13.5
   }
 }

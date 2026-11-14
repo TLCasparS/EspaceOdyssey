@@ -26,7 +26,7 @@ the old fake sample data instead, useful for design work.
 | `outputs/raw_values.csv` | pipeline | raw Earth values for the chips, e.g. "Steep walls 23.9° vs 27.2°", and crater width/depth |
 | `outputs/targets.json` | pipeline | per base type: which criteria count, their weight, and the raw Moon value with its unit |
 | `outputs/heatmap.json` | pipeline | globe heatmap points `{lat, lng, weight}` |
-| `outputs/cells.json` | pipeline | every searched grid cell, drawn as outlines in the 3D view (teal = scored, orange = crater left out, grey = no crater) |
+| `outputs/cells.json` | pipeline | every searched grid cell: outlines in the 3D view (teal = scored, orange = skipped at an edge or the sea, grey = no crater, light blue = ice-filled floor); grouped per region into outlines on the globe (teal = crater found, coral = nothing found) and the "Searched, no crater found" list |
 | `sample/scores.csv` | Sofia | in normal mode only its `SITE,LAT,LON`: puts the sites the pipeline hasn't scored yet on the map, listed as "Not scored yet" (its fake values are never shown) |
 | `sample/site_info.json` | Sofia | names, research notes, sources and 3D zoom per site; `export_app.py` reads it too, to name known sites |
 
@@ -37,6 +37,9 @@ How the scores are read:
 - The headline % is `SCORE_TOTAL`, the weighted mean of the criteria that count (`counts: true` in
   `targets.json`). Criteria with weight 0 (Sky-view, Relief, Pole-facing slopes) are shown as hollow
   dots and "Also compared, not in the score".
+- Light criteria (Sunny ridge, Dark floor, Light next to dark) carry a `limitation` in `targets.json`: the
+  card shows a short footnote (Moon = Sun disc, Earth = Sun centre). Grazing sun carries a `fact`: no place
+  on Earth can match it, so it is shown but never counted.
 - An empty cell means "no value", never zero. The card says which of three reasons: no data yet,
   waiting for a lunar value (the light criteria), or not computed yet.
 - Sites are keyed by `SITE`. A crater that matches a known site keeps that name (e.g. Meteor Crater);

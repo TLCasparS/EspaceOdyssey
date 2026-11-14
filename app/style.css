@@ -179,3 +179,13 @@ a { color: var(--earth); }
 }
 
 .site-meta .not-scored { color: var(--muted); font-style: italic; }
+
+/* Searched regions without a crater, under the ranked list */
+.site-list .regions { margin-top: 12px; padding: 12px; border: 1px dashed var(--border); border-radius: 10px; list-style: none; }
+.regions-title { margin: 0 0 4px; font-weight: 600; color: var(--text); font-size: 14px; }
+.regions-hint { margin: 0 0 8px; color: var(--muted); font-size: 12px; }
+.region-btn { display: inline-block; margin: 0 6px 6px 0; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font: inherit; font-size: 12.5px; cursor: pointer; }
+.region-btn:hover, .region-btn:focus-visible { border-color: var(--signal); }
+.region-note { color: var(--muted) !important; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 5px; }
+.region-note[hidden] { display: none; }
+.region-note i { display: inline-block; width: 12px; height: 0; border-top: 3px solid; margin-left: 4px; }
