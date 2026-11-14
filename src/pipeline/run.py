@@ -72,7 +72,7 @@ def _add_lonlat(place: dict, mg) -> None:
     place["utm_crs"] = mg.crs
 
 
-def cell_candidates(cell, dem, dem_tf, usable, lc_tf, cfg):
+def cell_candidates(cell, dem, dem_tf, usable, lc_tf, cfg, ice=None):
     """(cell info, candidate places with lon/lat) for one cell on its local-UTM grid."""
     pcfg, gcfg = cfg["polar"], cfg["grid"]
     lon_c, lat_c = (cell["west"] + cell["east"]) / 2, (cell["south"] + cell["north"]) / 2
@@ -82,7 +82,8 @@ def cell_candidates(cell, dem, dem_tf, usable, lc_tf, cfg):
                        dst_crs=metric_crs_for(lon_c, lat_c), resampling=gcfg["resampling"])
     in_cell = cell_mask_on_grid(mg, cell)
     usable_g = onto_grid(usable.astype(np.uint8), lc_tf, "EPSG:4326", mg, nodata=0) == 1
-    info, cands = polar_candidates(mg, in_cell, usable_g, lat_c, cfg)
+    ice_g = None if ice is None else onto_grid(ice.astype(np.uint8), lc_tf, "EPSG:4326", mg, nodata=0) == 1
+    info, cands = polar_candidates(mg, in_cell, usable_g, lat_c, cfg, ice=ice_g)
     for c in cands:
         _add_lonlat(c, mg)
         c["cell_id"] = cell["id"]
@@ -111,10 +112,11 @@ def run(bbox, name, cfg, dem_res=30, pop_path=None, out_root="out", log=print):
     log(f"  DEM {dem.shape} ({time.time() - t0:.0f} s)")
 
     crit = cfg["polar"]["criteria"]
+    ice = np.isin(lc, cfg["polar"]["ice_classes"])               # WorldCover snow & ice (display + ice-floor rule)
     infos, all_cands = {}, []
     for i, r in enumerate(rows):
         if r["keep"]:
-            info, cands = cell_candidates(r, dem, prof["transform"], masks["usable"], lc_tf, cfg)
+            info, cands = cell_candidates(r, dem, prof["transform"], masks["usable"], lc_tf, cfg, ice=ice)
             infos[r["id"]] = (info, cands)
             all_cands += cands
         if (i + 1) % 20 == 0 or i == len(rows) - 1:
@@ -166,7 +168,7 @@ RANK_COLS = (["rank", "id", "score", "n_scored", "rank_score", "n_ranked", "lon"
              + ["anchor", "c7_depth_m", "c7_width_m", "c7_elongation", "depression_extends_outside_cell", "n_depressions",
                 "n_candidates", "n_valid_candidates", "c14_n_steep", "low_lon", "low_lat", "low_elev_m",
                 "base_lon", "base_lat", "base_elev_m", "base_to_low_km", "base_to_bowl_km",
-                "wall_ring_km", "c11_ring_covered", "c5_floor_px", "c5_horizon_km", "c5_svf_low_point", "max_dark_days", "near_permanent_shadow_share", "flat_lit_fraction", "mean_sun_elev_deg",
+                "wall_ring_km", "c11_ring_covered", "ice_floor_share", "ice_rim_share", "c5_floor_px", "c5_horizon_km", "c5_svf_low_point", "max_dark_days", "near_permanent_shadow_share", "flat_lit_fraction", "mean_sun_elev_deg",
                 "usable", "largest_patch_km2", "utm_crs", "west", "south", "east", "north"])
 
 

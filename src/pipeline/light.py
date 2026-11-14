@@ -5,7 +5,8 @@
 Zones (same on Earth and Moon):
     floor zone  bowl pixels flatter than light.floor_max_slope_deg connected to the low point
                 (the low point alone if it is steeper)
-    rim zone    the criterion-10 zone: outside the bowl, at most polar.max_base_to_bowl_km from its edge
+    rim zone    rim_zone() (also criterion 10): outside the bowl, out to max(edge + polar.max_base_to_bowl_km,
+                polar.rim_zone_rel x r)
 Horizons: shadowsim.horizon_angles out to light.horizon_rel x bowl radius r, with the body's radius and
 refraction (light.bodies). Terrain outside the DEM counts as invisible.
 
@@ -104,6 +105,18 @@ def floor_zone(dep_mask: np.ndarray, slope_deg: np.ndarray, low, max_slope_deg: 
     return zone
 
 
+def rim_zone(dep_mask: np.ndarray, low, r_m: float, res_m: float, edge_km: float, rel: float):
+    """Shared rim zone (criterion 10 base pad AND criterion 1 sunny ridge; Earth and Moon):
+    outside the bowl, out to whichever reaches farther: edge_km beyond the bowl edge, or rel x r from
+    the low point (r = equivalent radius of the filled depression).
+    Returns (zone, distance to the bowl edge in m; 0 inside the bowl)."""
+    to_bowl = ndimage.distance_transform_edt(~dep_mask) * res_m
+    rr, cc = np.indices(dep_mask.shape)
+    d_low = np.hypot(rr - low[0], cc - low[1]) * res_m
+    zone = (to_bowl > 0) & ((to_bowl <= edge_km * 1000) | (d_low <= rel * r_m))
+    return zone, to_bowl
+
+
 def _bbox(mask):
     rows, cols = np.nonzero(mask)
     return rows.min(), rows.max() + 1, cols.min(), cols.max() + 1
@@ -147,7 +160,7 @@ def true_north_in_grid_deg(crs, x: float, y: float) -> float:
 LIGHT_KEYS = ("c1_sunny_ridge", "c2_dark_floor", "c3_light_dark", "c4_grazing_sun", "c5_sky_view")
 
 
-def place_light(mg, dep, low, slope_deg, rim_zone, lcfg: dict, body: str, fallback_dist_m: float):
+def place_light(mg, dep, low, slope_deg, rim, lcfg: dict, body: str, fallback_dist_m: float):
     """Raw light criteria + display values for one place. Sun criteria only for body 'earth' with
     light.sun true (the Moon side comes from lunar_light.py); otherwise they are None."""
     z, res = mg.dem, mg.res_m
@@ -167,8 +180,8 @@ def place_light(mg, dep, low, slope_deg, rim_zone, lcfg: dict, body: str, fallba
         floor[low] = True
         r, dist = None, fallback_dist_m
     sun_on = body == "earth" and lcfg.get("sun", True)
-    use_sun = sun_on and dep is not None and rim_zone is not None and bool(rim_zone.any())
-    zone = floor | rim_zone if use_sun else floor
+    use_sun = sun_on and dep is not None and rim is not None and bool(rim.any())
+    zone = floor | rim if use_sun else floor
     az, hz, (r0, r1, c0, c1) = zone_horizons(z, zone, res, dist, b, lcfg["n_azimuths"])
     fl = floor[r0:r1, c0:c1]
 
@@ -203,7 +216,7 @@ def place_light(mg, dep, low, slope_deg, rim_zone, lcfg: dict, body: str, fallba
 
     lit = res_y.lit_fraction
     shadow = 1.0 - lit / flat
-    rm = rim_zone[r0:r1, c0:c1]
+    rm = rim[r0:r1, c0:c1]
     raw["c1_sunny_ridge"] = float(lit[rm].max() / flat)
     raw["c2_dark_floor"] = float(np.percentile(shadow[fl], 99))
     dark = fl & (shadow >= shadow[fl].max() - 1e-9)

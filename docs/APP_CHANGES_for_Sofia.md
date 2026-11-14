@@ -47,4 +47,11 @@
 
 ## Notes
 - **Site names:** a known site from your `site_info.json` keeps its name when its point (from your `sample/scores.csv`) lies inside a cell, e.g. "Meteor Crater". Other cells are named `<run> <cell>`. Sites without a pipeline cell (Haughton, Atacama, …) are not in `outputs/scores.csv`.
-- **Light criteria c1–c4** (SUNNY_RIDGE, DARK_FLOOR, LIGHT_NEAR_DARK, GRAZING_SUN) get similarity values once Mateo's lunar light targets are merged. Until then they are empty in `scores.csv`.
+- **Light criteria c1–c4** (SUNNY_RIDGE, DARK_FLOOR, LIGHT_NEAR_DARK, GRAZING_SUN) now have lunar values and similarity scores (since 14 Nov, Mateo's `lunar_light.py`).
+
+## Card text for the light criteria (known limitation, accepted by the team)
+For SUNNY_RIDGE, DARK_FLOOR and LIGHT_NEAR_DARK, `targets.json` has a `limitation` field. Please show a short version on the card, e.g. as a footnote under the light chips or radar:
+
+> Light on the Moon is measured as the visible part of the Sun's disc (NASA PGDA illumination map); on Earth as the Sun's centre above the horizon. On flat ground at the pole both agree; on crater rims and floors they can differ a little.
+
+Suggested short label for a tooltip: "Moon: Sun disc · Earth: Sun centre".

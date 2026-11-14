@@ -171,3 +171,15 @@ def test_moon_body_leaves_sun_criteria_to_lunar_light():
     place = _Cell(mg, allpx, allpx, -89.9, _bowl_cfg(), body="moon").place(dep["low"], dep)
     assert all(place[k] is None for k in ("c1_sunny_ridge", "c2_dark_floor", "c3_light_dark", "c4_grazing_sun"))
     assert place["c5_sky_view"] == pytest.approx(1 - math.sin(math.atan(1000 / 3000)), abs=0.03)
+
+
+def test_shared_rim_zone_reaches_max_of_edge_plus_1km_and_1p3_r():
+    from pipeline.light import rim_zone
+    n = 501
+    rr, cc = np.indices((n, n))
+    d = np.hypot(rr - 250, cc - 250) * RES
+    for r_bowl, expect_outer in ((600.0, 600 + 1000), (9000.0, 1.3 * 9000)):   # small: edge + 1 km; big: 1.3 r
+        bowl = d <= r_bowl
+        zone, to_bowl = rim_zone(bowl, (250, 250), r_bowl, RES, 1.0, 1.3)
+        assert not (zone & bowl).any() and (to_bowl[bowl] == 0).all()
+        assert d[zone].max() == pytest.approx(expect_outer, abs=RES * 1.5)
