@@ -371,9 +371,20 @@
     "display": {
       "c16_day_night_swing": {
         "value": null,
-        "source": null,
+        "source": "LRO Diviner Lunar Radiometer: Williams, Paige, Greenhagen & Sefton-Nash (2017), The global surface temperatures of the Moon as measured by the Diviner Lunar Radiometer Experiment, Icarus, doi:10.1016/j.icarus.2016.08.012; values as summarised by the Diviner team (diviner.ucla.edu, 'New Diviner Level 4 data products', 2018)",
         "verified": false,
-        "fact": "No Earth analog possible (see pipeline.mare.FACT_C16); Earth side via MODIS later"
+        "fact": "No Earth analog possible (see pipeline.mare.FACT_C16)",
+        "unit": "K",
+        "day_max_k_equator": [
+          387,
+          397
+        ],
+        "night_min_k_equator": 95,
+        "swing_k_approx": [
+          290,
+          300
+        ],
+        "note": "Equatorial values, not per cell: the Level 4 day-max / night-min maps (0.5 deg grid) were not downloaded (their folder blocks automated access). value stays null: display only, no Earth analog."
       },
       "c23_basalt": {
         "value": null,

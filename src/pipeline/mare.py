@@ -25,9 +25,10 @@ from dem.terrain import compute_terrain
 MARE_CRITERIA = ("c9_relief", "c10_flat_base", "c12_drivable", "c13_roughness")
 MARE_DISPLAY = ("c16_day_night_swing", "c23_basalt")
 
-FACT_C16 = ("No Earth analog possible: the lunar day-night surface temperature swing is several hundred kelvin "
-            "(criteria doc row 16: near 400 K at noon, under 100 K at night at the equator; to be checked with "
-            "Diviner before the pitch). Earth's largest swings are far smaller. Shown for information, weight 0.")
+FACT_C16 = ("No Earth analog possible: near the lunar equator the surface reaches about 387-397 K at noon and "
+            "cools to about 95 K just before sunrise, a day-night swing of roughly 290-300 K (LRO Diviner, "
+            "Williams et al. 2017, Icarus, doi:10.1016/j.icarus.2016.08.012). Earth's largest surface swings "
+            "are far smaller. Shown for information, weight 0.")
 
 
 def _f(v):
