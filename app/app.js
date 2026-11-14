@@ -93,6 +93,15 @@ const MOON_BASES = [
     detail: 'The Apollo 11 site itself (130 m relief, 0.32° pad, 99.9% drivable, 1.7 m roughness) sits within the range of the 20 sample areas: Apollo 11 really did land on “average” mare.',
     figure: '../figures/moon/mare_cells.png', figureLabel: 'See the map of the 20 sample areas' },
 ];
+// Regions the pipeline's night run searches next, for both the Polar and the Mare track (config/night_regions.yaml
+// on Caspar's night-run branch; bboxes approximate). Shown on the Earth for the Mare base until its scores exist.
+const PLANNED_REGIONS = [
+  { run: 'tibesti', label: 'Tibesti', country: 'Chad / Libya', bbox: [16.0, 19.5, 19.5, 22.0] },
+  { run: 'harrat_saudi', label: 'Harrat lava fields', country: 'Saudi Arabia', bbox: [39.5, 22.0, 42.5, 24.5] },
+  { run: 'altiplano_puna', label: 'Altiplano–Puna', country: 'Chile / Bolivia / Argentina', bbox: [-69.5, -24.5, -66.5, -21.5] },
+  { run: 'namibia_south', label: 'Southern Namibia', country: 'Namibia', bbox: [16.0, -28.5, 18.5, -25.5] },
+  { run: 'afar', label: 'Afar', country: 'Ethiopia / Eritrea', bbox: [40.0, 11.5, 42.5, 14.0] },
+];
 const fmtLatLng = (lat, lng) => `${Math.abs(lat)}°${lat < 0 ? 'S' : 'N'}, ${Math.abs(lng)}°${lng < 0 ? 'W' : 'E'}`;
 const moonBase = id => MOON_BASES.find(b => b.id === id);
 const byKey = Object.fromEntries(CRITERIA.map(c => [c.key, c]));
@@ -343,15 +352,34 @@ function renderFilters() {
 }
 
 // Pick a lunar base type (on the Moon globe or its buttons): Earth sites are re-ranked against it.
+// With Earth scores for that base, its closest Earth twin is selected and the Earth turns to it, while the top
+// three pulse on the globe and in the list. Without scores yet (Mare tonight), the Earth shows where we search.
+let twinTimer = null;
 function setBase(id, fly) {
-  if (!state.targets[id]) { state.moonInfo = id; renderMoonInfo(); updateMoon(fly); return; }   // no values yet
-  state.base = id;
   state.moonInfo = id;
-  // Drop filters that do not apply to the new base type
-  [...state.active].forEach(k => { if (!byKey[k].bases.includes(state.base)) state.active.delete(k); });
-  refresh();
+  const ready = !!state.targets[id];
+  if (ready) {
+    state.base = id;
+    // Drop filters that do not apply to the new base type
+    [...state.active].forEach(k => { if (!byKey[k].bases.includes(state.base)) state.active.delete(k); });
+    const top = visibleSites().filter(x => x.sim != null);
+    if (top.length) state.selected = top[0].SITE;
+    state.twinFlash = top.slice(0, 3).map(x => x.SITE);
+    clearTimeout(twinTimer);
+    twinTimer = setTimeout(() => { state.twinFlash = []; renderList(); updateGlobe(false); }, 7000);
+  }
+  setEarthPaths();
+  renderFilters();
+  renderList();
+  renderCard();
+  if (!fly) updateGlobe(false);
+  else if (ready && state.view === 'terrain') { updateGlobe(false); flyTerrainTo(currentSite()); }
+  else if (ready) updateGlobe(true);
+  else { updateGlobe(false); showPlanned(); }
+  syncViewUI();
   updateMoon(fly);
 }
+const twinsOf = () => visibleSites().filter(x => x.sim != null).slice(0, 3);
 
 function wireFilters() {
   document.getElementById('groupTabs').addEventListener('click', e => {
@@ -389,9 +417,13 @@ function renderList() {
   document.getElementById('listHint').textContent = state.active.size
     ? `${shown} of ${total} sites pass the filters. Ranked by similarity to a ${baseLabel().toLowerCase()} base.`
     : `Ranked by similarity to ${moonBase(state.base) ? `${moonBase(state.base).name} (${baseLabel().toLowerCase()} base)` : `a ${baseLabel().toLowerCase()} base`} on the ${similarityCriteria().length} criteria that count.`;
+  const pending = state.moonInfo && state.moonInfo !== state.base ? moonBase(state.moonInfo) : null;
+  const note = document.getElementById('listNote');
+  note.hidden = !pending;
+  if (pending) note.innerHTML = `<b>${esc(pending.title)} twins: coming with tonight’s run.</b> We search ${PLANNED_REGIONS.length} volcanic regions for them (outlined on the Earth). The ranking below is still for the ${esc(baseLabel().toLowerCase())} base.`;
   list.innerHTML = rows.length ? rows.map(s => `
     <li>
-      <button type="button" class="site-btn" data-site="${esc(s.SITE)}" aria-current="${s.SITE === state.selected}">
+      <button type="button" class="site-btn${state.twinFlash?.includes(s.SITE) ? ' is-twin' : ''}" data-site="${esc(s.SITE)}" aria-current="${s.SITE === state.selected}">
         <span class="rank ${s.type === 'known' ? 'known' : 'new'}">${s.rank ?? '–'}</span>
         <span>
           <span class="site-name">${esc(nameOf(s))}</span>
@@ -687,7 +719,7 @@ function initGlobe() {
   const regions = searchedRegions();
   const regionNote = document.getElementById('regionNote');
   regionNote.hidden = !regions.length;
-  regionNote.innerHTML = `Searched regions (${regions.length}): <i style="border-color:${REGION_COLORS.found}"></i>crater found <i style="border-color:${REGION_COLORS.none}"></i>nothing found`;
+  regionNote.innerHTML = `Searched regions (${regions.length}): <i style="border-color:${REGION_COLORS.found}"></i>crater found <i style="border-color:${REGION_COLORS.none}"></i>nothing found<span class="planned-key" hidden><i style="border-color:${COLORS.moon};border-top-style:dashed"></i>searched tonight (Mare)</span>`;
 
   const g = Globe()(el)
     // NASA Blue Marble Next Generation, July 2004, topography + bathymetry (NASA Earth Observatory),
@@ -716,20 +748,20 @@ function initGlobe() {
     .labelAltitude(() => 0.07 * labelScale)
     .labelResolution(2)
     .onLabelClick(d => select(d.SITE, true))
-    // Outlines of every region the pipeline searched (from cells.json).
-    .pathsData(searchedRegions().map(r => {
-      const [w, so, e, n] = r.bbox;
-      return { ...r, points: [[so, w], [so, e], [n, e], [n, w], [so, w]] };
-    }))
+    // Outlines of every region the pipeline searched (from cells.json); dashed Moon-cream: searched next (Mare).
     .pathPoints('points')
     .pathPointLat(p => p[0])
     .pathPointLng(p => p[1])
-    .pathColor(r => (r.ranked ? REGION_COLORS.found : REGION_COLORS.none))   // strong colours: they must show on ice too
+    .pathColor(r => (r.planned ? COLORS.moon : r.ranked ? REGION_COLORS.found : REGION_COLORS.none))   // strong colours: they must show on ice too
     .pathStroke(4)
+    .pathDashLength(r => (r.planned ? 0.06 : 1))
+    .pathDashGap(r => (r.planned ? 0.03 : 0))
+    .pathDashAnimateTime(r => (r.planned ? 4000 : 0))
     .pathTransitionDuration(0)
-    .pathLabel(r => `${esc(r.label)}: ${r.ranked ? `${r.ranked} crater${r.ranked > 1 ? 's' : ''} scored` : 'searched, no crater found'}`)
-    .ringColor(() => t => `rgba(255,255,255,${1 - t})`)
-    .ringMaxRadius(() => 4 * labelScale)
+    .pathLabel(r => (r.planned ? `${esc(r.label)} (${esc(r.country)}): searched tonight for Mare twins`
+      : `${esc(r.label)}: ${r.ranked ? `${r.ranked} crater${r.ranked > 1 ? 's' : ''} scored` : 'searched, no crater found'}`))
+    .ringColor(r => t => (r.planned ? `rgba(232,227,211,${1 - t})` : r.twin ? `rgba(60,200,180,${1 - t})` : `rgba(255,255,255,${1 - t})`))
+    .ringMaxRadius(r => (r.planned ? 7 : 4) * labelScale)
     .ringPropagationSpeed(2)
     .ringRepeatPeriod(1200)
     .ringAltitude(() => 0.07 * labelScale);
@@ -742,11 +774,12 @@ function initGlobe() {
   controls.addEventListener('end', () => pauseRotation(4000));
   controls.addEventListener('change', onGlobeZoom);
   g.pointOfView({ lat: 35, lng: 10, altitude: 2.3 });
+  state.globe = g;
+  setEarthPaths();
 
   const fit = () => g.width(el.clientWidth).height(el.clientHeight);
   new ResizeObserver(fit).observe(el);
   fit();
-  state.globe = g;
 }
 
 // Globe labels are sized in degrees on the globe, so zoomed in they grow huge and nearby craters
@@ -795,6 +828,23 @@ function onGlobeZoom() {
   updateGlobe(false);
 }
 
+const boxPath = (r, extra) => { const [w, so, e, n] = r.bbox; return { ...r, ...extra, points: [[so, w], [so, e], [n, e], [n, w], [so, w]] }; };
+function setEarthPaths() {
+  const g = state.globe; if (!g) return;
+  const planned = state.moonInfo && !state.targets[state.moonInfo];
+  g.pathsData([...searchedRegions().map(r => boxPath(r)), ...(planned ? PLANNED_REGIONS.map(r => boxPath(r, { planned: true })) : [])]);
+  const key = document.querySelector('#regionNote .planned-key'); if (key) key.hidden = !planned;
+}
+// Turn the Earth to the regions searched next (Mare), or to one of them.
+function showPlanned(run) {
+  const g = state.globe; if (!g) return;
+  if (state.view === 'terrain') closeTerrain();
+  pauseRotation(9000);
+  const r = PLANNED_REGIONS.find(x => x.run === run);
+  g.pointOfView(r ? { lat: (r.bbox[1] + r.bbox[3]) / 2, lng: (r.bbox[0] + r.bbox[2]) / 2, altitude: 0.9 } : { lat: 2, lng: 0, altitude: 2.6 }, 1500);
+  setTimeout(onGlobeZoom, 1600);
+}
+
 // Fly the globe to a searched region (leaving the 3D view if it is open).
 function showRegion(run) {
   const r = searchedRegions().find(x => x.run === run); const g = state.globe;
@@ -819,7 +869,9 @@ function updateGlobe(fly) {
   const s = shown.find(x => x.SITE === state.selected);
   declutterLabels(shown);
   g.labelsData(shown.map(x => ({ ...x })));   // new objects so globe.gl redraws sizes and texts
-  g.ringsData(s ? [{ lat: s.lat, lng: s.lng }] : []);
+  g.ringsData([...(s ? [{ lat: s.lat, lng: s.lng }] : []),
+    ...shown.filter(x => state.twinFlash?.includes(x.SITE) && x.SITE !== state.selected).map(x => ({ lat: x.lat, lng: x.lng, twin: true })),
+    ...(state.moonInfo && !state.targets[state.moonInfo] ? PLANNED_REGIONS.map(r => ({ lat: (r.bbox[1] + r.bbox[3]) / 2, lng: (r.bbox[0] + r.bbox[2]) / 2, planned: true })) : [])]);
   if (s && fly) {
     pauseRotation(6000);
     g.pointOfView({ lat: s.lat, lng: s.lng, altitude: 1.4 }, 1200);
@@ -863,6 +915,10 @@ function initMoon() {
   state.moon = m;
   document.getElementById('moonBases').addEventListener('click', e => {
     const b = e.target.closest('[data-moon]'); if (b) setBase(b.dataset.moon, true);
+  });
+  document.getElementById('moonInfo').addEventListener('click', e => {
+    const t = e.target.closest('[data-twin]'); if (t) return select(t.dataset.twin, true);
+    const r = e.target.closest('[data-planned]'); if (r) showPlanned(r.dataset.planned);
   });
   updateMoon(true);
 }
@@ -914,7 +970,8 @@ function renderMoonInfo() {
     <p class="moon-why">${esc(b.why)}</p>
     ${rows || facts ? `<p class="moon-sub">${crit ? 'Target values (what Earth sites are compared with)' : 'What a lunar mare base site looks like'}</p><ul class="moon-vals">${rows}${facts}</ul>` : ''}
     ${b.detail ? `<p class="moon-detail">${esc(b.detail)}</p>` : ''}
-    ${crit ? '' : '<p class="moon-soon">Earth twins for this base come with the next pipeline run.</p>'}
+    ${crit && b.id === state.base ? `<p class="moon-sub">Closest Earth twins</p><div class="moon-twins">${twinsOf().map(t => `<button type="button" class="moon-twin" data-twin="${esc(t.SITE)}"><span class="rank ${t.type === 'known' ? 'known' : 'new'}">${t.rank}</span><span>${esc(nameOf(t))}</span><b>${pct(t.sim)}</b>${isTuning(t) ? '<i>tuning</i>' : ''}</button>`).join('')}</div>` : ''}
+    ${crit ? '' : `<p class="moon-soon">Earth twins for this base come with tonight’s pipeline run. Where we search:</p><div class="moon-twins">${PLANNED_REGIONS.map(r => `<button type="button" class="moon-twin" data-planned="${r.run}"><span>${esc(r.label)}</span><i>${esc(r.country)}</i></button>`).join('')}</div>`}
     <a class="moon-fig" href="${esc(b.figure)}" target="_blank" rel="noopener" hidden>${esc(b.figureLabel ?? 'See the target figure')}</a>`;
   // Show the figure link only if the figure is in the repo (the mare map arrives with Mateo's branch).
   const link = el.querySelector('.moon-fig');

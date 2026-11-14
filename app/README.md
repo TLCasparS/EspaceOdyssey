@@ -1,8 +1,8 @@
 # App: Earth Twins of the Moon
 
-A static web page (HTML + JavaScript, no build step): a Moon globe to pick the lunar base, an Earth
-globe with a suitability heatmap, the ranked list of Earth twins, and an analog card with a radar chart
-for each site.
+A static web page (HTML + JavaScript, no build step). Layout: the ranked list of Earth twins on the left,
+the Earth globe with a suitability heatmap in the middle, the Moon globe to pick the lunar base on the
+right, and under the two globes an analog card with a radar chart for each site.
 
 ## Run it on your laptop
 
@@ -65,6 +65,13 @@ shows as greyed out in the filters. Only the `polar` base type has pipeline data
   "typical lunar mare plain").
 - Clicking a marker (or its button under the Moon) picks that base type: the Earth list, heatmap and cards are
   re-ranked against it. This is the only base-type selector (the old "Base type" buttons are gone).
+- Picking a base links the two globes: its closest Earth twin is selected and the Earth turns to it, the top
+  three pulse on the globe and in the list for a few seconds, and the Moon card lists them ("Closest Earth
+  twins", each one clickable).
+- A base without Earth scores yet (Mare until the night run): the Earth shows the regions searched next
+  (`PLANNED_REGIONS` in `app.js`, from Caspar's `config/night_regions.yaml`) as dashed cream outlines with
+  rings, the list says the Mare twins are coming and that its ranking is still Polar, and the Moon card lists
+  those regions (click one to turn the Earth to it).
 - A base can be picked once `outputs/targets.json` has its values; until then it says "Earth twins coming".
 - Mare: the Moon card already shows Mateo's final target (median of 20 sample areas in 4 maria: relief 154 m,
   landing pad 0.24°, drivable 99.3%, roughness 1.7 m), the day–night swing fact (≈ 290–300 K, LRO Diviner,

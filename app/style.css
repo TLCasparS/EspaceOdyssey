@@ -68,9 +68,10 @@ a { color: var(--earth); }
 .link-btn { background: none; border: 0; color: var(--earth); text-decoration: underline; cursor: pointer; padding: 8px 4px; font-size: 13px; }
 .chip-x { background: var(--signal); color: var(--on-signal); border: 0; border-radius: 999px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
 
-/* Layout: Moon | Earth on top (both turning), then the Earth twins list | the site card */
-.layout { display: grid; grid-template-columns: minmax(300px, 1fr) minmax(0, 2fr); grid-template-rows: minmax(480px, 62vh) auto;
-  grid-template-areas: "moon earth" "list card"; gap: 16px; padding: 16px 24px; }
+/* Layout: Earth twins list | Earth | Moon on top (both globes turning), the site card under the two globes */
+.layout { display: grid; grid-template-columns: 300px minmax(0, 1.7fr) minmax(320px, 1fr); grid-template-rows: minmax(480px, 62vh) auto;
+  grid-template-areas: "list earth moon" "list card card"; gap: 16px; padding: 16px 24px; align-items: start; }
+.moon-wrap, .globe-wrap { align-self: stretch; }
 .moon-wrap { grid-area: moon; }
 .globe-wrap { grid-area: earth; }
 .list-panel { grid-area: list; }
@@ -80,7 +81,7 @@ a { color: var(--earth); }
 .panel-head h2 { font-size: 20px; text-transform: uppercase; }
 
 /* Site list */
-.list-panel { padding: 16px; display: flex; flex-direction: column; gap: 8px; max-height: 80vh; min-height: 420px; overflow: auto; }
+.list-panel { padding: 16px; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 16px; max-height: calc(100vh - 32px); min-height: 420px; overflow: auto; }
 .hint { margin: 0; font-size: 12px; color: var(--muted); }
 .site-list { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .site-btn { width: 100%; text-align: left; display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--panel-2); border: 2px solid transparent; cursor: pointer; }
@@ -194,10 +195,12 @@ a { color: var(--earth); }
 
 /* Narrower screens: stack */
 @media (max-width: 1180px) {
-  .layout { grid-template-columns: minmax(260px, 1fr) minmax(0, 1.6fr); }
+  .layout { grid-template-columns: 280px minmax(0, 1fr); grid-template-rows: minmax(420px, 55vh) auto auto; grid-template-areas: "list earth" "list moon" "card card"; }
+  .moon-wrap { min-height: 520px; }
+  .list-panel { position: static; }
 }
 @media (max-width: 760px) {
-  .layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "moon" "earth" "list" "card"; padding: 12px 16px; }
+  .layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "earth" "moon" "list" "card"; padding: 12px 16px; }
   .globe-wrap { min-height: 380px; }
   .list-panel, .card-panel { max-height: none; min-height: 0; }
   .topbar, .filters { padding-left: 16px; padding-right: 16px; }
@@ -265,6 +268,21 @@ a { color: var(--earth); }
 .moon-vals .is-fact { grid-column: 1 / -1; flex-wrap: wrap; }
 .moon-vals .is-fact em { flex-basis: 100%; font-size: 11px; color: var(--accent); }
 .moon-soon { color: var(--accent); }
+/* Closest Earth twins (or the regions searched next) under the Moon: each one turns the Earth to it */
+.moon-twins { display: flex; flex-direction: column; gap: 4px; }
+.moon-twin { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font: inherit; font-size: 12.5px; cursor: pointer; }
+.moon-twin:hover, .moon-twin:focus-visible { border-color: var(--signal); }
+.moon-twin > span:not(.rank) { flex: 1; }
+.moon-twin b { color: var(--signal); font-variant-numeric: tabular-nums; }
+.moon-twin i { font-size: 11px; color: var(--muted); }
+.moon-twin .rank { width: 22px; height: 22px; font-size: 11px; flex: none; }
+/* The top three twins pulse for a few seconds after a base is picked on the Moon */
+@keyframes twinPulse { 0%, 100% { border-color: transparent; box-shadow: none; } 50% { border-color: var(--signal); box-shadow: 0 0 0 3px rgba(60,200,180,.25); } }
+.site-btn.is-twin { animation: twinPulse 1.4s ease-in-out 4; }
+.site-btn.is-twin[aria-current="true"] { animation: none; }
+.list-note { margin: 2px 0 4px; padding: 8px 10px; border-radius: 8px; border: 1px dashed var(--moon); background: rgba(232,227,211,.06); font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+.list-note b { color: var(--moon); }
+@media (prefers-reduced-motion: reduce) { .site-btn.is-twin { animation: none; border-color: var(--signal); } }
 .moon-vals .has-note { grid-column: 1 / -1; flex-wrap: wrap; }
 .moon-vals .has-note em { flex-basis: 100%; font-size: 11px; font-style: normal; color: var(--muted); }
 .moon-detail { margin-top: 8px !important; padding: 6px 8px; border-left: 2px solid var(--moon); background: rgba(232,227,211,.06); line-height: 1.45; }
