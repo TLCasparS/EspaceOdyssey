@@ -450,14 +450,16 @@ a { color: var(--earth); }
 @media (max-width: 600px) { .findings { padding: 0 12px; } .find-title { font-size: 20px; } .fn-num { font-size: 24px; } .find-panel { padding: 14px; } }
 
 /* ---------- Opening screen: Earthrise (hero.js fades it on scroll) ---------- */
-.hero { position: relative; height: 100vh; height: 100svh; min-height: 520px; overflow: hidden; background: #000; isolation: isolate; }
+/* The section is taller than the screen; its stage sticks to the top while the photo fades (the extra 70vh). */
+.hero { position: relative; height: 170vh; height: 170svh; background: var(--bg); }
+.hero-stage { position: sticky; top: 0; height: 100vh; height: 100svh; min-height: 520px; overflow: hidden; isolation: isolate; }
 .hero-bg { position: absolute; inset: 0; z-index: -2; will-change: opacity, transform;
   /* Apollo 8 Earthrise, NASA AS08-14-2383, 3000 x 3000 px. Earth sits a bit right of centre, the horizon low. */
   background: #000 url("assets/earthrise-apollo8-as08-14-2383.jpg") 57% 62% / cover no-repeat; }
 /* Darker top for the title, and a soft fade into the app's background colour at the bottom. */
 .hero-shade { position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: linear-gradient(to bottom, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 38%, rgba(0,0,0,0) 85%, var(--bg) 100%); }
-.hero-text { position: absolute; left: 50%; top: 7vh; width: min(92vw, 1100px); transform-origin: center top; translate: -50% 0;
+.hero-text { position: absolute; left: 50%; top: 7vh; width: min(92vw, 1100px); translate: -50% 0;
   text-align: center; will-change: opacity, transform; }
 .hero-eyebrow { margin: 0 0 10px; font-size: clamp(14px, 1.4vw, 18px); letter-spacing: .08em; color: #CFE0EA; }
 .hero-title { margin: 0; font-family: var(--title); font-weight: 700; color: #fff; line-height: .95;

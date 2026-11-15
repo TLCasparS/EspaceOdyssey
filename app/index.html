@@ -20,17 +20,20 @@
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 </head>
 <body>
-  <!-- Opening screen: Earthrise (Apollo 8, NASA). Scrolling down fades it out and the app comes up (hero.js). -->
+  <!-- Opening screen: Earthrise (Apollo 8, NASA). The screen stays pinned while scrolling fades the photo out (title
+       stays), then the title scrolls away and the app comes up (hero.js). -->
   <section class="hero" id="hero" aria-labelledby="heroTitle">
-    <div class="hero-bg" role="img" aria-label="Earthrise: the Earth rising above the Moon's horizon, photographed from Apollo 8 in lunar orbit on 24 December 1968"></div>
-    <div class="hero-shade" aria-hidden="true"></div>
-    <div class="hero-text">
-      <p class="hero-eyebrow">Team EspaceOdyssey · 2026 hackathon project</p>
-      <p class="hero-title" id="heroTitle">Moon Twins on Earth</p>
-      <p class="hero-sub">Where on Earth can we rehearse a lunar base?</p>
+    <div class="hero-stage">
+      <div class="hero-bg" role="img" aria-label="Earthrise: the Earth rising above the Moon's horizon, photographed from Apollo 8 in lunar orbit on 24 December 1968"></div>
+      <div class="hero-shade" aria-hidden="true"></div>
+      <div class="hero-text">
+        <p class="hero-eyebrow">Team EspaceOdyssey</p>
+        <p class="hero-title" id="heroTitle">Moon Twins on Earth</p>
+        <p class="hero-sub">Where on Earth can we rehearse a lunar base?</p>
+      </div>
+      <a class="hero-go" href="#app">Explore the map <span aria-hidden="true">↓</span></a>
+      <p class="hero-credit">Earthrise, seen from Apollo 8 in lunar orbit, 24 Dec 1968 · photo: NASA</p>
     </div>
-    <a class="hero-go" href="#app">Explore the map <span aria-hidden="true">↓</span></a>
-    <p class="hero-credit">Earthrise, seen from Apollo 8 in lunar orbit, 24 Dec 1968 · photo: NASA</p>
   </section>
 
   <header class="topbar" id="app">
