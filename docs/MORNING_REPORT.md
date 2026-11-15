@@ -169,3 +169,15 @@ CLAUDE.md decision row, NIGHT_RUN.md command, ai_usage note). Rebased onto the G
 main`), tests re-run (green). **Not pushed:** `git push origin main` hung with no output (most likely at the GitHub
 sign-in) and was stopped after 90 s. The commits are local on `main`. To publish, run `git push origin main` yourself
 (GitHub Pages then republishes from `main` within a few minutes).
+
+**Second rebase (15 Nov, after Sofia's `agent/submission-final` merge):** `app/app.js` conflicted. Sofia's version
+was kept as the base (she owns the app: per-base ranking and heatmap, top-20 list with "Show more", best 30 named on
+the globe, access line, guide question, CC BY imagery). Re-added on top only what the cleaned export needs:
+EXCLUDED / EXCLUDED_DETAIL / BEST_TARGET as text columns; excluded places not ranked, not counted, not on the globe
+(unless picked); the folded "Excluded after scoring" box; card badge + reason; night runs left out of the
+searched-region outlines; cells of the other base hidden in the 3D view, Mare "kept" cells drawn as ranked,
+excluded cells in coral. The empty favicon in `index.html` merged cleanly. Access needs no export change: the app
+joins `data/access/access_hours.csv` on RUN/CELL (all 1,822 Polar + 500 Mare night rows match; Meteor Crater and
+Pinacate via the 1.5 km nearest-point fallback). Tests: 148 passed, 1 skipped. Headless Chrome on `/app/`: no
+console errors or exceptions (only three.js deprecation warnings from globe.gl); Polar top 10 as above, Mare switch
+(500 places), excluded box (564), excluded card with reason, access line on the #1 card. Still not pushed.
