@@ -27,7 +27,10 @@ Still missing, most urgent first:
     competition", with no length or format. Ask the Local Lead (listed on the event page) at the venue.
 11. **Demo video, if any**: the submission demo is 7 slides **or** a video of 30 s or less (4.1). A 2-minute
     video can't be the submission demo. Script for both in `docs/DEMO_VIDEO_SCRIPT.md`.
-12. Two tick boxes at submission (2.5), China-review question (2.6), SI-idea confirmation (5.4): the team answers.
+12. **Station list licence** (5.8, criterion 29, `docs/ACCESS.md` R2): COMNAP (non-commercial only) was dropped on
+    15 Nov 2026. The INTERACT station list states no licence: cite it as "INTERACT GIS station list,
+    interact-gis.org, accessed 15 Nov 2026" in the References field.
+13. Two tick boxes at submission (2.5), China-review question (2.6), SI-idea confirmation (5.4): the team answers.
 
 ---
 

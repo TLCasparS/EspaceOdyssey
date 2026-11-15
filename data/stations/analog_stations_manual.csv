@@ -1,0 +1,7 @@
+name,operator,lat,lon,type,season,analog,source,note
+Haughton-Mars Project Research Station (HMPRS),Mars Institute / SETI Institute,75.43333,-89.86667,field camp,,yes,https://www.marsinstitute.no/hmp,"page gives 75° 26' N, 89° 52' W (arc-minute precision, ~1 km); north-western rim area of Haughton Crater"
+Flashline Mars Arctic Research Station (FMARS),The Mars Society,75.43132,-89.82339,habitat,,yes,https://en.wikipedia.org/wiki/Flashline_Mars_Arctic_Research_Station,coordinates from the Wikipedia article (geo tag)
+Mars Desert Research Station (MDRS),The Mars Society,38.40646,-110.79190,habitat,,yes,https://en.wikipedia.org/wiki/Mars_Desert_Research_Station,coordinates from the Wikipedia article (geo tag); near Hanksville Utah
+HI-SEAS (Hawaii Space Exploration Analog and Simulation),HI-SEAS,19.60238,-155.48719,habitat,,yes,https://en.wikipedia.org/wiki/HI-SEAS,coordinates from the Wikipedia article (geo tag); Mauna Loa
+Biosphere 2 (SAM Space Analog for the Moon and Mars),University of Arizona,32.57878,-110.85059,habitat,,yes,https://en.wikipedia.org/wiki/Biosphere_2,coordinates of Biosphere 2 from the Wikipedia article (geo tag); SAM habitat is on the Biosphere 2 site
+LunAres Research Station,LunAres,53.17484,16.72632,habitat,,yes,https://en.wikipedia.org/wiki/LunAres,coordinates from the Wikipedia article (geo tag); indoor habitat in Pila Poland
