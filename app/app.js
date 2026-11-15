@@ -461,8 +461,12 @@ function renderFilters() {
   // Group tabs, with a count of active criteria per group
   const counts = {};
   state.active.forEach(k => { const g = byKey[k].group; counts[g] = (counts[g] ?? 0) + 1; });
+  // Only criteria someone can actually use: meant for this base and with data. Groups left empty are hidden.
+  const usable = c => c.bases.includes(state.base) && hasData(c.key);
+  const groups = GROUPS.filter(g => CRITERIA.some(c => c.group === g.id && usable(c)));
+  if (state.group !== 'all' && !groups.some(g => g.id === state.group)) state.group = 'all';
   document.getElementById('groupTabs').innerHTML =
-    [{ id: 'all', label: 'All criteria' }, ...GROUPS].map(g =>
+    [{ id: 'all', label: 'All criteria' }, ...groups].map(g =>
       `<button type="button" class="tab" role="tab" data-group="${g.id}" aria-selected="${g.id === state.group}">${esc(g.label)}${counts[g.id] ? `<span class="count">${counts[g.id]}</span>` : ''}</button>`).join('');
 
   // Sub-row: the criteria of the chosen group
@@ -472,8 +476,8 @@ function renderFilters() {
     const g = GROUPS.find(x => x.id === state.group);
     document.getElementById('subHint').textContent = state.group === 'practical'
       ? 'Practical criteria do not change the similarity score. Pick one to hide sites that score below the minimum.'
-      : `Pick criteria to keep only sites close to the Moon on them. Greyed out: not used for a ${baseLabel().toLowerCase()} base, or no data yet.`;
-    document.getElementById('criterionChips').innerHTML = CRITERIA.filter(c => c.group === g.id).map(c => {
+      : 'Pick criteria to keep only sites close to the Moon on them.';
+    document.getElementById('criterionChips').innerHTML = CRITERIA.filter(c => c.group === g.id && usable(c)).map(c => {
       const noData = !hasData(c.key);
       const notForBase = !c.bases.includes(state.base);
       const disabled = noData || notForBase;
@@ -738,8 +742,6 @@ function radarSVG(site, axes) {
 // "Steep walls 23.9° vs 27.2°" (pipeline, raw values with units) or "0.62 vs 0.80" (sample).
 // Card chips: hovering or focusing one shows its definition (defs.js) and this match line.
 const chipAttrs = d => `data-def="${esc(d.key)}" data-match="${esc(`${pct(d.sim)} match with the Moon${meta(d.key)?.limitation ? ' · Moon: Sun disc · Earth: Sun centre' : ''}`)}" tabindex="0"`;
-// Short version of targets.json "limitation" for the light criteria (text agreed with Caspar).
-const LIGHT_NOTE = 'Light on the Moon is measured as the visible part of the Sun’s disc (NASA PGDA illumination map); on Earth as the Sun’s centre above the horizon. On flat ground at the pole both agree; on crater rims and floors they can differ a little.';
 const vsText = d => {
   const unit = meta(d.key)?.earthUnit || meta(d.key)?.unit;
   return d.earth == null || d.moon == null ? pct(d.sim) : `${fmtVal(d.earth, unit)} vs ${fmtVal(d.moon, unit)}`;
@@ -755,7 +757,6 @@ function renderCard() {
   const missed = s.type === 'missed';   // a known crater our method searched but did not find
   // Chips: criteria with a value, closest to the Moon first. ≥ 50 % = close, below = what it lacks.
   const scored = s.details.filter(d => d.counts && d.sim != null).sort((a, b) => b.sim - a.sim);
-  const shownOnly = s.details.filter(d => !d.counts && d.sim != null);
   const strengths = scored.filter(d => d.sim >= 0.5).slice(0, 3);
   const gaps = scored.filter(d => d.sim < 0.5).reverse().slice(0, 3);
   // Three kinds of "no value": no data yet, waiting for a lunar value, not computed yet.
@@ -763,11 +764,6 @@ function renderCard() {
   s.details.filter(d => d.sim == null).forEach(d => {
     missing[d.method === 'rank' ? 'rank' : d.method === 'not computed' ? 'notcomputed' : 'nodata'].push(d.label);
   });
-  const displayOnly = s.details.filter(d => !d.counts && d.sim != null).map(d => d.label);
-  const hasLightLimit = s.details.some(d => d.sim != null && meta(d.key)?.limitation);
-  // "No Earth analog possible" facts (Grazing sun), shortened for the card; full text in the tooltip.
-  const facts = s.details.filter(d => meta(d.key)?.fact).map(d => ({ label: d.label, text: meta(d.key).fact,
-    short: d.key === 'GRAZING_SUN' ? 'How high the Sun climbs depends only on latitude: at least 23.4° on Earth (at the poles), 1.9° at Shackleton.' : meta(d.key).fact }));
   const practical = CRITERIA.filter(c => isPractical(c) && c.bases.includes(state.base) && s[c.key] != null);
   const { axes, perGroup } = radarAxes(s);
   const groupName = state.group === 'all' || state.group === 'practical'
@@ -791,7 +787,7 @@ function renderCard() {
   const ground = groundCriteria().filter(c => meta(c.key).kind === 'more is better' && s[c.key] != null);
   const impact = s.IMPACT_CRATER == null ? null : s.IMPACT_CRATER === 1
     ? `Yes: <b>${esc(raw.IMPACT_NAME || 'confirmed impact structure')}</b>${raw.IMPACT_DIAMETER_KM ? `, ${raw.IMPACT_DIAMETER_KM} km` : ''}${/^https?:/.test(raw.IMPACT_SOURCE ?? '') ? ` (<a href="${esc(raw.IMPACT_SOURCE)}" target="_blank" rel="noopener">list</a>)` : ''}`
-    : 'Not in the list of confirmed impact craters (the list is incomplete)';
+    : null;   // "not in the list" said little (the list is incomplete), so only a confirmed crater is shown
 
   el.innerHTML = `
     <div class="card-top">
@@ -831,18 +827,16 @@ function renderCard() {
         <span><span class="swatch" style="border-color:${COLORS.earth}"></span>${esc(nameOf(s))}</span>
         <span><span class="swatch" style="border-color:${COLORS.moon};border-top-style:dashed"></span>${esc(moonName)} = outer ring</span>
       </div>
-      <p class="nodata">Each axis is how close the site is to the Moon: the centre is nothing alike, the outer ring is the same as the Moon.${displayOnly.length ? ` Hollow dots (${esc(displayOnly.join(', '))}) are shown but not counted in the score.` : ''}</p>
       ${missingNote.length ? `<p class="nodata">${esc(missingNote.join(' '))} Left out of the score, not counted as zero.</p>` : ''}
-      ${hasLightLimit ? `<p class="nodata" title="${esc(meta('SUNNY_RIDGE')?.limitation ?? '')}"><b>Light:</b> ${esc(LIGHT_NOTE)}</p>` : ''}
     </div>`}
 
-    ${ground.length || impact || accessHTML(s) ? `<div class="note-box prac-box">
-      <h3>On the ground</h3>
+    ${ground.length || impact || accessHTML(s) ? `<details class="note-box prac-box fold-box">
+      <summary><h3>On the ground</h3> <span class="fold-hint">access, land cover · not in the score</span></summary>
       ${ground.length ? `<div class="prac">${ground.map(c => `
         <span title="${esc(meta(c.key).earthUnit)}">${esc(c.label)}</span>
         <span class="bar"><span style="width:${Math.round(s[c.key] * 100)}%"></span></span>
         <span class="pct">${Math.round(s[c.key] * 100)}%</span>`).join('')}
-      </div>` : ''}
+      </details>` : ''}
       ${impact ? `<p class="impact-line"><span>Impact crater</span> ${impact}</p>` : ''}
       ${accessHTML(s)}
       <p class="nodata">About the place itself, not compared with the Moon${ground.length ? ' (bars: more is better)' : ''}. Not part of the score.${accessOf(s) ? ' Access is a model (roads of 2015, airport in a straight line): a rough guide to how remote the place is, not a trip plan.' : ''}</p>
@@ -870,12 +864,7 @@ function renderCard() {
       <div class="chips">${gaps.length ? gaps.map(d => `<span class="chip gap" ${chipAttrs(d)}><b>${esc(d.label)}</b> ${d.signed == null ? '' : d.signed < 0 ? 'too little ' : 'too much '}(${esc(vsText(d))})</span>`).join('') : '<span class="chip">No big gaps</span>'}</div>
     </div>
 
-    ${shownOnly.length ? `<div>
-      <h3>Also compared, not in the score</h3>
-      <div class="chips">${shownOnly.map(d => `<span class="chip" ${chipAttrs(d)}><b>${esc(d.label)}</b> ${esc(vsText(d))}</span>`).join('')}</div>
-      ${facts.map(f => `<p class="nodata" title="${esc(f.text)}"><b>${esc(f.label)}: no place on Earth can match.</b> ${esc(f.short)}</p>`).join('')}
-    </div>` : ''}
-    ${isPipeline() ? '<p class="nodata">Earth value vs Moon value. Hover a chip for what it means and how well it matches.</p>' : ''}`}
+    `}
 
     <div class="note-box">
       <h3>${missed ? 'Why our method missed it' : 'Where the analogy breaks down'}</h3>
@@ -974,10 +963,8 @@ function initGlobe() {
   const heat = DATA.isFake ? fakeHeatPoints() : baseHeat();
   heatPoints = heat;
   setHeatNote();
-  const regions = searchedRegions();
-  const regionNote = document.getElementById('regionNote');
-  regionNote.hidden = !regions.length;
-  regionNote.innerHTML = `Searched regions (${regions.length}): <i style="border-color:${REGION_COLORS.found}"></i>crater found <i style="border-color:${REGION_COLORS.none}"></i>nothing found<span class="planned-key" hidden><i style="border-color:${COLORS.moon};border-top-style:dashed"></i>searched tonight (Mare)</span>`;
+  // Legend line only for the dashed Mare boxes (shown while a base without results is picked).
+  document.getElementById('regionNote').innerHTML = `<i style="border-color:${COLORS.moon};border-top-style:dashed"></i>searched tonight (Mare)`;
 
   const g = Globe()(el)
     // NASA Blue Marble Next Generation, July 2004, topography + bathymetry (NASA Earth Observatory),
@@ -1109,8 +1096,9 @@ const boxPath = (r, extra) => { const [w, so, e, n] = r.bbox; return { ...r, ...
 function setEarthPaths() {
   const g = state.globe; if (!g) return;
   const planned = state.moonInfo && !state.targets[state.moonInfo];
-  g.pathsData([...searchedRegions().map(r => boxPath(r)), ...(planned ? PLANNED_REGIONS.map(r => boxPath(r, { planned: true })) : [])]);
-  const key = document.querySelector('#regionNote .planned-key'); if (key) key.hidden = !planned;
+  // The searched-region outlines were removed (too busy); only the planned Mare boxes are drawn.
+  g.pathsData(planned ? PLANNED_REGIONS.map(r => boxPath(r, { planned: true })) : []);
+  document.getElementById('regionNote').hidden = !planned;
 }
 // Turn the Earth to the regions searched next (Mare), or to one of them.
 function showPlanned(run) {
@@ -1329,7 +1317,7 @@ function renderMoonInfo() {
     <p class="moon-title"><b>${esc(b.title)}</b> · ${esc(b.name)} (${esc(b.place)}), ${esc(fmtLatLng(b.lat, b.lng))}</p>
     ${b.subtitle ? `<p class="moon-facts">${esc(b.subtitle)}</p>` : ''}
     <p class="moon-why">${esc(b.why)}</p>
-    ${rows || facts ? `<p class="moon-sub">${crit ? 'Target values (what Earth sites are compared with)' : 'What a lunar mare base site looks like'}</p><ul class="moon-vals">${rows}${facts}</ul>` : ''}
+    ${rows || facts ? `<details class="moon-fold"><summary>${crit ? `Show ${esc(b.name)}’s values` : 'What a lunar mare base site looks like'}</summary>${crit ? '<p class="moon-fold-hint">What Earth sites are compared with</p>' : ''}<ul class="moon-vals">${rows}${facts}</ul></details>` : ''}
     ${b.detail ? `<p class="moon-detail">${esc(b.detail)}</p>` : ''}
     ${crit && b.id === state.base ? `<p class="moon-sub">Closest Earth twins</p><div class="moon-twins">${twinsOf().map(t => `<button type="button" class="moon-twin" data-twin="${esc(t.SITE)}"><span class="rank ${t.type === 'known' ? 'known' : 'new'}">${t.rank}</span><span>${esc(nameOf(t))}</span><b>${pct(t.sim)}</b>${isTuning(t) ? '<i>tuning</i>' : t.SITE === bestTwin(twinsOf())?.SITE ? '<i class="best">best independent</i>' : ''}</button>`).join('')}</div>` : ''}
     ${crit ? '' : `<p class="moon-soon">Earth twins for this base come with tonight’s pipeline run. Where we search:</p><div class="moon-twins">${PLANNED_REGIONS.map(r => `<button type="button" class="moon-twin" data-planned="${r.run}"><span>${esc(r.label)}</span><i>${esc(r.country)}</i></button>`).join('')}</div>`}
@@ -1354,7 +1342,7 @@ function moonTargetHTML(b, t, crit, row) {
   const html = `
     <p class="moon-title"><b>${esc(b.title)}</b> · ${esc(t.label)}${esc(where)}</p>
     <p class="moon-why">${esc(why)}</p>
-    ${rows ? `<p class="moon-sub">Target values (what Earth sites are compared with)</p><ul class="moon-vals">${rows}</ul>` : ''}
+    ${rows ? `<details class="moon-fold"><summary>Show ${esc(t.label)}’s values</summary><p class="moon-fold-hint">What Earth sites are compared with</p><ul class="moon-vals">${rows}</ul></details>` : ''}
     ${twins.length ? `<p class="moon-sub">Closest Earth twins to this target</p><div class="moon-twins">${twins.map((x, i) => `<button type="button" class="moon-twin" data-twin="${esc(x.SITE)}"><span class="rank ${x.type === 'known' ? 'known' : 'new'}">${i + 1}</span><span>${esc(nameOf(x))}</span><b>${pct(x[t.column])}</b></button>`).join('')}</div>
       <p class="nodata">The ranking and the main score use ${esc(lunarTargets(b.id).find(x => x.builtin)?.label ?? 'today’s target')}.</p>` : ''}
     ${t.preview ? `<a class="moon-fig" href="../${esc(t.preview)}" target="_blank" rel="noopener" hidden>See the target preview figure</a>` : ''}`;
