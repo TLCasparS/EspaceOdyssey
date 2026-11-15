@@ -1,0 +1,32 @@
+/* Page scroll rail (scroll-rail.js): a slim bar at the right edge to scroll the page over the globes.
+   Under the Guide panel (z-index 50), above the globes and side panels. It stays 16px from the edge: the last
+   ~15px of the window belong to the browser's own (hidden) scrollbar on Macs, which would take the mouse. */
+.scroll-rail { position: fixed; right: 16px; top: 50%; transform: translateY(-50%); z-index: 40;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; width: 20px; padding: 12px 0; border-radius: 999px;
+  background: rgba(12,30,44,.72); border: 1px solid rgba(36,70,94,.7);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 6px 24px rgba(0,0,0,.35);
+  cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.scroll-rail:hover, .scroll-rail.is-dragging { background: rgba(18,41,59,.9); border-color: rgba(108,180,238,.6); }
+.scroll-rail.is-dragging { cursor: grabbing; }
+.rail-dash { position: relative; display: block; width: 20px; height: 18px; padding: 0; border: 0; background: none; cursor: pointer; }
+.rail-dash::before { content: ""; position: absolute; left: 50%; top: 50%; width: 4px; height: 10px; border-radius: 2px;
+  transform: translate(-50%, -50%); background: rgba(230,240,248,.45); transition: height .2s, background-color .2s; }
+.rail-dash:hover::before { background: rgba(230,240,248,.85); }
+.rail-dash.is-here { height: 34px; }
+.rail-dash.is-here::before { height: 28px; background: var(--signal); }
+.rail-dash[hidden] { display: none; }
+.rail-dash:focus-visible { outline: 2px solid var(--signal); outline-offset: 1px; border-radius: 6px; }
+/* Name of the part, to the left of the bar, while you point at (or tab to) a dash */
+.rail-label { position: absolute; right: calc(100% + 12px); top: 50%; transform: translateY(-50%); white-space: nowrap;
+  padding: 4px 10px; border-radius: 8px; background: var(--panel); border: 1px solid var(--border);
+  color: var(--text); font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity .15s; }
+.rail-dash:hover .rail-label, .rail-dash:focus-visible .rail-label { opacity: 1; }
+.scroll-rail.is-dragging .rail-label { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .rail-dash::before, .rail-label { transition: none; } }
+/* Wide screens: the Moon panel moves in a little so the bar has its own lane next to it */
+@media (min-width: 1181px) { .moon-wrap { margin-right: 48px; } }
+/* Phones: a little slimmer, nearer the edge (touch screens have no scrollbar to dodge) */
+@media (max-width: 600px) {
+  .scroll-rail { right: 6px; width: 18px; padding: 10px 0; gap: 4px; }
+  .rail-dash { width: 18px; }
+}
