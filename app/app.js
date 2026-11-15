@@ -200,7 +200,20 @@ const TEXT_COLUMNS = new Set(['SITE', 'RUN', 'CELL', 'BASE_TYPE', 'IMPACT_NAME',
   'run', 'cell', 'AIRPORT_NAME', 'AIRPORT_TYPE', 'AIRPORT_IDENT',
   'ROLE', 'NAME', 'COUNTRY', 'MISSED_REASON',
   'EXCLUDED', 'EXCLUDED_DETAIL', 'BEST_TARGET',
-  'ROCK_CLASS', 'ROCK_CLASS_NAME']);   // night export text columns (EXCLUDED*: config-v1.1; ROCK_*: GLiM display)
+  'ROCK_CLASS', 'ROCK_CLASS_NAME',     // night export text columns (EXCLUDED*: config-v1.1; ROCK_CLASS*: GLiM display)
+  'ROCK_SITE', 'ROCK_SITE_LITH', 'ROCK_SITE_SOURCE', 'ROCK_SITE_SCALE']);   // Macrostrat map unit at the site (display)
+
+// Rock type on Mare cards, display only (never in the score). Site level: the geological map unit under the base
+// pad from Macrostrat (CC BY 4.0); how fine it is depends on the source map (ROCK_SITE_SCALE). Regional: GLiM 0.5° grid.
+function rockHTML(s) {
+  const raw = s.raw ?? {};
+  if (s.BASE_TYPE !== 'mare') return '';
+  const lith = raw.ROCK_SITE_LITH || raw.ROCK_SITE;
+  const where = [raw.ROCK_SITE_SOURCE, raw.ROCK_SITE_SCALE ? `${raw.ROCK_SITE_SCALE}-scale map` : null].filter(Boolean).join(', ');
+  const site = lith ? `<p class="impact-line rock-line" title="Geological map unit at the base pad${raw.ROCK_SITE ? `: ${esc(raw.ROCK_SITE)}` : ''}. Source: Macrostrat (macrostrat.org), CC BY 4.0. How fine the map is depends on the source map."><span>Rock at site</span> ${esc(lith)}${where ? ` (${esc(where)})` : ''}${raw.BASALT_SITE === 1 ? ' <span class="tag-basalt">Basalt at site</span>' : ''}</p>` : '';
+  const region = raw.ROCK_CLASS_NAME ? `<p class="impact-line rock-line" title="Dominant rock class of the 0.5° grid cell (about 55 km), GLiM (Hartmann &amp; Moosdorf 2012), CC BY 3.0."><span>Rock, regional</span> ${esc(raw.ROCK_CLASS_NAME)}, regional (0.5° map)</p>` : '';
+  return site + region;
+}
 
 const getText = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.text(); });
 const getJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.json(); });
@@ -828,7 +841,7 @@ function renderCard() {
       ${hasLightLimit ? `<p class="nodata" title="${esc(meta('SUNNY_RIDGE')?.limitation ?? '')}"><b>Light:</b> ${esc(LIGHT_NOTE)}</p>` : ''}
     </div>`}
 
-    ${ground.length || impact || accessHTML(s) ? `<div class="note-box prac-box">
+    ${ground.length || impact || accessHTML(s) || rockHTML(s) ? `<div class="note-box prac-box">
       <h3>On the ground</h3>
       ${ground.length ? `<div class="prac">${ground.map(c => `
         <span title="${esc(meta(c.key).earthUnit)}">${esc(c.label)}</span>
@@ -837,6 +850,7 @@ function renderCard() {
       </div>` : ''}
       ${impact ? `<p class="impact-line"><span>Impact crater</span> ${impact}</p>` : ''}
       ${accessHTML(s)}
+      ${rockHTML(s)}
       <p class="nodata">About the place itself, not compared with the Moon${ground.length ? ' (bars: more is better)' : ''}. Not part of the score.${accessOf(s) ? ' Access is a model (roads of 2015, airport in a straight line): a rough guide to how remote the place is, not a trip plan.' : ''}</p>
     </div>` : ''}
 
@@ -1786,7 +1800,7 @@ function refresh() {
   // Name only the data the app really shows. Planned sources: Copernicus DEM, ESA WorldCover, MODIS, LOLA, LROC, Diviner.
   document.getElementById('footNote').textContent = DATA.isFake
     ? 'Scores and heatmap are sample values, not results yet'
-    : 'Scores from our pipeline: Earth terrain from Copernicus DEM GLO-30, Moon terrain from LOLA (LDEM 80°S, 20 m, Barker et al. 2023)';
+    : 'Scores from our pipeline: Earth terrain from Copernicus DEM GLO-30, Moon terrain from LOLA (LDEM 80°S, 20 m, Barker et al. 2023). Rock at site: Macrostrat, CC BY 4.0';
   wireFilters();
   wireViewTools();
   initGlobe();

@@ -766,5 +766,56 @@
       "wb": "water bodies"
     },
     "note": "Display only, never in a score. Caveat: 0.5° grid, regional, not site-level (one dominant class per 0.5 deg cell, ~55 km). BASALT_REGION = 1 if the class at the point is vb, 0 for any other class. A point in a cell GLiM counts as sea (coasts, islands) or GLiM nd = no data: no class, no flag, no shares borrowed from neighbouring cells. Point = Polar low point, Mare base pad. docs/MATERIAL.md (team decisions 15 Nov 2026)."
+  },
+  "_rock_site": {
+    "source": "Macrostrat (macrostrat.org), CC BY 4.0",
+    "license": "CC BY 4.0",
+    "url": "https://macrostrat.org",
+    "score_method": "display",
+    "counts": false,
+    "weight": 0,
+    "note": "geological map unit at the site; resolution depends on the source map (ROCK_SITE_SCALE)",
+    "columns": [
+      {
+        "column": "ROCK_SITE",
+        "score_method": "display",
+        "counts": false,
+        "weight": 0,
+        "note": "geological map unit at the site; resolution depends on the source map (ROCK_SITE_SCALE)"
+      },
+      {
+        "column": "ROCK_SITE_LITH",
+        "score_method": "display",
+        "counts": false,
+        "weight": 0,
+        "note": "geological map unit at the site; resolution depends on the source map (ROCK_SITE_SCALE)"
+      },
+      {
+        "column": "ROCK_SITE_SOURCE",
+        "score_method": "display",
+        "counts": false,
+        "weight": 0,
+        "note": "geological map unit at the site; resolution depends on the source map (ROCK_SITE_SCALE)"
+      },
+      {
+        "column": "ROCK_SITE_SCALE",
+        "score_method": "display",
+        "counts": false,
+        "weight": 0,
+        "note": "geological map unit at the site; resolution depends on the source map (ROCK_SITE_SCALE)"
+      },
+      {
+        "column": "BASALT_SITE",
+        "score_method": "display",
+        "counts": false,
+        "weight": 0,
+        "note": "geological map unit at the site; resolution depends on the source map (ROCK_SITE_SCALE)"
+      }
+    ],
+    "basalt_rule": "BASALT_SITE = 1 if the unit's main lithology (or, failing that, its name) names basalt or a mafic volcanic rock; 0 if it clearly names another rock; empty = unknown or no map unit (never 0 for missing). Where several maps overlap, the youngest unit is used.",
+    "scales": "large, then medium, then small: the first scale with a map unit at the point",
+    "point": "Mare base pad",
+    "n_places": 500,
+    "details": "docs/MACROSTRAT_REPORT.md"
   }
 }
