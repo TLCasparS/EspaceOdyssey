@@ -117,6 +117,20 @@ Mongolia; (c) run `--runs polar` if wanted (1,825 places, so roughly 3–4 times
     `targets.json` is unchanged except for the new key; `scores.csv` and the other files were not touched.
   - Whoever has the inputs can run the documented command plus `--macrostrat data\macrostrat\rock_site.csv`; the
     result should match what is committed here.
+  - **Second attempt, same day:** the public inputs were downloaded (mining polygons, Natural Earth, GeoNames,
+    GLiM grid) and `meteor_crater` / `pinacate` were run again, then the documented command plus `--macrostrat`
+    was run into a scratch folder (not into `outputs/`). Compared with the committed files:
+    - `targets.json` is byte-identical; `raw_values.csv` and `scores.csv` have the same columns and the same
+      2,328 rows. For the 2,325 night-run rows every column is identical (scores, GLiM, names, post-filters and
+      the five Macrostrat columns) **except** the impact columns and 4 ranks.
+    - What differs, and why it was not copied into `outputs/`: (1) the impact list
+      (`data/impact/impact_structures.csv`) is not on this machine, so all impact values come out empty;
+      (2) the re-run `meteor_crater` and `pinacate` cells score slightly differently from the committed ones
+      (Meteor Crater 0.458 instead of 0.462, Pinacate r002c001 0.1784 instead of 0.1783; cause not looked into),
+      which moves 4 night ranks; (3) the night runs' `cells.geojson` are not in the repo, so `cells.json` and
+      `coverage.json` come out almost empty (14 cells / 6 tiles instead of 6,320 / 11,604).
+    - So the complete re-export still has to be run on the machine that holds the full `out/` folder and the
+      impact list. The committed `outputs/` stay as updated by `add_macrostrat_to_outputs.py`.
 - App (`app/app.js`, `app/style.css`): the four text columns are read as text; Mare cards show
   "Rock at site: <lithology> (<source map>, <scale>-scale map)" and "Rock, regional: <GLiM class>, regional
   (0.5° map)" in the "On the ground" box; a "Basalt at site" badge appears when `BASALT_SITE` = 1 (no place has
