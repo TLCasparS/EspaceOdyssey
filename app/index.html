@@ -30,17 +30,6 @@
     </div>
   </header>
 
-  <!-- "What we found": funnel + terrain-vs-light scatter (findings.js). Hidden until night-run data is loaded. -->
-  <section class="findings" id="findings" aria-label="What we found" hidden>
-    <details open>
-      <summary><span class="find-title">What we found</span> <span class="find-sub">the night run in two pictures · click to fold</span></summary>
-      <div class="findings-grid">
-        <figure class="panel find-panel" id="funnel"></figure>
-        <figure class="panel find-panel" id="scatter"></figure>
-      </div>
-    </details>
-  </section>
-
   <section class="filters" aria-label="Filters">
     <div class="filter-row">
       <div class="filter-group grow">
@@ -108,6 +97,17 @@
       <article id="card" class="card"></article>
     </section>
   </main>
+
+  <!-- "What we found", at the bottom of the page: funnel + terrain-vs-light scatter (findings.js). Hidden until night-run data is loaded. -->
+  <section class="findings" id="findings" aria-label="What we found" hidden>
+    <details open>
+      <summary><span class="find-title">What we found</span> <span class="find-sub">the night run in two pictures · click to fold</span></summary>
+      <div class="findings-grid">
+        <figure class="panel find-panel" id="funnel"></figure>
+        <figure class="panel find-panel" id="scatter"></figure>
+      </div>
+    </details>
+  </section>
 
   <footer class="footer">
     <span>Team EspaceOdyssey · 2026 hackathon project</span>

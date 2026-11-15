@@ -386,7 +386,7 @@ a { color: var(--earth); }
 .card-twin b { color: var(--moon); font-weight: 600; }
 
 /* ---------- What we found: funnel + terrain vs light (findings.js). Big type: it is shown on a projector. ---------- */
-.findings { padding: 14px 24px 16px; border-bottom: 1px solid var(--border); }
+.findings { padding: 14px 24px 16px; border-top: 1px solid var(--border); }
 .findings > details > summary { cursor: pointer; list-style: none; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; padding: 4px 0 10px; }
 .findings > details > summary::-webkit-details-marker { display: none; }
 .findings > details > summary::before { content: "▾"; color: var(--signal); font-size: 18px; }

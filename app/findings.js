@@ -1,4 +1,4 @@
-/* "What we found": two pictures of the night run at the top of the page (Polar base, Shackleton).
+/* "What we found": two pictures of the night run at the bottom of the page (Polar base, Shackleton).
  * 1. Funnel: from every grid cell searched to the ranked Earth twins. Numbers are computed here from
  *    outputs/coverage.json (cells per status) and outputs/scores.csv (EXCLUDED, RANK), never typed in.
  * 2. Terrain vs light: one dot per ranked Polar place (TERRAIN_SCORE, LIGHT_SCORE). Click a dot to open its card.
