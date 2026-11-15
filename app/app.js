@@ -124,7 +124,6 @@ const state = {
   typeFilter: 'all', selected: null, globe: null, moon: null,
   knownOpen: false,      // the folded "Known analog sites" box under the ranking
   excludedOpen: false,   // the folded "Excluded after scoring" box (config-v1.1 post-run filters)
-  valuesOpen: null,      // values panel over the 3D view (null = decide by screen width)
   view: 'globe', moonColours: false,   // 'globe' or 'terrain' (3D close-up of the selected site)
 };
 
@@ -737,7 +736,6 @@ function radarSVG(site, axes) {
 /* ---------- Analog card ---------- */
 
 // "Steep walls 23.9° vs 27.2°" (pipeline, raw values with units) or "0.62 vs 0.80" (sample).
-const chipTitle = d => `${d.hint} · ${pct(d.sim)} match${meta(d.key)?.limitation ? ' · Moon: Sun disc · Earth: Sun centre' : ''}`;
 // Card chips: hovering or focusing one shows its definition (defs.js) and this match line.
 const chipAttrs = d => `data-def="${esc(d.key)}" data-match="${esc(`${pct(d.sim)} match with the Moon${meta(d.key)?.limitation ? ' · Moon: Sun disc · Earth: Sun centre' : ''}`)}" tabindex="0"`;
 // Short version of targets.json "limitation" for the light criteria (text agreed with Caspar).
@@ -1711,7 +1709,6 @@ function flyToShackleton(s) {
 
 function toggleBase() {
   state.showBase = !state.showBase;
-  if (state.showBase) state.valuesOpen = false;   // fold the values panel so the base has room
   const s = currentSite();
   drawBaseLayer(s);
   if (state.showBase) flyToBase(s); else flyTerrainTo(s);
@@ -1730,58 +1727,6 @@ function baseCaptionHTML() {
     <button type="button" class="base-jump" data-base-jump="shackleton">Compare with Shackleton</button>`;
 }
 
-/* ---------- Values panel over the 3D view ---------- */
-
-// The selected site's numbers next to its terrain: score, light and shape (Earth vs Moon with a match bar),
-// and the "on the ground" values. Folded by default on narrow screens.
-function terrainValuesHTML(s) {
-  const open = state.valuesOpen;
-  const head = `<div class="tv-head">
-    <span><b>${esc(nameOf(s))}</b>${s.sim != null ? `<span class="tv-score">${pct(s.sim)} similar to the Moon · rank ${s.RANK ?? s.rank} of ${scoredCount()}</span>` : ''}</span>
-    <button type="button" class="tv-toggle" data-tv-toggle aria-expanded="${open}">${open ? 'Hide' : 'Values'}</button>
-  </div>`;
-  if (!open) return head;
-  const info = state.info[s.SITE] ?? {};
-  if (s.sim == null) {
-    const why = s.type === 'missed' ? 'A known crater our method missed (config-v1), so it has no values.'
-      : info.validation ? `Tested in our validation run: ${info.validation.result}, so it has no values.`
-      : 'Not scored yet: our pipeline hasn’t searched this region.';
-    return head + `<p class="tv-note">${esc(why)} See the card for details.</p>`;
-  }
-  const row = d => `<li class="tv-row" title="${esc(chipTitle(d))}">
-      <span class="tv-label">${esc(d.label)}</span>
-      <span class="tv-val">${esc(vsText(d))}</span>
-      <span class="tv-bar" aria-hidden="true"><i style="width:${Math.round(d.sim * 100)}%"></i></span>
-    </li>`;
-  const group = (title, ds) => (ds.length ? `<p class="tv-group">${title}</p><ul>${ds.map(row).join('')}</ul>` : '');
-  // Only the criteria that count: the display-only ones (Grazing sun, Relief, ...) stay on the card, with their reasons.
-  const withVal = s.details.filter(d => d.counts && d.sim != null);
-  const extra = s.details.filter(d => !d.counts && d.sim != null).length;
-  const raw = s.raw ?? {};
-  const ground = groundCriteria().filter(c => meta(c.key).kind === 'more is better' && s[c.key] != null);
-  const groundRows = ground.map(c => `<li class="tv-row"><span class="tv-label">${esc(c.label)}</span>
-      <span class="tv-val">${Math.round(s[c.key] * 100)}%</span>
-      <span class="tv-bar is-plain" aria-hidden="true"><i style="width:${Math.round(s[c.key] * 100)}%"></i></span></li>`).join('');
-  const impact = s.IMPACT_CRATER == null ? '' : `<li class="tv-row"><span class="tv-label">Impact crater</span>
-      <span class="tv-val tv-wide">${s.IMPACT_CRATER === 1 ? `Yes${raw.IMPACT_NAME ? ` (${esc(raw.IMPACT_NAME)})` : ''}` : 'Not in the list'}</span></li>`;
-  return head + `<div class="tv-body">
-    ${group('Light', withVal.filter(d => d.group === 'light'))}
-    ${group('Shape', withVal.filter(d => d.group === 'terrain'))}
-    ${group('Other', withVal.filter(d => d.group !== 'light' && d.group !== 'terrain'))}
-    ${groundRows || impact ? `<p class="tv-group">On the ground</p><ul>${groundRows}${impact}</ul>` : ''}
-    <p class="tv-note">${isPipeline() ? 'Earth vs Moon. ' : ''}Bar = match with the Moon.${extra ? ` ${extra} more value${extra > 1 ? 's' : ''} compared on the card, not in the score.` : ''}</p>
-  </div>`;
-}
-
-function renderTerrainValues(s) {
-  const el = document.getElementById('terrainValues');
-  el.hidden = !s;
-  if (!s) return;
-  if (state.valuesOpen == null) state.valuesOpen = window.innerWidth >= 900;   // open on desktop, folded on phones
-  el.innerHTML = terrainValuesHTML(s);
-  el.classList.toggle('is-open', !!state.valuesOpen);
-}
-
 function syncViewUI() {
   const inTerrain = state.view === 'terrain';
   const s = currentSite();
@@ -1798,7 +1743,6 @@ function syncViewUI() {
   fly.disabled = !inTerrain && !s;
   const cap = document.getElementById('terrainCaption');
   cap.hidden = !inTerrain || !s;
-  renderTerrainValues(inTerrain ? s : null);
   if (s) cap.innerHTML = `<b>${esc(nameOf(s))}</b><span class="cap-help${state.showBase ? ' is-base' : ''}"><br>3D terrain, heights ×${TERRAIN.exaggeration}. Drag to look around, scroll to zoom.</span>`
     + (state.showBase ? `<br>${baseCaptionHTML()}` : '')
     + (state.cells.length && !state.showBase ? `<br><span class="cell-key"><i style="border-color:${CELL_COLORS.ranked}"></i>scored crater <i style="border-color:${CELL_COLORS.filtered}"></i>skipped (edge or sea) <i style="border-color:${CELL_COLORS.no_bowl}"></i>no crater found${state.cells.some(c => c.status === 'ice_floor') ? ` <i style="border-color:${CELL_COLORS.ice_floor}"></i>ice-filled floor` : ''}</span>` : '');
@@ -1814,11 +1758,6 @@ function wireViewTools() {
     (b.dataset.baseJump === 'shackleton' ? flyToShackleton : flyToBase)(currentSite());
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.view === 'terrain') closeTerrain(); });
-  document.getElementById('terrainValues').addEventListener('click', e => {
-    if (!e.target.closest('[data-tv-toggle]')) return;
-    state.valuesOpen = !state.valuesOpen;
-    renderTerrainValues(currentSite());
-  });
 }
 
 /* ---------- Wiring ---------- */
