@@ -328,3 +328,49 @@ a { color: var(--earth); }
 .terrain-caption a { color: var(--earth); }
 .base-jump { margin: 6px 6px 0 0; font: inherit; font-weight: 600; color: var(--text); background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
 .base-jump:hover, .base-jump:focus-visible { border-color: var(--signal); }
+
+/* Astronaut guide (guide.js): a floating button and a small panel; the tour outlines one part of the page */
+.guide-spot { outline: 3px solid var(--signal); outline-offset: 3px; border-radius: var(--radius); transition: outline-color .3s; }
+.guide-btn-float { position: fixed; right: 18px; bottom: 18px; z-index: 50; display: flex; align-items: center; gap: 8px; padding: 6px 16px 6px 6px; border-radius: 999px; border: 1px solid var(--signal); background: var(--panel); color: var(--text); font-weight: 600; font-size: 14px; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.45); }
+.guide-btn-float:hover, .guide-btn-float:focus-visible { background: var(--brand); }
+.guide-btn-float.is-new { animation: guide-pulse 2s ease-in-out 4; }
+@keyframes guide-pulse { 50% { box-shadow: 0 0 0 8px rgba(60,200,180,.25), 0 6px 20px rgba(0,0,0,.45); } }
+@media (prefers-reduced-motion: reduce) { .guide-btn-float.is-new { animation: none; } }
+.guide-face { display: inline-flex; width: 40px; height: 40px; flex: none; }
+.guide-face svg { width: 100%; height: 100%; }
+.guide-panel { position: fixed; right: 18px; bottom: 76px; z-index: 50; width: 360px; max-width: calc(100vw - 32px); max-height: min(560px, calc(100vh - 100px)); display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.55); font-size: 14px; line-height: 1.5; }
+.guide-panel[hidden] { display: none; }
+.guide-head { display: flex; align-items: center; gap: 10px; padding: 12px 12px 8px; }
+.guide-head b { display: block; font-family: var(--title); font-size: 18px; letter-spacing: .01em; }
+.guide-head span:not(.guide-face) { display: block; font-size: 12px; color: var(--muted); }
+.guide-close { margin-left: auto; align-self: flex-start; background: none; border: 0; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer; padding: 2px 6px; }
+.guide-close:hover { color: var(--text); }
+.guide-tabs { display: flex; gap: 6px; padding: 0 12px 8px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.guide-tabs button { font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); cursor: pointer; }
+.guide-tabs button[aria-pressed="true"] { background: var(--signal); color: var(--on-signal); border-color: var(--signal); }
+.guide-body { padding: 10px 14px 14px; overflow: auto; }
+.guide-body p { margin: 0 0 8px; }
+.guide-step { font-family: var(--title); font-size: 16px; font-weight: 700; color: var(--signal-soft); }
+.guide-note { color: var(--muted); font-size: 12px; }
+.guide-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+.guide-dots { display: flex; gap: 5px; }
+.guide-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--border); }
+.guide-dots i.on { background: var(--signal); }
+.guide-btn, .guide-link { font: inherit; font-size: 13px; font-weight: 600; padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); cursor: pointer; }
+.guide-btn.primary { background: var(--signal); border-color: var(--signal); color: var(--on-signal); }
+.guide-btn:disabled { opacity: .4; cursor: default; }
+.guide-link { margin: 2px 6px 2px 0; color: var(--earth); }
+.guide-btn:hover:not(:disabled), .guide-link:hover { border-color: var(--signal); }
+.guide-qs { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.guide-q { width: 100%; text-align: left; font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); cursor: pointer; }
+.guide-q:hover, .guide-q:focus-visible { border-color: var(--signal); }
+.guide-list { margin: 0 0 8px; padding-left: 18px; }
+.guide-list li { margin: 4px 0; }
+.guide-word { border-bottom: 1px solid var(--border); padding: 6px 0; }
+.guide-word summary { cursor: pointer; font-weight: 600; }
+.guide-word p { margin: 6px 0 2px; }
+@media (max-width: 600px) {
+  .guide-btn-text { display: none; }
+  .guide-btn-float { padding: 4px; right: 12px; bottom: 12px; }
+  .guide-panel { right: 8px; left: 8px; bottom: 66px; width: auto; max-width: none; }
+}
