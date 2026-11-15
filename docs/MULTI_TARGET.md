@@ -43,6 +43,17 @@ Data downloaded (size): none
 Raw values are target-independent, so each Earth place can be scored against any number of lunar targets
 without new DEM reads. Per place we report the score against each target and the best-matching one.
 
+## Final export, 15 Nov 2026 (real data)
+Verified targets in use: Polar `polar_sl2` (small crater on the de Gerlache rim) and `polar_haworth` (small crater
+in the Haworth region) next to Shackleton; Mare the four maria (Tranquillitatis, Serenitatis, Imbrium, Crisium) next
+to the 20-cell median. All six cover every counting criterion (`tests/test_multi_target.py::test_verified_targets_in_repo_are_complete`),
+and no exported place lacks a counting value, so the completeness rule removes nothing in this export.
+`BEST_TARGET` counts (all places incl. excluded): Polar shackleton 63, polar_sl2 957, polar_haworth 805; Mare
+mare_20cells 401, imbrium 37, tranquillitatis 29, serenitatis 20, crisium 13. Polar: most Earth bowls are small and
+shallow, so they resemble the small lunar bowls more than Shackleton (best `BEST_SCORE` 0.84 vs top `SCORE_TOTAL`
+0.60). Ranking (`RANK`) is unchanged: it stays the rank of `SCORE_TOTAL`. The place per cell is still the bowl picked
+against Shackleton (open point 1).
+
 ## Rules
 - **Same scoring rule:** per criterion `exp(-((earth - moon) / tolerance)^2)`, total = weighted mean of the counting
   criteria (weight > 0) that have a score. Same code (`pipeline.scoring`), same rounding (4 decimals) as today.
@@ -53,7 +64,13 @@ without new DEM reads. Per place we report the score against each target and the
 - **Verification:** real scoring uses a candidate only if the target has `verified: true`, and within it only
   criteria with `verified: true`. `--include-unverified` = preview: every non-skipped target and every criterion
   with a value; outputs are marked (`MULTI_TARGET_PREVIEW = 1`, `targets._multi_target.preview = true`, README).
-- Missing value = no data (left out, weights renormalised), never 0. `skipped: true` targets are ignored.
+- **Missing values never score better than real ones (15 Nov 2026):** a `SCORE_<TARGET>` is only given when every
+  counting criterion of the base type (weight > 0, scored against today's target) has both a usable lunar value and
+  an Earth value. Otherwise it is empty (no data, never 0) and that target cannot be `BEST_TARGET`. This replaces the
+  earlier renormalisation for candidate targets (open point 2 below: a target with gaps, e.g. `polar_dm1/dm2` without
+  c1-c3, could win on fewer, easier criteria). `SCORE_TOTAL` keeps the frozen config-v1 / mare-v1 rule; with complete
+  data the built-in score equals it. `targets.json` -> `lunar_targets[].complete` says whether a target has all
+  counting criteria. `skipped: true` targets are ignored.
 - `config/lunar_targets.json` is unchanged and still the only source of today's targets.
 
 ## Candidate file format (`config/lunar_targets_candidates.json`, written by Task 5)

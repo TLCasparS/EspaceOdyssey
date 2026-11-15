@@ -76,10 +76,13 @@ Configs: Polar `config-v1` (frozen), Mare `mare-v1` (frozen, Mateo's lunar targe
 .venv\Scripts\python.exe src\night_run.py --score --tracks A,B2
 .venv\Scripts\python.exe src\export_app.py out\night_polar out\night_mare out\meteor_crater out\pinacate `
   --post-filters config\post_filters.yaml --place-names $env:LOCALAPPDATA\espaceodyssey_data `
-  --anchors config\site_anchors.csv --dedupe-km 1 --cells-near-km 16
+  --anchors config\site_anchors.csv --dedupe-km 1 --cells-near-km 16 `
+  --glim $env:LOCALAPPDATA\espaceodyssey_data\glim_pangaea_0p5deg
 ```
+(`--glim` added for the final export, 15 Nov evening: GLiM rock class display columns; the verified lunar targets in
+`config/lunar_targets_candidates.json` are picked up automatically, docs/MULTI_TARGET.md.)
 Needs in `%LOCALAPPDATA%\espaceodyssey_data`: `maus_v2\global_mining_polygons_v2.gpkg`, `naturalearth\extracted\`
-(admin 0 countries + geography regions), `geonames\extracted\cities1000.txt`; links in `config/post_filters.yaml`
+(admin 0 countries + geography regions), `geonames\extracted\cities1000.txt`, `glim_pangaea_0p5deg\extracted\glim_wgs84_0point5deg.txt.asc` (docs/MATERIAL.md); links in `config/post_filters.yaml`
 and `src/place_names.py`. Details: `docs/MORNING_REPORT.md`.
 Failed tiles are listed by `--status` and retried by running the night command again.
 
