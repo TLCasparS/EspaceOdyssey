@@ -403,6 +403,40 @@ const outlookHTML = info => {
 };
 const baseLabel = () => BASES.find(b => b.id === state.base)?.label ?? state.base;
 
+// Places nobody has researched yet (most of the night run's ~1,800 world cells): instead of "[to research]",
+// short lines built only from our own measurements, each tagged "our data". No outside facts are invented;
+// what our data cannot know (land owner, permits, natural crater or mine) is said as a challenge.
+const pctR = v => `${Math.round(v * 100)}%`;
+function travelText(h) { return h < 1 ? 'less than an hour' : h < 48 ? `about ${Math.round(h)} h` : `about ${Math.round(h / 24)} days`; }
+function autoNotes(s, strengths, gaps) {
+  const raw = s.raw ?? {}, mare = (s.BASE_TYPE ?? state.base) === 'mare';
+  const lat = s.LAT ?? s.lat, ns = lat >= 0 ? 'N' : 'S';
+  const breaks = [], opp = [], chal = [];
+  const sunMax = raw.GRAZING_SUN ?? (lat == null ? null : Math.min(90, 90 - Math.abs(lat) + 23.44));
+  if (!mare) {
+    if (sunMax != null) breaks.push(`At ${Math.abs(lat).toFixed(0)}° ${ns} the Sun climbs to about ${Math.round(sunMax)}° at its highest; at Shackleton it never gets above 1.9°.`);
+    if (raw.DARK_FLOOR != null) breaks.push(`The darkest part of its floor is in shadow ${pctR(raw.DARK_FLOOR)} of the time; Shackleton's floor never sees the Sun.`);
+    const w = raw.CRATER_DIAMETER_EQUIV_M ?? raw.DIAMETER_EQUIV_M;
+    if (w) breaks.push(`It is about ${(w / 1000).toFixed(1)} km wide; Shackleton is 20.9 km, about ${Math.round(20900 / w)} times wider.`);
+  } else {
+    breaks.push('Our Mare score compares only the shape of the ground. The Moon’s maria are dark basalt; rock type is not compared yet.');
+  }
+  // General fact, not a measurement: the card shows it without the "our data" tag.
+  const general = 'Like every place on Earth: air, weather, full gravity and protection from radiation, none of which the Moon has.';
+  const a = accessOf(s);
+  if (strengths.length) opp.push({ text: `Closest to the Moon in: ${strengths.map(d => d.label.toLowerCase()).join(', ')}.`, src: ['ours'] });
+  if (s.IMPACT_CRATER === 1) opp.push({ text: `A confirmed impact crater${raw.IMPACT_NAME ? ` (${raw.IMPACT_NAME})` : ''}, formed by an impact like Shackleton.`, src: ['ours'] });
+  const drive = mare ? raw.DRIVABLE : s.DRIVABLE;
+  if (drive != null && drive >= 0.8) opp.push({ text: `${pctR(drive)} of the ground ${mare ? 'within 5 km' : 'around the base spot'} is gentle enough to drive: room for rover tests.`, src: ['ours'] });
+  if (!mare && s.BARE != null && s.BARE >= 0.8) opp.push({ text: `Bare ground on ${pctR(s.BARE)} of the floor and rim, with no trees or fields in the way.`, src: ['ours'] });
+  if (a?.ACCESS_HOURS != null && a.ACCESS_HOURS <= 3) opp.push({ text: `${travelText(a.ACCESS_HOURS)[0].toUpperCase() + travelText(a.ACCESS_HOURS).slice(1)} from the nearest city by land (2015 roads): easy to reach for a field team.`, src: ['ours'] });
+  if (gaps.length) chal.push({ text: `Furthest from the Moon in: ${gaps.map(d => d.label.toLowerCase()).join(', ')}.`, src: ['ours'] });
+  if (!mare && s.GROUND_ICE != null && s.GROUND_ICE >= 0.2) chal.push({ text: `Snow or ice covers ${pctR(s.GROUND_ICE)} of the floor.`, src: ['ours'] });
+  if (a?.ACCESS_HOURS != null && a.ACCESS_HOURS > 12) chal.push({ text: `Remote: ${travelText(a.ACCESS_HOURS)} from the nearest city by land (2015 roads).`, src: ['ours'] });
+  chal.push({ text: `Not checked yet: who owns the land, whether visits need a permit${mare ? '' : ', and whether the bowl is natural (an open-pit mine looks the same in elevation data)'}.`, src: [] });
+  return { breaks, general, outlook: { opportunities: opp, challenges: chal } };
+}
+
 /* ---------- Filter bar ---------- */
 
 function renderFilters() {
@@ -504,6 +538,25 @@ function wireFilters() {
 
 /* ---------- Site list ---------- */
 
+// Long rankings (night run: 1,825 places) show the best LIST_STEP first; "Show more" adds LIST_STEP more.
+const LIST_STEP = 20;
+function siteRowHTML(s) {
+  return `
+    <li>
+      <button type="button" class="site-btn${state.twinFlash?.includes(s.SITE) ? ' is-twin' : ''}" data-site="${esc(s.SITE)}" aria-current="${s.SITE === state.selected}">
+        <span class="rank ${s.type === 'known' ? 'known' : 'new'}">${s.rank ?? '–'}</span>
+        <span>
+          <span class="site-name">${esc(nameOf(s))}</span>
+          <span class="site-meta">
+            ${s.sim == null ? '<span class="not-scored">Not scored yet</span>' : `<span class="bar"><span style="width:${Math.round(s.sim * 100)}%"></span></span>
+            <span class="pct">${pct(s.sim)}</span>`}
+            <span>${s.type === 'known' ? 'Known' : 'New'}</span>
+            ${isTuning(s) ? `<span class="tag-tuning" title="${esc(TUNING_NOTE)}">Tuning</span>` : ''}
+          </span>
+        </span>
+      </button>
+    </li>`;
+}
 function renderList() {
   const list = document.getElementById('siteList');
   const ofType = s => state.typeFilter === 'all' || s.type === state.typeFilter;
@@ -518,21 +571,26 @@ function renderList() {
   const note = document.getElementById('listNote');
   note.hidden = !pending;
   if (pending) note.innerHTML = `<b>${esc(pending.title)} twins: coming with tonight’s run.</b> We search ${PLANNED_REGIONS.length} volcanic regions for them (outlined on the Earth). The ranking below is still for the ${esc(baseLabel().toLowerCase())} base.`;
-  list.innerHTML = rows.length ? rows.map(s => `
-    <li>
-      <button type="button" class="site-btn${state.twinFlash?.includes(s.SITE) ? ' is-twin' : ''}" data-site="${esc(s.SITE)}" aria-current="${s.SITE === state.selected}">
-        <span class="rank ${s.type === 'known' ? 'known' : 'new'}">${s.rank ?? '–'}</span>
-        <span>
-          <span class="site-name">${esc(nameOf(s))}</span>
-          <span class="site-meta">
-            ${s.sim == null ? '<span class="not-scored">Not scored yet</span>' : `<span class="bar"><span style="width:${Math.round(s.sim * 100)}%"></span></span>
-            <span class="pct">${pct(s.sim)}</span>`}
-            <span>${s.type === 'known' ? 'Known' : 'New'}</span>
-            ${isTuning(s) ? `<span class="tag-tuning" title="${esc(TUNING_NOTE)}">Tuning</span>` : ''}
-          </span>
-        </span>
-      </button>
-    </li>`).join('') : '<li class="empty">No site passes these filters. Lower the minimum match or remove a filter.</li>';
+  const limit = Math.max(LIST_STEP, state.listLimit ?? LIST_STEP);
+  const head = rows.slice(0, limit);
+  // The selected site stays visible even when it ranks below the cut (e.g. picked from the guide).
+  const sel = rows.slice(limit).find(s => s.SITE === state.selected);
+  const more = rows.length - head.length;
+  list.innerHTML = rows.length ? head.map(siteRowHTML).join('')
+    + (sel ? `<li class="list-gap" aria-hidden="true">⋯</li>${siteRowHTML(sel)}` : '')
+    + (more > 0 || limit > LIST_STEP ? `<li class="list-more">
+        <span class="muted">Showing ${head.length.toLocaleString('en')} of ${rows.length.toLocaleString('en')}</span>
+        ${more > 0 ? `<button type="button" class="region-btn" data-list="more">Show ${Math.min(LIST_STEP, more)} more</button>` : ''}
+        ${more > LIST_STEP ? `<button type="button" class="region-btn" data-list="all">Show all</button>` : ''}
+        ${limit > LIST_STEP ? `<button type="button" class="region-btn" data-list="less">Show fewer</button>` : ''}
+      </li>` : '')
+    : '<li class="empty">No site passes these filters. Lower the minimum match or remove a filter.</li>';
+  list.querySelectorAll('[data-list]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.list;
+    state.listLimit = k === 'more' ? limit + LIST_STEP : k === 'all' ? rows.length : LIST_STEP;
+    renderList();
+    if (k === 'less') list.scrollIntoView({ block: 'start', behavior: reducedMotion ? 'auto' : 'smooth' });
+  }));
   // Known analog sites the pipeline hasn't scored yet: a small, folded reference box.
   if (reference.length) {
     list.insertAdjacentHTML('beforeend', `<li class="regions known-ref">
@@ -675,6 +733,8 @@ function renderCard() {
     missing.notcomputed.length && `Not computed yet: ${missing.notcomputed.join(', ')}.`,
   ].filter(Boolean);
   const raw = s.raw ?? {};
+  // Not researched yet (no notes in site_info.json) but scored by the pipeline: lines from our data instead.
+  const auto = isPipeline() && !unscored && !missed && !info.breaks && !info.outlook && !info.helps ? autoNotes(s, strengths, gaps) : null;
   const width = raw.CRATER_DIAMETER_EQUIV_M ?? raw.DIAMETER_EQUIV_M, depth = raw.CRATER_RIM_TO_FLOOR_M ?? raw.DEPTH_SPILL_M;
   const craterFacts = [
     width != null && `about ${(width / 1000).toFixed(1)} km wide`,
@@ -769,7 +829,7 @@ function renderCard() {
 
     <div class="note-box">
       <h3>${missed ? 'Why our method missed it' : 'Where the analogy breaks down'}</h3>
-      <p>${info.breaks ? research(info.breaks) : '<span class="todo">[to research]</span>'}</p>
+      ${info.breaks ? `<p>${research(info.breaks)}</p>` : auto ? `<ul class="outlook">${auto.breaks.map(t => `<li>${esc(t)} <span class="ref-ours">our data</span></li>`).join('')}<li>${esc(auto.general)}</li></ul>` : '<p><span class="todo">[to research]</span></p>'}
     </div>
 
     ${info.outlook ? `${isNew || missed ? '' : `<div class="note-box">
@@ -780,6 +840,10 @@ function renderCard() {
       <h3>Opportunities &amp; challenges</h3>
       ${outlookHTML(info)}
       ${numberedSourcesHTML(info.sources)}
+    </div>` : auto ? `<div class="note-box outlook-box">
+      <h3>Opportunities &amp; challenges</h3>
+      ${outlookHTML({ outlook: auto.outlook, sources: [] })}
+      <p class="nodata">Nobody on our team has researched this place yet: these lines come only from our pipeline’s measurements.</p>
     </div>` : `<div class="note-box">
       <h3>${missed ? 'What we change next' : isNew ? 'What we could test here' : 'How it has helped exploration'}</h3>
       <p>${info.helps ? research(info.helps) : `<span class="todo">${isNew ? '[to write once ranked: what we could test here]' : '[to research]'}</span>`}</p>
