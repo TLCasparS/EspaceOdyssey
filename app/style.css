@@ -384,3 +384,58 @@ a { color: var(--earth); }
 .moon-twin[aria-pressed="true"] { border-color: var(--signal); box-shadow: inset 0 0 0 1px var(--signal); }
 .card-twin { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
 .card-twin b { color: var(--moon); font-weight: 600; }
+
+/* ---------- What we found: funnel + terrain vs light (findings.js). Big type: it is shown on a projector. ---------- */
+.findings { padding: 14px 24px 16px; border-bottom: 1px solid var(--border); }
+.findings > details > summary { cursor: pointer; list-style: none; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; padding: 4px 0 10px; }
+.findings > details > summary::-webkit-details-marker { display: none; }
+.findings > details > summary::before { content: "▾"; color: var(--signal); font-size: 18px; }
+.findings > details:not([open]) > summary::before { content: "▸"; }
+.find-title { font-family: var(--title); font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
+.find-sub { color: var(--muted); font-size: 15px; margin: 2px 0 0; }
+.findings-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; }
+.find-panel { margin: 0; padding: 18px 20px; }
+.find-panel h3 { font-size: 22px; }
+.find-note { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+.funnel { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.fn-stage { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: baseline; }
+.fn-bar { grid-column: 1 / -1; height: 14px; background: var(--panel-2); border-radius: 999px; overflow: hidden; margin-bottom: 4px; }
+.fn-bar > span { display: block; height: 100%; background: var(--earth); border-radius: 999px; }
+.fn-mid .fn-bar > span { background: var(--moon); }
+.fn-end .fn-bar > span { background: var(--signal); }
+.fn-num { font-family: var(--title); font-size: 28px; font-weight: 700; line-height: 1.1; }
+.fn-end .fn-num { color: var(--signal); font-size: 34px; }
+.fn-head { font-size: 17px; font-weight: 600; }
+.fn-stage .fn-text { grid-column: 1 / -1; color: var(--muted); font-size: 14.5px; }
+.fn-cut { margin-left: 18px; padding: 2px 0 2px 12px; border-left: 2px dashed var(--border); font-size: 15.5px; }
+.fn-cut b { color: var(--warn); font-size: 17px; }
+.fn-cut .fn-text { display: block; color: var(--muted); font-size: 14px; }
+.fn-cut.is-small { font-size: 14px; }
+.fn-cut.is-small b { font-size: 15px; }
+.fn-link { background: none; border: 0; padding: 0; color: var(--text); font: inherit; cursor: pointer; text-align: left; }
+.fn-link:hover, .fn-link:focus-visible { text-decoration: underline; color: var(--warn); }
+.scatter { width: 100%; height: auto; display: block; margin-top: 8px; font-family: 'Fira Sans', system-ui, sans-serif; }
+.sc-grid { stroke: var(--border); stroke-width: 1; }
+.sc-tick { fill: var(--muted); font-size: 17px; }
+.sc-axis { fill: var(--text); font-size: 17px; font-weight: 600; }
+.sc-corner { fill: rgba(60, 200, 180, .08); stroke: var(--signal); stroke-dasharray: 6 5; }
+.sc-corner-label { fill: var(--signal-soft); font-size: 17px; }
+.sc-corner-label.strong { font-size: 22px; font-weight: 700; fill: var(--signal); }
+.sc-dot { fill: var(--earth); fill-opacity: .45; stroke: none; cursor: pointer; }
+.sc-dot:hover { fill-opacity: 1; stroke: var(--text); stroke-width: 1.5; }
+.sc-dot.is-marked { fill: #F0C85D; fill-opacity: 1; stroke: #1A1005; stroke-width: 1; }
+.sc-dot.is-selected { stroke: #FFFFFF; stroke-width: 3; fill-opacity: 1; }
+.sc-mark { fill: #1A1005; font-size: 14px; font-weight: 700; }
+.sc-note { fill: var(--text); font-size: 16px; }
+.sc-note-line { stroke: var(--muted); stroke-width: 1.5; }
+.sc-moon circle { fill: var(--moon); }
+.sc-moon text { fill: var(--moon); font-size: 18px; font-weight: 600; }
+.sc-caption { font-family: var(--title); font-size: 20px; font-weight: 700; color: var(--signal); margin: 6px 0 4px; }
+.sc-legend { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 2px 14px; }
+.sc-legend button { background: none; border: 0; color: var(--text); font: inherit; font-size: 14.5px; text-align: left; padding: 4px 0 4px 30px; cursor: pointer; display: block; position: relative; }
+.sc-legend .sc-key { position: absolute; left: 0; top: 3px; }
+.sc-legend button:hover { text-decoration: underline; }
+.sc-legend .muted { color: var(--muted); }
+.sc-key { flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #F0C85D; color: #1A1005; font-size: 12px; font-weight: 700; }
+@media (max-width: 1000px) { .findings-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) { .findings { padding: 0 12px; } .find-title { font-size: 20px; } .fn-num { font-size: 24px; } .find-panel { padding: 14px; } }
