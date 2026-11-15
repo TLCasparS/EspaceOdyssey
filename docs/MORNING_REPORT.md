@@ -166,4 +166,6 @@ region run's 0.462 (dedupe, see below).
 ## Git
 Commits on `main` (explicit paths): post-filters + names + tests; app fixes; new outputs; docs (this report,
 CLAUDE.md decision row, NIGHT_RUN.md command, ai_usage note). Rebased onto the GLiM merge (`git pull --rebase origin
-main`), tests re-run (green), then pushed to `origin/main`. GitHub Pages republishes from `main` within a few minutes.
+main`), tests re-run (green). **Not pushed:** `git push origin main` hung with no output (most likely at the GitHub
+sign-in) and was stopped after 90 s. The commits are local on `main`. To publish, run `git push origin main` yourself
+(GitHub Pages then republishes from `main` within a few minutes).
