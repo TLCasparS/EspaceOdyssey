@@ -176,6 +176,9 @@ async function loadAll() {
       .forEach(([k, v]) => state.sites.push({ SITE: k, LAT: v.lat, LON: v.lng, lat: v.lat, lng: v.lng, raw: {}, unscored: true, missed: true }));
   }
   state.targets = Object.fromEntries(Object.entries(targets).filter(([k]) => !k.startsWith('_')));
+  // The night export names some cells differently (e.g. "Al Wahbah area r003c1511" instead of
+  // "arid_al_wahbah r001c001"); site_info.json → _aliases maps the new name to the same notes.
+  for (const [alias, key] of Object.entries(info?._aliases ?? {})) if (info[key] && !info[alias]) info[alias] = info[key];
   state.info = info;
   state.heat = Array.isArray(heat) ? heat : null;
   state.cells = Array.isArray(cells) ? cells : [];
@@ -1020,8 +1023,10 @@ function renderMoonInfo() {
 const TERRAIN = {
   // Elevation: Terrain Tiles on AWS Open Data (Mapzen; SRTM, GMTED, ETOPO1 and others), Terrarium encoding.
   dem: 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
-  // Imagery: Sentinel-2 cloudless 2020 by EOX (modified Copernicus Sentinel data), about 10 m per pixel.
-  img: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg',
+  // Imagery: Sentinel-2 cloudless 2016 by EOX (modified Copernicus Sentinel data), about 10 m per pixel.
+  // The 2016 layer is CC BY 4.0; the 2018–2025 layers are CC BY-NC-SA 4.0 (non-commercial), which does not fit
+  // the challenge rule that third-party materials be free without restriction or open source.
+  img: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/{z}/{y}/{x}.jpg',
   exaggeration: 1.5,   // heights x1.5 so relief reads on screen; said in the caption
   defaultZoom: 12,     // a site can set its own "zoom" in site_info.json
 };
@@ -1048,7 +1053,7 @@ function terrainStyle() {
     version: 8,
     sources: {
       img: { type: 'raster', tiles: [TERRAIN.img], tileSize: 256, maxzoom: 15,
-        attribution: 'Imagery: <a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless</a> by EOX (contains modified Copernicus Sentinel data 2020)' },
+        attribution: 'Imagery: <a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless</a> by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2016), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>' },
       dem: { ...dem, attribution: 'Elevation: <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">Terrain Tiles on AWS</a> (Mapzen)' },
       shade: dem,
       cells: { type: 'geojson', data: cellsGeoJSON() },

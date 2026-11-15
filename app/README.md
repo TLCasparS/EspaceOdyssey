@@ -124,8 +124,10 @@ team name, EspaceOdyssey. NASA imagery (Blue Marble) is used as data, with credi
 - 3D terrain close-up: MapLibre GL JS 4.7.1 (open source), loaded from unpkg. No account or key.
   - Elevation: [Terrain Tiles on AWS](https://registry.opendata.aws/terrain-tiles/) (Mapzen; SRTM, GMTED,
     ETOPO1 and others), shown with heights ×1.5.
-  - Imagery: [Sentinel-2 cloudless 2020](https://s2maps.eu) by EOX (modified Copernicus Sentinel data),
-    CC BY-NC-SA 4.0, fine for a non-commercial hackathon.
+  - Imagery: [Sentinel-2 cloudless 2016](https://s2maps.eu) by EOX IT Services GmbH (contains modified
+    Copernicus Sentinel data 2016), CC BY 4.0. We use the 2016 layer on purpose: EOX's 2018–2025 layers are
+    CC BY-NC-SA 4.0 (non-commercial), and the challenge asks for third-party materials that are free without
+    restriction or open source.
   - Clicking a site (list or globe) spins the globe to it, then flies into 3D terrain and orbits slowly.
     A values panel (top right) shows that site's numbers, Earth vs Moon with a match bar, grouped into
     Light, Shape and On the ground (only the criteria that count; display-only ones stay on the card); open on desktop, folded behind a "Values" button on phones.

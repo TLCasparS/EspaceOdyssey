@@ -25,7 +25,7 @@ Live link once Pages is on: **https://tlcaspars.github.io/EspaceOdyssey/app/**
   live app, and only the submitted version should be judged.
 - Outside pieces the app loads from the web (list them in the project's References): globe.gl and
   MapLibre GL (unpkg), Google Fonts (Fira Sans), AWS Terrain Tiles (elevation), EOX Sentinel-2 cloudless
-  (satellite imagery, CC BY-NC-SA 4.0: see open point 2 in `docs/SUBMISSION_CHECKLIST.md` on branch `agent/submission`).
+  (satellite imagery, 2016 layer, CC BY 4.0; the newer layers are non-commercial, so we don't use them).
 
 ## Checks after it is live
 
