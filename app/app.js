@@ -192,7 +192,8 @@ function parseCSV(text) {
   return { head, rows };
 }
 const TEXT_COLUMNS = new Set(['SITE', 'RUN', 'CELL', 'BASE_TYPE', 'IMPACT_NAME', 'IMPACT_SOURCE',
-  'run', 'cell', 'AIRPORT_NAME', 'AIRPORT_TYPE', 'AIRPORT_IDENT']);
+  'run', 'cell', 'AIRPORT_NAME', 'AIRPORT_TYPE', 'AIRPORT_IDENT',
+  'ROLE', 'NAME', 'COUNTRY', 'MISSED_REASON']);   // night export text columns
 
 const getText = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.text(); });
 const getJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.json(); });
@@ -306,7 +307,7 @@ const nameOf = site => state.info[site.SITE ?? site]?.name ?? site.SITE ?? site;
 // Tuning regions (CLAUDE.md, "do not count for validation"): used to check and set up the method, so a
 // high rank there is partly built in. Screening regions (Al Wahbah, Roter Kamm, ...) are the fair results.
 const TUNING_RUNS = new Set(['meteor_crater', 'pinacate', 'sf_volcanic']);
-const isTuning = site => TUNING_RUNS.has(site.RUN);
+const isTuning = site => TUNING_RUNS.has(site.RUN) || site.ROLE === 'tuning';   // night export: ROLE column
 const TUNING_NOTE = 'Tuning site: we used this region to check and set up our method, so its rank is partly built in and does not count as an independent result.';
 
 // Active filters: a site passes when it has data and matches at least the threshold on every selected criterion.
@@ -318,8 +319,12 @@ function passesFilters(site) {
   return true;
 }
 
+// The night export has Polar and Mare rows in one file (BASE_TYPE). Each base is ranked on its own: a Mare
+// place is scored against the lunar mare, so it must never show up in the Polar ranking. Rows without
+// BASE_TYPE (first-run data, known sites not scored yet, missed craters) show for every base.
+const ofBase = s => s.BASE_TYPE == null || s.BASE_TYPE === state.base;
 function ranked() {
-  return state.sites
+  return state.sites.filter(ofBase)
     .map(s => ({ ...s, ...scoreSite(s), type: typeOf(s) }))
     .sort((a, b) => (b.sim ?? -1) - (a.sim ?? -1))
     .map((s, i) => ({ ...s, rank: s.sim == null ? null : i + 1, passes: passesFilters(s) }));
@@ -346,7 +351,7 @@ function searchedRegions() {
   return Object.values(by).map(r => ({ ...r, lat: (r.bbox[1] + r.bbox[3]) / 2, lng: (r.bbox[0] + r.bbox[2]) / 2 }));
 }
 const pipelineAreas = () => searchedRegions().map(r => r.label).join(', ') || 'none yet';
-const scoredCount = () => state.sites.filter(s => scoreSite(s).sim != null).length;
+const scoredCount = () => state.sites.filter(s => ofBase(s) && scoreSite(s).sim != null).length;
 
 // "23.9° vs 27.2°": raw values with a short unit taken from earth_unit (e.g. "deg (inner wall slope)").
 function fmtVal(v, unit) {
@@ -450,6 +455,11 @@ function setBase(id, fly) {
     const top = visibleSites().filter(x => x.sim != null);
     if (top.length) state.selected = bestTwin(top).SITE;
     state.twinFlash = top.slice(0, 3).map(x => x.SITE);
+    if (state.globe && !DATA.isFake) {   // heatmap of the new base
+      heatPoints = baseHeat();
+      if (heatShown) state.globe.heatmapsData([{ points: heatPoints }]);
+      setHeatNote();
+    }
     clearTimeout(twinTimer);
     twinTimer = setTimeout(() => { state.twinFlash = []; renderList(); updateGlobe(false); }, 7000);
   }
@@ -809,7 +819,7 @@ function initGlobe() {
   const el = document.getElementById('globe');
   if (!hasWebGL() || typeof Globe !== 'function') { document.getElementById('globeError').hidden = false; return; }
   // Pipeline: one point per ranked crater, weight = SCORE_TOTAL. Sample: a fake pattern, for design only.
-  const heat = DATA.isFake ? fakeHeatPoints() : (state.heat ?? []);
+  const heat = DATA.isFake ? fakeHeatPoints() : baseHeat();
   heatPoints = heat;
   setHeatNote();
   const regions = searchedRegions();
@@ -882,11 +892,16 @@ function initGlobe() {
 // (El Elegante and Pinacate NW are 25 km apart) pile up. Scale them with the camera height, and
 // where labels would still overlap show only the best-ranked one, with "+1" for the hidden ones.
 let labelScale = 1, labelHidden = new Map(), heatPoints = [], heatShown = true;
+// Heatmap points of the selected base only (night export: each point has "base").
+const baseHeat = () => (state.heat ?? []).filter(p => p.base == null || p.base === state.base);
+// With hundreds of places the globe would be covered in names: only the best LABEL_LIMIT (of the places that
+// pass the filters), known sites and the selected one get a name and dot; the heatmap shows the rest.
+const LABEL_LIMIT = 30;
 const HEAT_MIN_SCALE = 0.25;   // closer than this the blobs only cover the ground, so the heatmap hides
 function setHeatNote() {
   document.getElementById('heatNote').textContent = !heatShown ? 'Zoom out to see the heatmap'
     : DATA.isFake ? 'Fake pattern, for design only'
-    : heatPoints.length ? `${heatPoints.length} craters scored so far` : 'No heatmap data yet';
+    : heatPoints.length ? `${heatPoints.length.toLocaleString('en')} ${state.base === 'mare' ? 'places' : 'craters'} scored so far${heatPoints.length > LABEL_LIMIT ? ` · best ${LABEL_LIMIT} named` : ''}` : 'No heatmap data yet';
 }   // SITE → '' (hidden) or ' +n' (leader of a group)
 const labelTextOf = d => (d.sim == null && d.SITE !== state.selected ? '' : labelHidden.has(d.SITE) ? (labelHidden.get(d.SITE) === '' ? '' : nameOf(d) + labelHidden.get(d.SITE)) : nameOf(d));
 
@@ -963,8 +978,11 @@ function updateGlobe(fly) {
   if (!g) return;
   const shown = visibleSites();
   const s = shown.find(x => x.SITE === state.selected);
-  declutterLabels(shown);
-  g.labelsData(shown.map(x => ({ ...x })));   // new objects so globe.gl redraws sizes and texts
+  const named = new Set(shown.filter(x => x.sim != null).slice(0, LABEL_LIMIT).map(x => x.SITE));
+  const onGlobe = shown.filter(x => x.sim == null || named.has(x.SITE) || typeOf(x) === 'known' || x.SITE === state.selected
+    || state.twinFlash?.includes(x.SITE));
+  declutterLabels(onGlobe);
+  g.labelsData(onGlobe.map(x => ({ ...x })));   // new objects so globe.gl redraws sizes and texts
   g.ringsData([...(s ? [{ lat: s.lat, lng: s.lng }] : []),
     ...shown.filter(x => state.twinFlash?.includes(x.SITE) && x.SITE !== state.selected).map(x => ({ lat: x.lat, lng: x.lng, twin: true })),
     ...(state.moonInfo && !state.targets[state.moonInfo] ? PLANNED_REGIONS.map(r => ({ lat: (r.bbox[1] + r.bbox[3]) / 2, lng: (r.bbox[0] + r.bbox[2]) / 2, planned: true })) : [])]);
