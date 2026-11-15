@@ -1,0 +1,430 @@
+{
+  "_note": "Lunar reference per base type. The 0-1 values in scores.csv ARE the similarity to the Moon (1 = equal); no 0-1 target values. Moon values are raw, in earth_unit. score_method: target = similarity, counts in SCORE_TOTAL if weight > 0; display = shown, weight 0; rank = no lunar value yet; not computed = no pipeline value yet. A column can mean different things per base type (e.g. DRIVABLE: Polar display share, Mare scored similarity): always read it through targets[BASE_TYPE].",
+  "polar": {
+    "label": "Shackleton rim + floor (lunar south pole)",
+    "named_site": null,
+    "total_rule": "score (vs Moon): weighted mean of the axes with in_total = true",
+    "criteria": [
+      {
+        "column": "SUNNY_RIDGE",
+        "criterion": "c1_sunny_ridge",
+        "label": "1 Sunny ridge",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 0.4,
+        "earth_unit": "lit fraction / flat-land lit fraction",
+        "limitation": "Known limitation: on the Moon 'lit' is the visible fraction of the solar DISC (PGDA AVGVISIB, extended Sun); on Earth it is the Sun's CENTRE above the horizon (point Sun). Both give 0.5 on flat land at the pole; on terrain they can differ where the Sun stays partly hidden for long stretches (disc fraction > 0 while the centre is already below the horizon).",
+        "fact": null,
+        "moon": {
+          "value": 1.5617,
+          "unit": "lit fraction / flat-land lit fraction",
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "zone": "floor = bowl pixels < 10 deg connected to the low point; rim = outside the bowl, at most 1 km from its edge (criterion-10 zone)",
+          "n_cells": null,
+          "note": null
+        }
+      },
+      {
+        "column": "DARK_FLOOR",
+        "criterion": "c2_dark_floor",
+        "label": "2 Dark floor",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 0.5,
+        "earth_unit": "terrain shadow fraction (p99 of floor)",
+        "limitation": "Known limitation: on the Moon 'lit' is the visible fraction of the solar DISC (PGDA AVGVISIB, extended Sun); on Earth it is the Sun's CENTRE above the horizon (point Sun). Both give 0.5 on flat land at the pole; on terrain they can differ where the Sun stays partly hidden for long stretches (disc fraction > 0 while the centre is already below the horizon).",
+        "fact": null,
+        "moon": {
+          "value": 1.0,
+          "unit": "share",
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "zone": "floor = bowl pixels < 10 deg connected to the low point; rim = outside the bowl, at most 1 km from its edge (criterion-10 zone)",
+          "n_cells": null,
+          "note": null
+        }
+      },
+      {
+        "column": "LIGHT_NEAR_DARK",
+        "criterion": "c3_light_dark",
+        "label": "3 Light next to dark",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 0.5,
+        "earth_unit": "distance / bowl radius",
+        "limitation": "Known limitation: on the Moon 'lit' is the visible fraction of the solar DISC (PGDA AVGVISIB, extended Sun); on Earth it is the Sun's CENTRE above the horizon (point Sun). Both give 0.5 on flat land at the pole; on terrain they can differ where the Sun stays partly hidden for long stretches (disc fraction > 0 while the centre is already below the horizon).",
+        "fact": null,
+        "moon": {
+          "value": 0.7849,
+          "unit": "distance / r",
+          "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
+          "zone": "floor = bowl pixels < 10 deg connected to the low point; rim = outside the bowl, at most 1 km from its edge (criterion-10 zone)",
+          "n_cells": null,
+          "note": null
+        }
+      },
+      {
+        "column": "GRAZING_SUN",
+        "criterion": "c4_grazing_sun",
+        "label": "4 Grazing sun",
+        "counts": false,
+        "weight": 0.0,
+        "score_method": "display",
+        "in_scores_csv": true,
+        "tolerance": 5,
+        "earth_unit": "deg (max Sun elevation)",
+        "limitation": null,
+        "fact": "No Earth analog possible: the Sun's highest elevation is purely a matter of latitude. On Earth it is at least 23.4 deg (at the poles, from the axial tilt); at Shackleton it is 1.9 deg (1.5 deg at the lunar pole). Shown for information, weight 0.",
+        "moon": {
+          "value": 1.91,
+          "unit": "deg",
+          "source": "geometry: low-point latitude from the LOLA window + lunar equator tilt (light.MOON_EQUATOR_TILT_DEG, NSSDC Moon Fact Sheet)",
+          "zone": "low point, latitude -89.625",
+          "n_cells": null,
+          "note": null
+        }
+      },
+      {
+        "column": "SKY_VIEW",
+        "criterion": "c5_sky_view",
+        "label": "5 Sky-view factor (floor)",
+        "counts": false,
+        "weight": 0.0,
+        "score_method": "display",
+        "in_scores_csv": true,
+        "tolerance": 0.1,
+        "earth_unit": "share of sky hemisphere",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 0.6306,
+          "unit": "share of sky hemisphere",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "floor zone (6103 px: bowl pixels < 10 deg connected to the low point); horizons out to 19.02 km (= 2 x r); nearest window edge 25.0 km from the low point (covers the full look-out distance)",
+          "n_cells": null,
+          "note": null
+        }
+      },
+      {
+        "column": "BOWL_SHAPE",
+        "criterion": "c7_bowl",
+        "label": "7 Bowl shape",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 0.05,
+        "earth_unit": "depth / width",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 0.1973,
+          "unit": "depth/width",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "whole crater = filled closed depression (cyan outline)",
+          "n_cells": null,
+          "note": null
+        }
+      },
+      {
+        "column": "RELIEF",
+        "criterion": "c9_relief",
+        "label": "9 Rim-to-floor depth",
+        "counts": false,
+        "weight": 0.0,
+        "score_method": "display",
+        "in_scores_csv": true,
+        "tolerance": 1500,
+        "earth_unit": "m (rim to floor)",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 4077.2251,
+          "unit": "m",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "whole bowl: rim crest within 1.3 x bowl radius of the floor low point",
+          "n_cells": null,
+          "note": null
+        }
+      },
+      {
+        "column": "SLOPE_BASE",
+        "criterion": "c10_flat_base",
+        "label": "10 Flat base spot",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 3,
+        "earth_unit": "deg (base pad slope)",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 0.664,
+          "unit": "deg",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "rim: outside the bowl, pad centre at most 1 km outside the bowl edge",
+          "n_cells": null,
+          "note": null
+        }
+      },
+      {
+        "column": "STEEP_WALLS",
+        "criterion": "c11_walls",
+        "label": "11 Steep walls",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 5,
+        "earth_unit": "deg (inner wall slope)",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 27.2221,
+          "unit": "deg",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "inner wall: ring 4.76-9.51 km around the low point (= 0.5-1.0 x bowl radius, r = equivalent radius of the filled depression)",
+          "n_cells": null,
+          "note": null
+        }
+      },
+      {
+        "column": "ROUGHNESS",
+        "criterion": "c13_roughness",
+        "label": "13 Roughness",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 10,
+        "earth_unit": "m (elevation std, 3x3 px at 60 m)",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 24.5428,
+          "unit": "m",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "bowl + rim ring: the bowl plus everything within 1.3 x bowl radius of the low point (same zone as on Earth)",
+          "n_cells": null,
+          "note": null
+        }
+      },
+      {
+        "column": "ASPECT",
+        "criterion": "c14_aspect",
+        "label": "14 Pole-facing slopes",
+        "counts": false,
+        "weight": 0.0,
+        "score_method": "display",
+        "in_scores_csv": true,
+        "tolerance": 0.15,
+        "earth_unit": "share of steep slopes facing the pole",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 0.3979,
+          "unit": "share",
+          "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
+          "zone": "within 9.51 km (ring outer radius) of the low point",
+          "n_cells": null,
+          "note": null
+        }
+      },
+      {
+        "column": "DRIVABLE",
+        "criterion": "c12_drivable",
+        "label": null,
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "display_kind": "more is better",
+        "in_scores_csv": true,
+        "tolerance": null,
+        "earth_unit": "share of pixels flatter than display.drivable_slope_deg within display.drivable_radius_km of the base pad",
+        "limitation": null,
+        "fact": null,
+        "moon": null,
+        "note": "Display only, 'more is better', not a similarity to the Moon."
+      },
+      {
+        "column": "BARE",
+        "criterion": "c19_bare",
+        "label": null,
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "display_kind": "more is better",
+        "in_scores_csv": true,
+        "tolerance": null,
+        "earth_unit": "share of WorldCover bare/sparse (class 60) in floor + rim zone",
+        "limitation": null,
+        "fact": null,
+        "moon": null,
+        "note": "Display only, 'more is better', not a similarity to the Moon."
+      },
+      {
+        "column": "GROUND_ICE",
+        "criterion": "c18_ground_ice",
+        "label": null,
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "display_kind": "more is better",
+        "in_scores_csv": true,
+        "tolerance": null,
+        "earth_unit": "share of WorldCover snow & ice in the floor zone",
+        "limitation": null,
+        "fact": null,
+        "moon": null,
+        "note": "Display only, 'more is better', not a similarity to the Moon."
+      },
+      {
+        "column": "IMPACT_CRATER",
+        "criterion": "c24_impact_crater",
+        "label": null,
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "display_kind": "fact",
+        "in_scores_csv": true,
+        "tolerance": null,
+        "earth_unit": "1 = low point lies within max(0.6 x diameter, 1 km) of a confirmed impact structure in data/impact/impact_structures.csv (Wikipedia list, incomplete), 0 = not in that list",
+        "limitation": null,
+        "fact": null,
+        "moon": null,
+        "note": "Display only, 'more is better', not a similarity to the Moon."
+      },
+      {
+        "column": "CRATER_SIZE",
+        "criterion": "c8_crater_size",
+        "label": null,
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "display_kind": "raw only",
+        "in_scores_csv": false,
+        "tolerance": null,
+        "earth_unit": "size-dependent: diameter and depth in raw_values.csv (CRATER_DIAMETER_EQUIV_M, CRATER_RIM_TO_FLOOR_M); no 0-1 value",
+        "limitation": null,
+        "fact": null,
+        "moon": null,
+        "note": "Display only, 'more is better', not a similarity to the Moon."
+      }
+    ]
+  },
+  "mare": {
+    "label": "Mare surface base · Apollo 11 (Mare Tranquillitatis)",
+    "named_site": "Apollo 11 (Mare Tranquillitatis)",
+    "total_rule": "score (vs Moon): weighted mean of the axes with in_total = true",
+    "criteria": [
+      {
+        "column": "RELIEF",
+        "criterion": "c9_relief",
+        "label": "9 Relief (5 km of base pad)",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 163.1498,
+        "earth_unit": "m (max - min within 5 km of the base pad)",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 154.0281,
+          "unit": "m",
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json",
+          "zone": null,
+          "n_cells": 20,
+          "note": null
+        }
+      },
+      {
+        "column": "SLOPE_BASE",
+        "criterion": "c10_flat_base",
+        "label": "10 Flat base spot",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 0.5,
+        "earth_unit": "deg (base pad slope)",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 0.2379,
+          "unit": "deg",
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json",
+          "zone": null,
+          "n_cells": 20,
+          "note": null
+        }
+      },
+      {
+        "column": "DRIVABLE",
+        "criterion": "c12_drivable",
+        "label": "12 Drivable share",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 0.05,
+        "earth_unit": "share of pixels < 15 deg within 5 km",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 0.9932,
+          "unit": "share < 15 deg",
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json",
+          "zone": null,
+          "n_cells": 20,
+          "note": null
+        }
+      },
+      {
+        "column": "ROUGHNESS",
+        "criterion": "c13_roughness",
+        "label": "13 Roughness",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 1.0,
+        "earth_unit": "m (median 3x3 std within 5 km)",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 1.6885,
+          "unit": "m",
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json",
+          "zone": null,
+          "n_cells": 20,
+          "note": null
+        }
+      },
+      {
+        "column": null,
+        "criterion": "c16_day_night_swing",
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "fact": "No Earth analog possible: near the lunar equator the surface reaches about 387-397 K at noon and cools to about 95 K just before sunrise, a day-night swing of roughly 290-300 K (LRO Diviner, Williams et al. 2017, Icarus, doi:10.1016/j.icarus.2016.08.012). Earth's largest surface swings are far smaller. Shown for information, weight 0.",
+        "moon": null
+      },
+      {
+        "column": null,
+        "criterion": "c23_basalt",
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "fact": "not computed yet (GLiM)",
+        "moon": null
+      }
+    ]
+  }
+}
