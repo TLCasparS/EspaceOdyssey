@@ -1,0 +1,361 @@
+[
+ {
+  "name": "meteor_crater",
+  "title": "Meteor Crater area",
+  "bbox": [
+   -111.2,
+   34.85,
+   -110.85,
+   35.15
+  ],
+  "role": "tuning",
+  "country": "United States",
+  "cells": {
+   "polar": {
+    "dropped": 3,
+    "duplicate": 1,
+    "no_bowl": 3,
+    "filtered": 5,
+    "ranked": 1
+   }
+  }
+ },
+ {
+  "name": "pinacate",
+  "title": "Pinacate volcanic field",
+  "bbox": [
+   -113.8,
+   31.6,
+   -113.2,
+   32.1
+  ],
+  "role": "tuning",
+  "country": "Mexico",
+  "cells": {
+   "polar": {
+    "dropped": 10,
+    "no_bowl": 17,
+    "duplicate": 2,
+    "ranked": 2
+   }
+  }
+ },
+ {
+  "name": "sf_volcanic",
+  "title": "San Francisco Volcanic Field",
+  "bbox": [
+   -112.3,
+   35.0,
+   -111.2,
+   35.8
+  ],
+  "role": "tuning",
+  "country": "United States",
+  "cells": {
+   "polar": {
+    "dropped": 17,
+    "filtered": 3,
+    "no_bowl": 1
+   }
+  }
+ },
+ {
+  "name": "svalbard_nordenskiold",
+  "title": "Svalbard Nordenskiöld Land",
+  "bbox": [
+   14.5,
+   77.9,
+   17.5,
+   78.7
+  ],
+  "role": "screening",
+  "country": "Norway (Svalbard)",
+  "cells": {
+   "polar": {
+    "dropped": 15,
+    "filtered": 2
+   }
+  }
+ },
+ {
+  "name": "ellesmere_fosheim",
+  "title": "Ellesmere Fosheim Peninsula",
+  "bbox": [
+   -87.0,
+   79.3,
+   -82.0,
+   80.3
+  ],
+  "role": "screening",
+  "country": "Canada",
+  "cells": {
+   "polar": {
+    "dropped": 36,
+    "filtered": 1
+   }
+  }
+ },
+ {
+  "name": "greenland_peary_land",
+  "title": "Greenland Peary Land",
+  "bbox": [
+   -36.0,
+   82.0,
+   -28.0,
+   83.0
+  ],
+  "role": "screening",
+  "country": "Greenland (Denmark)",
+  "cells": {
+   "polar": {
+    "dropped": 37
+   }
+  }
+ },
+ {
+  "name": "greenland_kangerlussuaq",
+  "title": "Greenland Kangerlussuaq",
+  "bbox": [
+   -51.5,
+   66.8,
+   -49.8,
+   67.2
+  ],
+  "role": "screening",
+  "country": "Greenland (Denmark)",
+  "cells": {
+   "polar": {
+    "no_bowl": 1,
+    "dropped": 11,
+    "excluded": 1
+   }
+  }
+ },
+ {
+  "name": "arid_al_wahbah",
+  "title": "Al Wahbah area",
+  "bbox": [
+   40.9,
+   22.7,
+   41.4,
+   23.1
+  ],
+  "role": "screening",
+  "country": "Saudi Arabia",
+  "cells": {
+   "polar": {
+    "dropped": 8,
+    "ranked": 1
+   }
+  }
+ },
+ {
+  "name": "arid_tenoumer",
+  "title": "Tenoumer area",
+  "bbox": [
+   -10.65,
+   22.7,
+   -10.15,
+   23.1
+  ],
+  "role": "screening",
+  "country": "Mauritania",
+  "cells": {
+   "polar": {
+    "prefilter": 10,
+    "no_bowl": 1,
+    "dropped": 1
+   }
+  }
+ },
+ {
+  "name": "arid_roter_kamm",
+  "title": "Roter Kamm area",
+  "bbox": [
+   16.05,
+   -27.95,
+   16.55,
+   -27.55
+  ],
+  "role": "screening",
+  "country": "Namibia",
+  "cells": {
+   "polar": {
+    "dropped": 7,
+    "ranked": 1,
+    "excluded": 1,
+    "no_bowl": 1
+   }
+  }
+ },
+ {
+  "name": "devon_haughton",
+  "title": "Devon Island (Haughton)",
+  "bbox": [
+   -90.6,
+   75.1,
+   -88.7,
+   75.7
+  ],
+  "role": "validation",
+  "country": "Canada",
+  "cells": {
+   "polar": {
+    "dropped": 13,
+    "filtered": 1
+   },
+   "mare": {
+    "kept": 1
+   }
+  }
+ },
+ {
+  "name": "iceland",
+  "title": "Iceland",
+  "bbox": [
+   -24.6,
+   63.2,
+   -13.4,
+   66.6
+  ],
+  "role": "validation",
+  "country": "Iceland",
+  "cells": {
+   "polar": {
+    "dropped": 354,
+    "filtered": 43,
+    "no_bowl": 21,
+    "ice_floor": 2,
+    "ranked": 1
+   }
+  }
+ },
+ {
+  "name": "tibesti",
+  "title": "Tibesti",
+  "bbox": [
+   16.0,
+   19.5,
+   19.5,
+   22.0
+  ],
+  "role": "screening",
+  "country": "Chad / Libya",
+  "cells": {
+   "polar": {
+    "no_bowl": 51,
+    "dropped": 374,
+    "ranked": 13
+   },
+   "mare": {
+    "kept": 3
+   }
+  }
+ },
+ {
+  "name": "harrat_saudi",
+  "title": "Harrat Saudi",
+  "bbox": [
+   39.5,
+   22.0,
+   42.5,
+   24.5
+  ],
+  "role": "screening",
+  "country": "Saudi Arabia",
+  "cells": {
+   "polar": {
+    "dropped": 348,
+    "prefilter": 22,
+    "no_bowl": 2,
+    "filtered": 8
+   }
+  }
+ },
+ {
+  "name": "altiplano_puna",
+  "title": "Altiplano Puna",
+  "bbox": [
+   -69.5,
+   -24.5,
+   -66.5,
+   -21.5
+  ],
+  "role": "screening",
+  "country": "Chile / Bolivia / Argentina",
+  "cells": {
+   "polar": {
+    "dropped": 346,
+    "ranked": 41,
+    "no_bowl": 50,
+    "excluded": 7,
+    "filtered": 2,
+    "prefilter": 5
+   },
+   "mare": {
+    "kept": 1
+   }
+  }
+ },
+ {
+  "name": "namibia_south",
+  "title": "Namibia South",
+  "bbox": [
+   16.0,
+   -28.5,
+   18.5,
+   -25.5
+  ],
+  "role": "screening",
+  "country": "Namibia",
+  "cells": {
+   "polar": {
+    "dropped": 335,
+    "ranked": 9,
+    "no_bowl": 6
+   }
+  }
+ },
+ {
+  "name": "afar",
+  "title": "Afar",
+  "bbox": [
+   40.0,
+   11.5,
+   42.5,
+   14.0
+  ],
+  "role": "screening",
+  "country": "Ethiopia / Eritrea",
+  "cells": {
+   "polar": {
+    "dropped": 284,
+    "no_bowl": 16,
+    "ranked": 7,
+    "excluded": 2,
+    "prefilter": 1
+   }
+  }
+ },
+ {
+  "name": "world",
+  "title": "world",
+  "bbox": null,
+  "role": "",
+  "country": "",
+  "cells": {
+   "polar": {
+    "filtered": 41639,
+    "dropped": 200223,
+    "no_bowl": 6756,
+    "excluded": 553,
+    "ranked": 1185,
+    "prefilter": 11894,
+    "ice_floor": 107
+   },
+   "mare": {
+    "kept": 495
+   }
+  }
+ }
+]

@@ -1,7 +1,8 @@
 {
-  "_note": "Lunar reference per base type. The 0-1 values in scores.csv ARE the similarity to the Moon (1 = equal to the Moon); there are no 0-1 target values. Moon values are raw, in earth_unit. score_method: target = similarity, counts in SCORE_TOTAL if weight > 0; display = similarity shown but weight 0; rank = no lunar value yet, rank within one run, NOT in scores.csv; not computed = no pipeline value yet.",
+  "_note": "Lunar reference per base type. The 0-1 values in scores.csv ARE the similarity to the Moon (1 = equal); no 0-1 target values. Moon values are raw, in earth_unit. score_method: target = similarity, counts in SCORE_TOTAL if weight > 0; display = shown, weight 0; rank = no lunar value yet; not computed = no pipeline value yet. A column can mean different things per base type (e.g. DRIVABLE: Polar display share, Mare scored similarity): always read it through targets[BASE_TYPE].",
   "polar": {
-    "label": "Polar base · Shackleton rim + floor (lunar south pole)",
+    "label": "Shackleton rim + floor (lunar south pole)",
+    "named_site": null,
     "total_rule": "score (vs Moon): weighted mean of the axes with in_total = true",
     "criteria": [
       {
@@ -21,6 +22,7 @@
           "unit": "lit fraction / flat-land lit fraction",
           "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
           "zone": "floor = bowl pixels < 10 deg connected to the low point; rim = outside the bowl, at most 1 km from its edge (criterion-10 zone)",
+          "n_cells": null,
           "note": null
         }
       },
@@ -41,6 +43,7 @@
           "unit": "share",
           "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
           "zone": "floor = bowl pixels < 10 deg connected to the low point; rim = outside the bowl, at most 1 km from its edge (criterion-10 zone)",
+          "n_cells": null,
           "note": null
         }
       },
@@ -61,6 +64,7 @@
           "unit": "distance / r",
           "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
           "zone": "floor = bowl pixels < 10 deg connected to the low point; rim = outside the bowl, at most 1 km from its edge (criterion-10 zone)",
+          "n_cells": null,
           "note": null
         }
       },
@@ -81,6 +85,7 @@
           "unit": "deg",
           "source": "geometry: low-point latitude from the LOLA window + lunar equator tilt (light.MOON_EQUATOR_TILT_DEG, NSSDC Moon Fact Sheet)",
           "zone": "low point, latitude -89.625",
+          "n_cells": null,
           "note": null
         }
       },
@@ -101,6 +106,7 @@
           "unit": "share of sky hemisphere",
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
           "zone": "floor zone (6103 px: bowl pixels < 10 deg connected to the low point); horizons out to 19.02 km (= 2 x r); nearest window edge 25.0 km from the low point (covers the full look-out distance)",
+          "n_cells": null,
           "note": null
         }
       },
@@ -121,6 +127,7 @@
           "unit": "depth/width",
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
           "zone": "whole crater = filled closed depression (cyan outline)",
+          "n_cells": null,
           "note": null
         }
       },
@@ -141,6 +148,7 @@
           "unit": "m",
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
           "zone": "whole bowl: rim crest within 1.3 x bowl radius of the floor low point",
+          "n_cells": null,
           "note": null
         }
       },
@@ -161,6 +169,7 @@
           "unit": "deg",
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
           "zone": "rim: outside the bowl, pad centre at most 1 km outside the bowl edge",
+          "n_cells": null,
           "note": null
         }
       },
@@ -181,6 +190,7 @@
           "unit": "deg",
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
           "zone": "inner wall: ring 4.76-9.51 km around the low point (= 0.5-1.0 x bowl radius, r = equivalent radius of the filled depression)",
+          "n_cells": null,
           "note": null
         }
       },
@@ -201,6 +211,7 @@
           "unit": "m",
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
           "zone": "bowl + rim ring: the bowl plus everything within 1.3 x bowl radius of the low point (same zone as on Earth)",
+          "n_cells": null,
           "note": null
         }
       },
@@ -221,6 +232,7 @@
           "unit": "share",
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the pole read via /vsicurl/ (widened from +-25 km on 14 Nov for c5)",
           "zone": "within 9.51 km (ring outer radius) of the low point",
+          "n_cells": null,
           "note": null
         }
       },
@@ -238,7 +250,7 @@
         "limitation": null,
         "fact": null,
         "moon": null,
-        "note": "Display only, not a similarity to the Moon: environment criteria are 'more is better' (the Moon's values are not reachable or not meaningful as closeness, like c4). Parameters in config/display.yaml, outside the config-v1 freeze."
+        "note": "Display only, 'more is better', not a similarity to the Moon."
       },
       {
         "column": "BARE",
@@ -254,7 +266,7 @@
         "limitation": null,
         "fact": null,
         "moon": null,
-        "note": "Display only, not a similarity to the Moon: environment criteria are 'more is better' (the Moon's values are not reachable or not meaningful as closeness, like c4). Parameters in config/display.yaml, outside the config-v1 freeze."
+        "note": "Display only, 'more is better', not a similarity to the Moon."
       },
       {
         "column": "GROUND_ICE",
@@ -270,7 +282,7 @@
         "limitation": null,
         "fact": null,
         "moon": null,
-        "note": "Display only, not a similarity to the Moon: environment criteria are 'more is better' (the Moon's values are not reachable or not meaningful as closeness, like c4). Parameters in config/display.yaml, outside the config-v1 freeze."
+        "note": "Display only, 'more is better', not a similarity to the Moon."
       },
       {
         "column": "IMPACT_CRATER",
@@ -286,7 +298,7 @@
         "limitation": null,
         "fact": null,
         "moon": null,
-        "note": "Display only, not a similarity to the Moon: environment criteria are 'more is better' (the Moon's values are not reachable or not meaningful as closeness, like c4). Parameters in config/display.yaml, outside the config-v1 freeze."
+        "note": "Display only, 'more is better', not a similarity to the Moon."
       },
       {
         "column": "CRATER_SIZE",
@@ -302,7 +314,116 @@
         "limitation": null,
         "fact": null,
         "moon": null,
-        "note": "Display only, not a similarity to the Moon: environment criteria are 'more is better' (the Moon's values are not reachable or not meaningful as closeness, like c4). Parameters in config/display.yaml, outside the config-v1 freeze."
+        "note": "Display only, 'more is better', not a similarity to the Moon."
+      }
+    ]
+  },
+  "mare": {
+    "label": "Mare surface base · Apollo 11 (Mare Tranquillitatis)",
+    "named_site": "Apollo 11 (Mare Tranquillitatis)",
+    "total_rule": "score (vs Moon): weighted mean of the axes with in_total = true",
+    "criteria": [
+      {
+        "column": "RELIEF",
+        "criterion": "c9_relief",
+        "label": "9 Relief (5 km of base pad)",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 163.1498,
+        "earth_unit": "m (max - min within 5 km of the base pad)",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 154.0281,
+          "unit": "m",
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json",
+          "zone": null,
+          "n_cells": 20,
+          "note": null
+        }
+      },
+      {
+        "column": "SLOPE_BASE",
+        "criterion": "c10_flat_base",
+        "label": "10 Flat base spot",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 0.5,
+        "earth_unit": "deg (base pad slope)",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 0.2379,
+          "unit": "deg",
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json",
+          "zone": null,
+          "n_cells": 20,
+          "note": null
+        }
+      },
+      {
+        "column": "DRIVABLE",
+        "criterion": "c12_drivable",
+        "label": "12 Drivable share",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 0.05,
+        "earth_unit": "share of pixels < 15 deg within 5 km",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 0.9932,
+          "unit": "share < 15 deg",
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json",
+          "zone": null,
+          "n_cells": 20,
+          "note": null
+        }
+      },
+      {
+        "column": "ROUGHNESS",
+        "criterion": "c13_roughness",
+        "label": "13 Roughness",
+        "counts": true,
+        "weight": 1.0,
+        "score_method": "target",
+        "in_scores_csv": true,
+        "tolerance": 1.0,
+        "earth_unit": "m (median 3x3 std within 5 km)",
+        "limitation": null,
+        "fact": null,
+        "moon": {
+          "value": 1.6885,
+          "unit": "m",
+          "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json",
+          "zone": null,
+          "n_cells": 20,
+          "note": null
+        }
+      },
+      {
+        "column": null,
+        "criterion": "c16_day_night_swing",
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "fact": "No Earth analog possible: near the lunar equator the surface reaches about 387-397 K at noon and cools to about 95 K just before sunrise, a day-night swing of roughly 290-300 K (LRO Diviner, Williams et al. 2017, Icarus, doi:10.1016/j.icarus.2016.08.012). Earth's largest surface swings are far smaller. Shown for information, weight 0.",
+        "moon": null
+      },
+      {
+        "column": null,
+        "criterion": "c23_basalt",
+        "counts": false,
+        "weight": 0,
+        "score_method": "display",
+        "fact": "not computed yet (GLiM)",
+        "moon": null
       }
     ]
   }
