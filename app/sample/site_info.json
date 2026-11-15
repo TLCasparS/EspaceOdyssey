@@ -1,5 +1,5 @@
 {
-  "_note": "Sofia's research file: what each site is, where the analogy breaks down, and how it helps exploration. Known sites: 'helps' = what has been tested there, with source links in 'sources'. New candidates: 'helps' = what we could test there (write it once the pipeline ranks them; only the ~5 shown in the demo). [brackets] = still to research or check. Coordinates in scores.csv are approximate. Gorafe and Kali Gandaki are parked per the criteria doc. 'zoom' = how close the 3D terrain view flies in (11 shows about 20 km, 14 about 2 km).",
+  "_note": "Sofia's research file: what each site is, where the analogy breaks down, and how it helps exploration. Known sites: 'helps' = what has been tested there, with source links in 'sources'. New candidates: 'helps' = what we could test there (write it once the pipeline ranks them; only the ~5 shown in the demo). [brackets] = still to research or check. Coordinates in scores.csv are approximate. Gorafe and Kali Gandaki are parked per the criteria doc. 'zoom' = how close the 3D terrain view flies in (11 shows about 20 km, 14 about 2 km). 'outlook' = short Opportunities and Challenges lines; each line's 'src' lists 1-based numbers into that site's 'sources', or \"ours\" for our own pipeline measurement (outputs/raw_values.csv, config-v1).",
   "Haughton Crater": {
     "type": "known",
     "place": "Devon Island, Nunavut, Canada",
@@ -8,8 +8,8 @@
     "helps": "Haughton-Mars Project (since 1997, NASA-supported, run by the Mars Institute): field tests of rovers, including a pressurized rover with suit ports, robotic drills, cameras and spectrometers, spacesuit gear such as a smart glove, and long traverses planned like Moon and Mars expeditions.",
     "sources": [
       {
-        "label": "NASA: Haughton-Mars Project",
-        "url": "https://www.nasa.gov/mission/haughton-mars-project-hmp"
+        "label": "NASA Earth Observatory: Mars researchers rendezvous on remote Arctic island (Haughton-Mars Project)",
+        "url": "https://science.nasa.gov/earth/earth-observatory/mars-researchers-rendezvous-on-remote-arctic-island-2585/"
       },
       {
         "label": "Mars Institute: HMP",
@@ -60,15 +60,69 @@
         "url": "https://www.usgs.gov/publications/walk-footsteps-apollo-astronauts-a-field-guide-northern-arizona-astronaut-training"
       },
       {
-        "label": "NASA ALSJ: Astronaut geology training",
-        "url": "https://www.nasa.gov/wp-content/uploads/static/history/alsj/AstronautGeologyTraining.pdf"
+        "label": "NASA SP-2015-626: Science training history of the Apollo astronauts (Phinney, 2015)",
+        "url": "https://ntrs.nasa.gov/citations/20190026783"
       },
       {
         "label": "Phys.org: Training future explorers of the Moon (2018)",
         "url": "https://phys.org/news/2018-10-future-explorers-moon.html"
+      },
+      {
+        "label": "Barringer Crater Company: Crater FAQs",
+        "url": "https://barringercrater.com/faq"
+      },
+      {
+        "label": "Eos: The art of doing fieldwork on the Moon (2024)",
+        "url": "https://eos.org/features/the-art-of-doing-fieldwork-on-the-moon"
+      },
+      {
+        "label": "NPR/KNAU: NASA tests scientific instruments in Arizona crater ahead of Moon landing attempt (2025)",
+        "url": "https://www.kunc.org/npr-news/2025-07-17/nasa-tests-scientific-instruments-in-arizona-crater-ahead-of-moon-landing-attempt"
       }
     ],
-    "zoom": 14
+    "zoom": 14,
+    "outlook": {
+      "opportunities": [
+        {
+          "text": "NASA's Artemis geology training has a field camp at Meteor Crater or another lunar-analog site, with a simulated moonwalk on real geology.",
+          "src": [
+            5
+          ]
+        },
+        {
+          "text": "In 2025 science teams tested a backpack lidar (3D mapping) and a ground-penetrating radar here ahead of a Moon landing.",
+          "src": [
+            6
+          ]
+        },
+        {
+          "text": "Our data: the most Moon-like bowl we found, with walls of about 24° and 99% drivable ground within 5 km.",
+          "src": [
+            "ours"
+          ]
+        }
+      ],
+      "challenges": [
+        {
+          "text": "Privately owned: the Barringer family's company still owns and runs the crater.",
+          "src": [
+            4
+          ]
+        },
+        {
+          "text": "Visitors stay on paved rim paths; the public may not climb to the bottom because the slopes erode and are unstable.",
+          "src": [
+            4
+          ]
+        },
+        {
+          "text": "About 1 km wide, while some craters on the Moon are hundreds of kilometres wide.",
+          "src": [
+            5
+          ]
+        }
+      ]
+    }
   },
   "Craters of the Moon": {
     "type": "known",
@@ -163,9 +217,62 @@
       {
         "label": "OpenTopography: Crater Elegante lidar survey report",
         "url": "https://opentopography.s3.sdsc.edu/dataspace/OTDS.122025.6340.1/docs/Crater_Elegante_FullReport.pdf"
+      },
+      {
+        "label": "UNESCO World Heritage: El Pinacate and Gran Desierto de Altar Biosphere Reserve",
+        "url": "https://whc.unesco.org/en/list/1410"
+      },
+      {
+        "label": "University of Arizona: Exploring a desert portal to other worlds (2019)",
+        "url": "https://news.arizona.edu/news/exploring-desert-portal-other-worlds"
+      },
+      {
+        "label": "KJZZ/Fronteras: Tour operators look for a solution to blockades at El Pinacate (2022)",
+        "url": "https://www.kjzz.org/content/1826278/tour-operators-look-solution-blockades-el-pinacate-biosphere-reserve"
+      },
+      {
+        "label": "USGS Open-File Report 2005-1190, Table 1: astronaut geologic field training, 1963–1972 (Schaber)",
+        "url": "https://pubs.usgs.gov/of/2005/1190/of2005-1190_table1.pdf"
       }
     ],
-    "zoom": 13.5
+    "zoom": 13.5,
+    "outlook": {
+      "opportunities": [
+        {
+          "text": "Apollo astronauts trained in the Pinacate volcanic field from 1965 on, including the Apollo 14 crew (Shepard, Mitchell) in February 1970.",
+          "src": [
+            6,
+            4
+          ]
+        },
+        {
+          "text": "The reserve has ten large, almost perfectly circular maar craters, so several bowls can be compared in one field campaign.",
+          "src": [
+            3
+          ]
+        },
+        {
+          "text": "Our data: our closest bowl after Meteor Crater, about 1.5 km wide and 215 m deep, with 98% of the rim drivable.",
+          "src": [
+            "ours"
+          ]
+        }
+      ],
+      "challenges": [
+        {
+          "text": "Protected: a UNESCO World Heritage site (2013) under the authority of Mexico's federal protected-areas agency, CONANP.",
+          "src": [
+            3
+          ]
+        },
+        {
+          "text": "In 2022, blockades by communal landowners cut off parts of the reserve, including its visitor centre.",
+          "src": [
+            5
+          ]
+        }
+      ]
+    }
   },
   "pinacate r002c001": {
     "type": "candidate",
@@ -174,7 +281,56 @@
     "why": "A second crater bowl in the Pinacate volcanic field, about 1.6 km wide and 100 m deep (our pipeline). [check: probably MacDougal crater]",
     "breaks": "Volcanic maar, not an impact crater; shallower than Elegante. Hot, low-latitude desert with no polar light. [check]",
     "helps": "[to write once ranked: what we could test here]",
-    "zoom": 13.5
+    "zoom": 13.5,
+    "sources": [
+      {
+        "label": "UNESCO World Heritage: El Pinacate and Gran Desierto de Altar Biosphere Reserve",
+        "url": "https://whc.unesco.org/en/list/1410"
+      },
+      {
+        "label": "University of Arizona: Exploring a desert portal to other worlds (2019)",
+        "url": "https://news.arizona.edu/news/exploring-desert-portal-other-worlds"
+      },
+      {
+        "label": "KJZZ/Fronteras: Tour operators look for a solution to blockades at El Pinacate (2022)",
+        "url": "https://www.kjzz.org/content/1826278/tour-operators-look-solution-blockades-el-pinacate-biosphere-reserve"
+      },
+      {
+        "label": "USGS Open-File Report 2005-1190, Table 1: astronaut geologic field training, 1963–1972 (Schaber)",
+        "url": "https://pubs.usgs.gov/of/2005/1190/of2005-1190_table1.pdf"
+      }
+    ],
+    "outlook": {
+      "opportunities": [
+        {
+          "text": "Apollo astronauts trained in the Pinacate volcanic field from 1965 on, including the Apollo 14 crew (Shepard, Mitchell) in February 1970.",
+          "src": [
+            4,
+            2
+          ]
+        },
+        {
+          "text": "Our data: about 1.6 km wide and 114 m deep, with gentler walls (about 15°) than El Elegante: a second bowl nearby for comparison.",
+          "src": [
+            "ours"
+          ]
+        }
+      ],
+      "challenges": [
+        {
+          "text": "Protected: a UNESCO World Heritage site under the authority of Mexico's federal protected-areas agency, CONANP.",
+          "src": [
+            1
+          ]
+        },
+        {
+          "text": "In 2022, blockades by communal landowners cut off parts of the reserve, including its visitor centre.",
+          "src": [
+            3
+          ]
+        }
+      ]
+    }
   },
   "arid_al_wahbah r001c001": {
     "type": "candidate",
@@ -195,9 +351,55 @@
       {
         "label": "Wikipedia: Al Wahbah crater",
         "url": "https://en.wikipedia.org/wiki/Al_Wahbah_crater"
+      },
+      {
+        "label": "Visit Saudi (official tourism site): Wahba Crater",
+        "url": "https://www.visitsaudi.com/en/taif/attractions/al-wahbah-crater-in-taif"
+      },
+      {
+        "label": "Arab News: Al-Wahbah Crater stands at the heart of Saudi eco-tourism (2026)",
+        "url": "https://www.arabnews.pk/node/2652704/saudi-arabia"
       }
     ],
-    "zoom": 13.5
+    "zoom": 13.5,
+    "outlook": {
+      "opportunities": [
+        {
+          "text": "Visitors already hike down to the white salt floor, so the whole bowl can be reached on foot.",
+          "src": [
+            5
+          ]
+        },
+        {
+          "text": "Our data: the widest bowl in our results (about 2.2 km, 165 m deep), with almost bare ground (99.8%) and 97% drivable within 5 km.",
+          "src": [
+            "ours"
+          ]
+        }
+      ],
+      "challenges": [
+        {
+          "text": "The official tourism site says it is reachable only through tour operators.",
+          "src": [
+            4
+          ]
+        },
+        {
+          "text": "Most visitors come in the cooler winter and spring months.",
+          "src": [
+            5
+          ]
+        },
+        {
+          "text": "Published sizes disagree (2–3 km wide, 220–380 m deep), so a field team would need its own survey.",
+          "src": [
+            4,
+            5,
+            1
+          ]
+        }
+      ]
+    }
   },
   "arid_roter_kamm r001c001": {
     "type": "candidate",
@@ -214,9 +416,62 @@
       {
         "label": "Solar Views: Roter Kamm impact crater",
         "url": "https://solarviews.com/cap/earth/roter.htm"
+      },
+      {
+        "label": "ESA: Roter Kamm impact crater (2020)",
+        "url": "https://www.esa.int/ESA_Multimedia/Images/2020/06/Roter_Kamm_impact_crater"
+      },
+      {
+        "label": "Nienhaus et al.: Geophysical imaging of the Roter Kamm crater, TEM and AMT (CRC 1211, 2022)",
+        "url": "https://www.crc1211db.uni-koeln.de/search/view.php?dataID=641"
+      },
+      {
+        "label": "University of Cologne: Geophysical expedition to the Namib completed (2022)",
+        "url": "https://geomet.uni-koeln.de/news/current-news/geophysical-expedition-to-the-namib-completed"
+      },
+      {
+        "label": "Allgemeine Zeitung Namibia: Park without public access (2021)",
+        "url": "https://www.az.com.na/nachrichten/park-without-public-access-2021-04-12"
       }
     ],
-    "zoom": 13.5
+    "zoom": 13.5,
+    "outlook": {
+      "opportunities": [
+        {
+          "text": "A true impact crater, about 2.5 km wide and about 5 million years old.",
+          "src": [
+            3
+          ]
+        },
+        {
+          "text": "Its sand fill, up to about 300 m thick, has been mapped with electromagnetic soundings: a test case for instruments that look under the ground.",
+          "src": [
+            4
+          ]
+        },
+        {
+          "text": "Our data: fully bare ground and almost all of it drivable within 5 km.",
+          "src": [
+            "ours"
+          ]
+        }
+      ],
+      "challenges": [
+        {
+          "text": "It lies in Tsau ǁKhaeb (Sperrgebiet) National Park; in 2021 public access was still limited to a single tour concession.",
+          "src": [
+            3,
+            6
+          ]
+        },
+        {
+          "text": "In 2022 rangers did not allow a research team to drive into the crater, so all measurements inside were done on foot.",
+          "src": [
+            5
+          ]
+        }
+      ]
+    }
   },
   "Tenoumer crater": {
     "type": "missed",

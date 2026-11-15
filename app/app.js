@@ -315,6 +315,29 @@ const sourcesHTML = list => {
   return `<p class="sources-title">Sources</p><ul class="sources">${ok.map(x =>
     `<li><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label || x.url)}</a></li>`).join('')}</ul>`;
 };
+// Numbered source list, so lines in "Opportunities & challenges" can point to [1], [2]...
+const numberedSourcesHTML = list => {
+  const items = (list ?? []).map((x, i) => ({ ...x, n: i + 1 })).filter(x => /^https?:\/\//.test(x?.url ?? ''));
+  if (!items.length) return '';
+  return `<p class="sources-title">Sources</p><ol class="sources">${items.map(x =>
+    `<li value="${x.n}"><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label || x.url)}</a></li>`).join('')}</ol>`;
+};
+// One line of the outlook box: text + its source numbers ("ours" = our own pipeline measurement).
+const outlookLine = (item, sources) => {
+  const text = String(item.text ?? '').replace(/^Our data:\s*/, '');
+  const refs = [...(item.src ?? [])].sort((a, b) => (a === 'ours') - (b === 'ours') || a - b).map(r => {
+    if (r === 'ours') return '<span class="ref-ours" title="Measured by our pipeline (config-v1), not from a publication">our data</span>';
+    const s = sources?.[r - 1];
+    return s && /^https?:\/\//.test(s.url ?? '') ? `<a class="ref" href="${esc(s.url)}" target="_blank" rel="noopener" title="${esc(s.label)}">[${r}]</a>` : '';
+  }).join('');
+  return `<li>${esc(text.charAt(0).toUpperCase() + text.slice(1))} ${refs}</li>`;
+};
+const outlookHTML = info => {
+  const o = info.outlook;
+  if (!o) return '';
+  const list = (cls, title, items) => items?.length ? `<p class="outlook-title ${cls}">${title}</p><ul class="outlook ${cls}">${items.map(it => outlookLine(it, info.sources)).join('')}</ul>` : '';
+  return list('opp', 'Opportunities', o.opportunities) + list('chal', 'Challenges', o.challenges);
+};
 const baseLabel = () => BASES.find(b => b.id === state.base)?.label ?? state.base;
 
 /* ---------- Filter bar ---------- */
@@ -680,11 +703,19 @@ function renderCard() {
       <p>${info.breaks ? research(info.breaks) : '<span class="todo">[to research]</span>'}</p>
     </div>
 
-    <div class="note-box">
+    ${info.outlook ? `${isNew || missed ? '' : `<div class="note-box">
+      <h3>How it has helped exploration</h3>
+      <p>${research(info.helps ?? '[to research]')}</p>
+    </div>`}
+    <div class="note-box outlook-box">
+      <h3>Opportunities &amp; challenges</h3>
+      ${outlookHTML(info)}
+      ${numberedSourcesHTML(info.sources)}
+    </div>` : `<div class="note-box">
       <h3>${missed ? 'What we change next' : isNew ? 'What we could test here' : 'How it has helped exploration'}</h3>
       <p>${info.helps ? research(info.helps) : `<span class="todo">${isNew ? '[to write once ranked: what we could test here]' : '[to research]'}</span>`}</p>
       ${sourcesHTML(info.sources)}
-    </div>
+    </div>`}
     </div>
     </div>`;
 }
@@ -1057,6 +1088,7 @@ function startOrbit() {
 function flyTerrainTo(s) {
   if (!terrainMap || !terrainReady || !s || state.view !== 'terrain') return;
   stopOrbit();
+  if (state.showBase) { drawBaseLayer(s); flyToBase(s); return syncViewUI(); }
   const zoom = state.info[s.SITE]?.zoom ?? TERRAIN.defaultZoom;
   flightTarget = null;   // flyTo first stops any old move, which fires a 'moveend' that must not orbit
   settling = false;
@@ -1157,6 +1189,7 @@ function createTerrainMap(s) {
   ['mousedown', 'touchstart', 'wheel'].forEach(ev => terrainMap.on(ev, viewerTookOver));
   terrainMap.on('moveend', onMoveEnd);
   terrainMap.on('pitchend', syncTiltButton);
+  terrainMap.on('zoomend', syncBaseLabels);
   terrainMap.once('load', () => {
     terrainReady = true;
     // Start the credits folded into the ⓘ button so they don't cover the caption.
@@ -1202,6 +1235,144 @@ function applyMoonColours() {
   if (!layer) return;
   terrainMap.removeLayer('img');
   terrainMap.addLayer({ ...layer, paint: moonPaint() }, 'shade');
+}
+
+/* ---------- Moon base drawn to scale (3D view) ---------- */
+
+// Sizes come from published sources; WHERE each piece sits is our own illustration, not a site plan.
+// Drawn by code (no images, nothing AI-generated).
+const BASE_SCALE = {
+  habitatD: 6.5,       // m, NASA reference Surface Habitat, inflatable part, outer diameter (Burke, Howard & Kessler 2022)
+  padInnerR: 12,       // m, landing pad inner zone (engine plume heat and pressure), Metzger & Autry 2022
+  padOuterR: 27,       // m, landing pad outer zone (stops the plume eroding soil), Metzger & Autry 2022
+  spacing: 200,        // m, habitat to pad centre: illustrative only, said in the caption
+  shackletonD: 20900,  // m, Shackleton rim crest width, our LOLA measurement (config/lunar_targets.json)
+  sources: {
+    habitat: { label: 'Burke, Howard & Kessler (2022), Internal layout of a lunar surface habitat, NASA', url: 'https://ntrs.nasa.gov/citations/20220013669' },
+    pad: { label: 'Metzger & Autry (2022), The cost of lunar landing pads', url: 'https://arxiv.org/abs/2205.00378' },
+  },
+};
+const BASE_COLORS = { habitat: '#E8E3D3', pad: '#F0C85D', blast: '#F0A35D', shackleton: '#E8E3D3', path: '#7FDCCD' };
+let baseMarkers = [];
+
+// A circle as a polygon ring, r in metres (flat-Earth offset: fine at these sizes).
+function circleRing(lng, lat, r, n = 96) {
+  const kx = 111320 * Math.cos(lat * Math.PI / 180), ky = 110540;
+  return Array.from({ length: n + 1 }, (_, i) => {
+    const t = (i / n) * 2 * Math.PI;
+    return [lng + (r * Math.cos(t)) / kx, lat + (r * Math.sin(t)) / ky];
+  });
+}
+const offsetLngLat = (lng, lat, dx, dy) => [lng + dx / (111320 * Math.cos(lat * Math.PI / 180)), lat + dy / 110540];
+
+// Habitat on the flat base spot our pipeline picked (BASE_LAT/BASE_LON), else the site point.
+function basePlan(s) {
+  const lat = Number(s.raw?.BASE_LAT ?? s.lat), lng = Number(s.raw?.BASE_LON ?? s.lng);
+  const hab = [lng, lat], pad = offsetLngLat(lng, lat, BASE_SCALE.spacing, 0);
+  const poly = (ring, kind) => ({ type: 'Feature', properties: { kind }, geometry: { type: 'Polygon', coordinates: [ring] } });
+  const line = (coords, kind) => ({ type: 'Feature', properties: { kind }, geometry: { type: 'LineString', coordinates: coords } });
+  return {
+    hab, pad, shackletonLabel: offsetLngLat(s.lng, s.lat, 0, BASE_SCALE.shackletonD / 2),
+    geojson: { type: 'FeatureCollection', features: [
+      line(circleRing(s.lng, s.lat, BASE_SCALE.shackletonD / 2, 256), 'shackleton'),
+      poly(circleRing(...pad, BASE_SCALE.padOuterR), 'blast'),
+      poly(circleRing(...pad, BASE_SCALE.padInnerR), 'pad'),
+      line([hab, pad], 'path'),
+      poly(circleRing(...hab, BASE_SCALE.habitatD / 2, 48), 'habitat'),
+    ] },
+  };
+}
+
+function baseMarker(lngLat, text, cls) {
+  const el = document.createElement('div');
+  el.className = `base-label ${cls}`;
+  el.textContent = text;
+  return new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [0, -6] }).setLngLat(lngLat).addTo(terrainMap);
+}
+
+function clearBaseLayer() {
+  baseMarkers.forEach(m => m.remove());
+  baseMarkers = [];
+  if (!terrainMap) return;
+  ['base-fill', 'base-edge', 'base-line', 'base-shackleton'].forEach(id => terrainMap.getLayer(id) && terrainMap.removeLayer(id));
+  if (terrainMap.getSource('base')) terrainMap.removeSource('base');
+}
+
+function drawBaseLayer(s) {
+  clearBaseLayer();
+  if (!state.showBase || !terrainReady || !s) return;
+  const plan = basePlan(s);
+  terrainMap.addSource('base', { type: 'geojson', data: plan.geojson });
+  terrainMap.addLayer({ id: 'base-fill', type: 'fill', source: 'base', filter: ['==', ['geometry-type'], 'Polygon'], paint: {
+    'fill-color': ['match', ['get', 'kind'], 'habitat', BASE_COLORS.habitat, 'pad', BASE_COLORS.pad, BASE_COLORS.blast],
+    'fill-opacity': ['match', ['get', 'kind'], 'habitat', 0.95, 'pad', 0.75, 0.3],
+    'fill-outline-color': '#04201C',
+  } });
+  terrainMap.addLayer({ id: 'base-edge', type: 'line', source: 'base', filter: ['==', ['geometry-type'], 'Polygon'], paint: {
+    'line-color': ['match', ['get', 'kind'], 'habitat', '#FFFFFF', 'pad', BASE_COLORS.pad, BASE_COLORS.blast], 'line-width': 1.5,
+  } });
+  terrainMap.addLayer({ id: 'base-line', type: 'line', source: 'base', filter: ['==', ['get', 'kind'], 'path'], paint: {
+    'line-color': BASE_COLORS.path, 'line-width': 2, 'line-dasharray': [1.5, 1.5],
+  } });
+  terrainMap.addLayer({ id: 'base-shackleton', type: 'line', source: 'base', filter: ['==', ['get', 'kind'], 'shackleton'], paint: {
+    'line-color': BASE_COLORS.shackleton, 'line-width': 2.5, 'line-opacity': 0.85, 'line-dasharray': [3, 2],
+  } });
+  baseMarkers = [
+    baseMarker(plan.hab, `Habitat ${BASE_SCALE.habitatD} m`, 'is-hab'),
+    baseMarker(plan.pad, `Landing pad ${BASE_SCALE.padInnerR * 2} m · blast zone ${BASE_SCALE.padOuterR * 2} m`, 'is-pad'),
+    baseMarker(plan.shackletonLabel, `Shackleton's rim, same scale (${(BASE_SCALE.shackletonD / 1000).toFixed(1)} km)`, 'is-shack'),
+  ];
+  syncBaseLabels();
+}
+// Zoomed out, the habitat and pad labels would sit on top of each other: show one "Base" label instead.
+function syncBaseLabels() {
+  if (baseMarkers.length < 3 || !terrainMap) return;
+  const far = terrainMap.getZoom() < 14;
+  const [hab, pad] = baseMarkers.map(m => m.getElement());
+  hab.hidden = far;
+  pad.textContent = far ? 'Moon base (habitat + landing pad)' : `Landing pad ${BASE_SCALE.padInnerR * 2} m · blast zone ${BASE_SCALE.padOuterR * 2} m`;
+}
+
+// Fly so both the habitat and the pad fit, tilted; zooming out shows Shackleton's rim around the crater.
+// Same landing as a site fly-in (flightTarget/flightGoal), so onMoveEnd puts the camera on the real ground
+// height afterwards; otherwise the base sits at the wrong height and its labels float off screen.
+function flyCamera(center, zoom, pitch, bearing) {
+  stopOrbit();
+  flightTarget = null;
+  settling = false;
+  terrainMap.flyTo({ center, zoom, pitch, bearing, duration: reducedMotion ? 0 : 3500, essential: true });
+  flightTarget = state.selected;
+  flightGoal = { zoom, pitch };
+}
+function flyToBase(s) {
+  if (!terrainReady || !s) return;
+  const plan = basePlan(s);
+  flyCamera([(plan.hab[0] + plan.pad[0]) / 2, (plan.hab[1] + plan.pad[1]) / 2], 16.4, 60, -20);
+}
+function flyToShackleton(s) {
+  if (!terrainReady || !s) return;
+  flyCamera([s.lng, s.lat], 10.4, 40, 0);
+}
+
+function toggleBase() {
+  state.showBase = !state.showBase;
+  if (state.showBase) state.valuesOpen = false;   // fold the values panel so the base has room
+  const s = currentSite();
+  drawBaseLayer(s);
+  if (state.showBase) flyToBase(s); else flyTerrainTo(s);
+  syncViewUI();
+}
+
+function baseCaptionHTML() {
+  const src = x => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label)}</a>`;
+  const sw = (c, round) => `<i class="base-sw${round ? ' is-round' : ''}" style="background:${c}"></i>`;
+  return `<span class="base-key">${sw(BASE_COLORS.habitat, true)}habitat ${BASE_SCALE.habitatD} m wide ${sw(BASE_COLORS.pad, true)}landing pad ${BASE_SCALE.padInnerR * 2} m
+    ${sw(BASE_COLORS.blast, true)}blast zone ${BASE_SCALE.padOuterR * 2} m <i class="base-sw is-ring"></i>Shackleton's rim ${(BASE_SCALE.shackletonD / 1000).toFixed(1)} km</span>
+    <span class="base-more"><br>Drawn to scale by code. Sizes: habitat ${src(BASE_SCALE.sources.habitat)}; pad ${src(BASE_SCALE.sources.pad)}; Shackleton: our LOLA measurement.
+    The layout (${BASE_SCALE.spacing} m apart, on the flat spot our pipeline picked) is only an illustration.</span>
+    <span class="base-less"><br>Drawn to scale; sizes from NASA and published studies (sources on a wider screen). Layout is illustrative.</span>
+    <br><button type="button" class="base-jump" data-base-jump="base">Close-up of the base</button>
+    <button type="button" class="base-jump" data-base-jump="shackleton">Compare with Shackleton</button>`;
 }
 
 /* ---------- Values panel over the 3D view ---------- */
@@ -1265,19 +1436,28 @@ function syncViewUI() {
   document.getElementById('globeLegend').hidden = inTerrain;
   document.getElementById('moonBtn').hidden = !inTerrain;
   document.getElementById('moonBtn').setAttribute('aria-pressed', String(!!state.moonColours));
+  document.getElementById('baseBtn').hidden = !inTerrain || !s;
+  document.getElementById('baseBtn').setAttribute('aria-pressed', String(!!state.showBase));
   const fly = document.getElementById('flyBtn');
   fly.textContent = inTerrain ? '← Back to globe' : 'Fly into 3D terrain';
   fly.disabled = !inTerrain && !s;
   const cap = document.getElementById('terrainCaption');
   cap.hidden = !inTerrain || !s;
   renderTerrainValues(inTerrain ? s : null);
-  if (s) cap.innerHTML = `<b>${esc(nameOf(s))}</b><br>3D terrain, heights ×${TERRAIN.exaggeration}. Drag to look around, scroll to zoom.`
-    + (state.cells.length ? `<br><span class="cell-key"><i style="border-color:${CELL_COLORS.ranked}"></i>scored crater <i style="border-color:${CELL_COLORS.filtered}"></i>skipped (edge or sea) <i style="border-color:${CELL_COLORS.no_bowl}"></i>no crater found${state.cells.some(c => c.status === 'ice_floor') ? ` <i style="border-color:${CELL_COLORS.ice_floor}"></i>ice-filled floor` : ''}</span>` : '');
+  if (s) cap.innerHTML = `<b>${esc(nameOf(s))}</b><span class="cap-help${state.showBase ? ' is-base' : ''}"><br>3D terrain, heights ×${TERRAIN.exaggeration}. Drag to look around, scroll to zoom.</span>`
+    + (state.showBase ? `<br>${baseCaptionHTML()}` : '')
+    + (state.cells.length && !state.showBase ? `<br><span class="cell-key"><i style="border-color:${CELL_COLORS.ranked}"></i>scored crater <i style="border-color:${CELL_COLORS.filtered}"></i>skipped (edge or sea) <i style="border-color:${CELL_COLORS.no_bowl}"></i>no crater found${state.cells.some(c => c.status === 'ice_floor') ? ` <i style="border-color:${CELL_COLORS.ice_floor}"></i>ice-filled floor` : ''}</span>` : '');
 }
 
 function wireViewTools() {
   document.getElementById('flyBtn').addEventListener('click', () => (state.view === 'terrain' ? closeTerrain() : openTerrain()));
   document.getElementById('moonBtn').addEventListener('click', () => { state.moonColours = !state.moonColours; applyMoonColours(); syncViewUI(); });
+  document.getElementById('baseBtn').addEventListener('click', toggleBase);
+  document.getElementById('terrainCaption').addEventListener('click', e => {
+    const b = e.target.closest('[data-base-jump]');
+    if (!b) return;
+    (b.dataset.baseJump === 'shackleton' ? flyToShackleton : flyToBase)(currentSite());
+  });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.view === 'terrain') closeTerrain(); });
   document.getElementById('terrainValues').addEventListener('click', e => {
     if (!e.target.closest('[data-tv-toggle]')) return;
