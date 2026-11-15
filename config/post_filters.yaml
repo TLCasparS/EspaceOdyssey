@@ -1,0 +1,31 @@
+# config-v1.1: post-run filters for Polar places (15 Nov 2026).
+#
+# config-v1 (git tag, pipeline.yaml, tests/test_config_freeze.py) stays FROZEN and untouched. These filters run
+# AFTER scoring, in src/export_app.py --post-filters (code: src/post_filters.py). They never change a score: an
+# excluded place keeps its SCORE_TOTAL and raw values, gets EXCLUDED = reason, and loses its RANK (not ranked,
+# not in the heatmap). Base type: Polar only (Mare rows are not filtered).
+#
+# Why: the night run (14/15 Nov) ranked open-pit mines (pit = closed bowl with steep walls) and wet / icy /
+# vegetated bowls near the top. Neither is a usable stand-in for a dry lunar polar crater.
+
+version: config-v1.1
+based_on: config-v1
+base_types: [polar]
+
+mine:
+  # Maus, V. et al. (2022): Global-scale mining polygons (Version 2). PANGAEA,
+  # https://doi.org/10.1594/PANGAEA.942325 (44,929 polygons, CC BY-SA 4.0). Paper: Maus et al. (2022), "An update
+  # on global mining land use", Scientific Data 9, 433. Not in the repo (data/ rule); download once:
+  #   https://download.pangaea.de/dataset/942325/files/global_mining_polygons_v2.gpkg  (24.7 MB)
+  path: ${LOCALAPPDATA}/espaceodyssey_data/maus_v2/global_mining_polygons_v2.gpkg
+  rule: low point (LAT/LON = crater centre) lies inside a mining polygon
+  reason: "excluded: mine"
+  near_km: 1.0          # info only (raw_values.csv MINE_DIST_KM, README): places this close to a polygon are listed
+
+dry_bowl:
+  # WorldCover 2021 shares already computed by config-v1 (raw fields bare_share, ice_floor_share, ice_rim_share).
+  # Excluded if ANY test fails. A share without data (empty) is not tested ("no data", never 0).
+  bare_min: 0.3         # BARE_SHARE (bare / sparse vegetation in floor + rim zone) below this
+  ice_floor_max: 0.2    # ICE_FLOOR_SHARE (snow & ice in the floor zone) above this
+  ice_rim_max: 0.2      # ICE_RIM_SHARE (snow & ice in the rim zone) above this
+  reason: "excluded: not a dry bowl (vegetation/ice/water)"

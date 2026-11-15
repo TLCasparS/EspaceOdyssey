@@ -1,0 +1,8 @@
+# Places whose app card in app/sample/site_info.json is keyed by an older '<run> <cell>' name. Low point
+# LAT/LON copied from the 14 Nov export (outputs/scores.csv, commit 639beee). export_app.py --anchors gives a row
+# within MAX_KM of a point this SITE key, so the card still finds the place in a new export.
+SITE,LAT,LON,MAX_KM
+pinacate r001c002,31.84603,-113.38996,1.5
+pinacate r002c001,31.97584,-113.62755,1.5
+arid_al_wahbah r001c001,22.90325,41.1441,1.5
+arid_roter_kamm r001c001,-27.76852,16.29151,1.5

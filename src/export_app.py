@@ -29,6 +29,16 @@ Rules:
   SCORE_SHACKLETON = SCORE_TOTAL), BEST_TARGET, BEST_SCORE (+ MULTI_TARGET_PREVIEW = 1 in a preview), appended
   after the existing columns; targets.json gets targets[base].lunar_targets and _multi_target. With only
   today's targets nothing changes: all files are identical to before.
+
+Optional (15 Nov 2026; without these flags nothing changes):
+- --post-filters config/post_filters.yaml: config-v1.1 post-run filters (src/post_filters.py). An excluded
+  Polar place keeps SCORE_TOTAL and raw values, gets EXCLUDED = reason(s), no RANK, no heatmap point; its cell
+  gets status "excluded" in cells.json. Scores are never changed.
+- --place-names DIR: offline NAME ("34 km SW of Balkhash") and per-cell COUNTRY (src/place_names.py).
+- --anchors CSV (SITE,LAT,LON,MAX_KM): a row whose LAT/LON lies within MAX_KM of an anchor takes that SITE key,
+  so the app's site_info.json cards (keyed by older "<run> <cell>" names) still find their place.
+- --dedupe-km D: the same bowl found by two runs (low points within D km, same base type) is exported once;
+  the row of a region run wins over a night (world-grid) run. Dropped rows are listed in the README.
 """
 from __future__ import annotations
 
@@ -201,8 +211,10 @@ def region_of(run: str, cell_id: str, lat, lon, regions: list[dict]) -> dict | N
     return None
 
 
-def cell_status(pr: dict, scored: bool, base: str) -> str:
+def cell_status(pr: dict, scored: bool, base: str, override: str | None = None) -> str:
     fr, tr = pr.get("filter_reason") or "", pr.get("terrain_reason") or ""
+    if override:                                           # config-v1.1 "excluded", or "duplicate"
+        return override
     if scored:
         return "ranked" if base == "polar" else "kept"
     if fr:
@@ -239,6 +251,12 @@ def main():
                     help="extra lunar targets (Task 5 format, docs/MULTI_TARGET.md); only verified ones are used")
     ap.add_argument("--include-unverified", action="store_true",
                     help="PREVIEW: also score unverified candidate targets / criteria; outputs are marked as preview")
+    ap.add_argument("--post-filters", type=Path, help="config-v1.1 post-run filters (config/post_filters.yaml)")
+    ap.add_argument("--place-names", type=Path,
+                    help="folder with Natural Earth + GeoNames data for offline NAME / COUNTRY (src/place_names.py)")
+    ap.add_argument("--anchors", type=Path, help="CSV SITE,LAT,LON,MAX_KM: keep site_info keys for these places")
+    ap.add_argument("--dedupe-km", type=float, default=0.0,
+                    help="same bowl in two runs (low points within this distance): export once, region run wins")
     a = ap.parse_args()
     sys.path.insert(0, str(ROOT / "src"))
     from impact_list import load as load_impacts
@@ -249,6 +267,25 @@ def main():
     impacts = load_impacts(a.impacts)
     regions = load_regions(a.regions, a.night_regions)
     sites = known_sites(a.sites_info, a.sites_coords)
+    post = names = None
+    if a.post_filters:
+        from post_filters import PostFilters
+        post = PostFilters.from_file(a.post_filters)
+        if post.mines_missing:
+            print(f"WARNING: mine filter NOT applied: {post.mines_missing}")
+    if a.place_names:
+        from place_names import PlaceNames
+        names = PlaceNames(a.place_names)
+    info_names = {}
+    if a.sites_info and a.sites_info.exists():
+        info_names = {k: (v.get("name") if isinstance(v, dict) else None) or k
+                      for k, v in json.loads(a.sites_info.read_text(encoding="utf-8")).items() if not k.startswith("_")}
+    anchors_in = []
+    if a.anchors and a.anchors.exists():
+        with open(a.anchors, newline="", encoding="utf-8") as f:
+            lines = [ln for ln in f if ln.strip() and not ln.startswith("#")]
+        anchors_in = [(r["SITE"], float(r["LAT"]), float(r["LON"]), float(r.get("MAX_KM") or 1.5))
+                      for r in csv.DictReader(lines)]
 
     runs = [(p, p.name, *load_run(p)) for p in a.runs]
     ref = {}                                               # base type -> (run name, axes, radar)
@@ -310,14 +347,42 @@ def main():
             w, s, e, n = (float(r[k]) for k in ("west", "south", "east", "north"))
             known = [nm for nm, la, lo in sites if s <= la <= n and w <= lo <= e]
             short = r["id"].split("_")[-1]
-            row["NAME"] = known[0] if known else hit["name"] if hit else f"{rg['title'] if rg else name} {short}"
+            label = None
+            if names is not None and lat is not None and lon is not None:
+                label = names.label(lat, lon)
+                row["COUNTRY"] = names.country(lat, lon) or row["COUNTRY"]
+            row["NAME"] = (known[0] if known else hit["name"] if hit else label if label
+                           else f"{rg['title'] if rg else name} {short}")
+            row["_anchor"] = None
+            if lat is not None and lon is not None:
+                near = [(_dist_km(lat, lon, la, lo), k) for k, la, lo, mx in anchors_in if _dist_km(lat, lon, la, lo) <= mx]
+                if near:
+                    row["_anchor"] = min(near)[1]
+                    row["NAME"] = info_names.get(row["_anchor"], row["_anchor"])
+            pf = post.evaluate(base, lat, lon, r) if post else None
+            row["_pf"] = pf
+            row["EXCLUDED"] = " + ".join(pf["reasons"]) if pf and pf["reasons"] else ""
             if multi:
                 row.update(mt.score_row(r, base, lunar_targets))
             rows.append(row)
 
-    for base in ref:                                       # rank per base type
-        sub = sorted([x for x in rows if x["BASE_TYPE"] == base and x["SCORE_TOTAL"] is not None],
-                     key=lambda x: -x["SCORE_TOTAL"])
+    duplicates = []                                        # same bowl in two runs: keep one (region run wins)
+    if a.dedupe_km > 0:
+        kept = []
+        for x in sorted(rows, key=lambda x: (x["RUN"].startswith("night_"), -(x["SCORE_TOTAL"] or -1))):
+            twin = next((k for k in kept if k["BASE_TYPE"] == x["BASE_TYPE"] and k["RUN"] != x["RUN"]
+                         and None not in (k["LAT"], x["LAT"])
+                         and _dist_km(x["LAT"], x["LON"], k["LAT"], k["LON"]) <= a.dedupe_km), None)
+            if twin is None:
+                kept.append(x)
+            else:
+                duplicates.append((x, twin))
+        drop = {id(x) for x, _ in duplicates}
+        rows = [x for x in rows if id(x) not in drop]
+
+    for base in ref:                                       # rank per base type (config-v1.1: excluded rows not)
+        sub = sorted([x for x in rows if x["BASE_TYPE"] == base and x["SCORE_TOTAL"] is not None
+                      and not x.get("EXCLUDED")], key=lambda x: -x["SCORE_TOTAL"])
         for i, x in enumerate(sub, 1):
             x["RANK"] = i
     for x in rows:
@@ -328,12 +393,14 @@ def main():
         row = {c: None for c in list(APP_COLUMNS.values()) + list(DISPLAY_COLUMNS)}
         row.update(LAT=m["lat"], LON=m["lon"], RUN="", CELL="", BASE_TYPE=m["base_type"], SCORE_TOTAL=None, RANK=None,
                    NAME=m["name"], COUNTRY=m["country"], ROLE="missed", TERRAIN_SCORE=None, LIGHT_SCORE=None,
-                   MISSED_REASON=m["reason"], _r={}, _impact=None, _centre=(m["lat"], m["lon"]))
+                   MISSED_REASON=m["reason"], _r={}, _impact=None, _centre=(m["lat"], m["lon"]),
+                   EXCLUDED="", _pf=None, _anchor=None)
         rows.append(row)
 
-    rows.sort(key=lambda x: (x["ROLE"] == "missed", x["BASE_TYPE"], x["RANK"] is None, x["RANK"] or 0))
+    rows.sort(key=lambda x: (x["ROLE"] == "missed", x["BASE_TYPE"], x["RANK"] is None,
+                             x["RANK"] or 0, -(x["SCORE_TOTAL"] or 0)))
     for x in rows:
-        x["SITE"] = x["NAME"]
+        x["SITE"] = x.get("_anchor") or x["NAME"]
     count = {}
     for x in rows:
         count[x["SITE"]] = count.get(x["SITE"], 0) + 1
@@ -341,11 +408,12 @@ def main():
         if count[x["SITE"]] > 1:
             x["SITE"] = f"{x['NAME']} ({x['BASE_TYPE']} {x['CELL'] or 'missed'})"
     for x in rows:
-        for k in ("SITE", "NAME", "COUNTRY", "MISSED_REASON"):
-            x[k] = str(x[k] or "").replace(",", ";")       # the app splits on ","
+        for k in ("SITE", "NAME", "COUNTRY", "MISSED_REASON", "EXCLUDED"):
+            x[k] = str(x.get(k) or "").replace(",", ";")   # the app splits on ","
 
     a.out.mkdir(parents=True, exist_ok=True)
-    cols = ["SITE", "LAT", "LON", *APP_COLUMNS.values(), *DISPLAY_COLUMNS, *EXTRA_COLS, *mt_cols]
+    pf_cols = ["EXCLUDED"] if post else []
+    cols = ["SITE", "LAT", "LON", *APP_COLUMNS.values(), *DISPLAY_COLUMNS, *EXTRA_COLS, *pf_cols, *mt_cols]
     if multi:                                              # today's target re-scored from raw must equal SCORE_TOTAL
         off = [x["SITE"] for x in rows for t in lunar_targets if t["builtin"] and t["base_type"] == x["BASE_TYPE"]
                and x["SCORE_TOTAL"] is not None and x.get(t["column"]) is not None
@@ -361,24 +429,29 @@ def main():
                         *[_fmt(x[c]) for c in DISPLAY_COLUMNS], x["RUN"], x["CELL"], x["BASE_TYPE"],
                         _fmt(x["SCORE_TOTAL"]), x["RANK"] or "", x["NAME"], x["COUNTRY"], x["ROLE"],
                         _fmt(x["TERRAIN_SCORE"]), _fmt(x["LIGHT_SCORE"]), x["MISSED_REASON"],
+                        *[x["EXCLUDED"] for _ in pf_cols],
                         *[x.get(c) or "" if c == "BEST_TARGET" else "1" if c == "MULTI_TARGET_PREVIEW"
                           else _fmt(x.get(c)) for c in mt_cols]])
 
     crit_cols = list(dict.fromkeys([*APP_COLUMNS.values(), *MARE_COLUMNS.values()]))   # Polar + Mare raw columns
+    pf_raw = ["EXCLUDED", "EXCLUDED_DETAIL", "MINE_DIST_KM"] if post else []
     raw_cols = ["SITE", "LAT", "LON", *crit_cols, *EXTRA_RAW.values(), *DISPLAY_RAW.values(),
-                "IMPACT_NAME", "IMPACT_DIAMETER_KM", "IMPACT_DIST_KM", "IMPACT_SOURCE", "RUN", "CELL", "BASE_TYPE"]
+                "IMPACT_NAME", "IMPACT_DIAMETER_KM", "IMPACT_DIST_KM", "IMPACT_SOURCE", "RUN", "CELL", "BASE_TYPE",
+                *pf_raw]
     with open(a.out / "raw_values.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(raw_cols)
         for x in rows:
-            r, hit = x["_r"], x["_impact"]
+            r, hit, pf = x["_r"], x["_impact"], x.get("_pf")
             inv = {v: k for k, v in (APP_COLUMNS if x["BASE_TYPE"] == "polar" else MARE_COLUMNS).items()}
             w.writerow([x["SITE"], _fmt(x["LAT"], 5), _fmt(x["LON"], 5),
                         *[_fmt(_num(r.get(inv[col]))) if col in inv else "" for col in crit_cols],
                         *[_fmt(_num(r.get(c))) for c in EXTRA_RAW], *[_fmt(_num(r.get(c))) for c in DISPLAY_RAW],
                         hit["name"] if hit else "", _fmt(hit["diameter_km"]) if hit else "",
                         _fmt(hit["dist_km"], 2) if hit else "", hit["source"] if hit else "",
-                        x["RUN"], x["CELL"], x["BASE_TYPE"]])
+                        x["RUN"], x["CELL"], x["BASE_TYPE"],
+                        *([x["EXCLUDED"], "; ".join(pf["details"]).replace(",", ";") if pf else "",
+                           _fmt(pf["mine_dist_km"], 3) if pf else ""] if post else [])])
 
     targets = {"_note": ("Lunar reference per base type. The 0-1 values in scores.csv ARE the similarity to the "
                          "Moon (1 = equal); no 0-1 target values. Moon values are raw, in earth_unit. score_method: "
@@ -431,12 +504,28 @@ def main():
     (a.out / "targets.json").write_text(json.dumps(targets, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     heat = [{"lat": x["_centre"][0], "lng": x["_centre"][1], "weight": round(x["SCORE_TOTAL"], 4),
-             "base": x["BASE_TYPE"]} for x in rows if x["SCORE_TOTAL"] is not None]
+             "base": x["BASE_TYPE"]} for x in rows if x["SCORE_TOTAL"] is not None and not x.get("EXCLUDED")]
     (a.out / "heatmap.json").write_text(json.dumps(heat, indent=1) + "\n", encoding="utf-8")
 
     # every searched cell -> coverage per 1 deg tile + region counts; cells.json only near ranked/kept places
-    anchors = [x["_centre"] for x in rows if x["RUN"] and x["_centre"][0] is not None]
+    # (config-v1.1: excluded places are not anchors, but their own cell is written with status "excluded")
+    anchors = [x["_centre"] for x in rows if x["RUN"] and x["_centre"][0] is not None and not x.get("EXCLUDED")]
     by_id = {(x["RUN"], x["CELL"]): x for x in rows if x["RUN"]}
+    dup_cells = {(x["RUN"], x["CELL"]) for x, _ in duplicates}
+    buckets = {}                                           # 1 deg buckets: only nearby anchors are checked
+    for la, lo in anchors:
+        buckets.setdefault((math.floor(la), math.floor(lo)), []).append((la, lo))
+
+    def near_anchor(lat, lon):
+        dlat = int(math.ceil(a.cells_near_km / 110.6))
+        dlon = int(math.ceil(a.cells_near_km / (111.3 * max(math.cos(math.radians(lat)), 0.02))))
+        fy, fx = math.floor(lat), math.floor(lon)
+        for y in range(fy - dlat, fy + dlat + 1):
+            for x in range(fx - dlon, fx + dlon + 1):
+                for la, lo in buckets.get((y, (x + 180) % 360 - 180), ()):
+                    if _dist_km(lat, lon, la, lo) <= a.cells_near_km:
+                        return True
+        return False
     cells, cov, reg_count = [], {}, {}
     for p, name, radar, _ in runs:
         gj = p / "cells.geojson"
@@ -446,7 +535,9 @@ def main():
         for f in json.loads(gj.read_text(encoding="utf-8"))["features"]:
             pr = f["properties"]
             hit = by_id.get((name, pr["id"]))
-            st = cell_status(pr, hit is not None and (hit["SCORE_TOTAL"] is not None or base == "mare"), base)
+            override = ("excluded" if hit is not None and hit.get("EXCLUDED") else
+                        "duplicate" if (name, pr["id"]) in dup_cells else None)
+            st = cell_status(pr, hit is not None and (hit["SCORE_TOTAL"] is not None or base == "mare"), base, override)
             lat, lon = pr.get("lat"), pr.get("lon")
             t = cov.setdefault(f"{math.floor(lat)}_{math.floor(lon)}", {"lat": math.floor(lat), "lon": math.floor(lon)})
             b = t.setdefault(base, {})
@@ -456,12 +547,14 @@ def main():
             rk = rg["name"] if rg else name
             rc = reg_count.setdefault(rk, {}).setdefault(base, {})
             rc[st] = rc.get(st, 0) + 1
-            if hit or any(_dist_km(lat, lon, la, lo) <= a.cells_near_km for la, lo in anchors):
+            if hit or near_anchor(lat, lon):
                 ring = f["geometry"]["coordinates"][0]
                 lons, lats = [c[0] for c in ring], [c[1] for c in ring]
                 cells.append({"run": name, "cell": pr["id"], "base": base, "lat": lat, "lng": lon,
                               "bbox": [round(min(lons), 5), round(min(lats), 5), round(max(lons), 5), round(max(lats), 5)],
-                              "status": st, "reason": pr.get("filter_reason") or pr.get("terrain_reason") or "",
+                              "status": st, "reason": (hit["EXCLUDED"] if st == "excluded" else
+                                                       "same bowl as a region run" if st == "duplicate" else
+                                                       pr.get("filter_reason") or pr.get("terrain_reason") or ""),
                               "site": hit["SITE"] if hit else None, "score_total": hit["SCORE_TOTAL"] if hit else None})
     (a.out / "cells.json").write_text(json.dumps(cells, indent=1) + "\n", encoding="utf-8")
     (a.out / "coverage.json").write_text(json.dumps(sorted(cov.values(), key=lambda t: (t["lat"], t["lon"])), indent=1)
@@ -479,6 +572,17 @@ def main():
     (a.out / "regions.json").write_text(json.dumps(reg_out, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 
     n_by = {b: sum(1 for x in rows if x["BASE_TYPE"] == b and x["ROLE"] != "missed") for b in ref}
+    cmdline = ""
+    if post or names or anchors_in or duplicates:          # new-style export: write the exact command
+        def rel(v):
+            try:
+                return Path(v).resolve().relative_to(ROOT).as_posix()
+            except ValueError:
+                return "<data dir>" if a.place_names and Path(v) == a.place_names else Path(v).as_posix()
+        cmdline = "python src/export_app.py " + " ".join(rel(p) for p in a.runs) + "".join(
+            f" --{k.replace('_', '-')} {rel(v)}" for k, v in (("post_filters", a.post_filters),
+                                                            ("place_names", a.place_names), ("anchors", a.anchors)) if v) \
+            + (f" --dedupe-km {a.dedupe_km:g}" if a.dedupe_km else "") + f" --cells-near-km {a.cells_near_km:g}"
     readme = f"""# outputs/ for the app
 
 Written by `src/export_app.py` from {len(runs)} runs: {', '.join(n for _, n, _, _ in runs)}.
@@ -500,13 +604,13 @@ Base types: {', '.join(f"{b} ({n_by[b]} rows)" for b in ref)}; plus {len(missed)
   similarity for Mare).
 - **`SCORE_TOTAL`** = score vs Moon (counted criteria only); **`RANK`** = rank within the same `BASE_TYPE`.
 - **`TERRAIN_SCORE` / `LIGHT_SCORE`** = the same weighted mean over the counted terrain / light criteria only.
-- **`NAME`** = known site (site_info) or confirmed impact structure, else `<region title> <cell>`. **`COUNTRY`** =
-  region level (approximate, from the region registry, no per-cell lookup).
+- **`NAME`** = known site (site_info) or confirmed impact structure, else {"the nearest place (see Place names below)" if names else "`<region title> <cell>`"}. **`COUNTRY`** =
+  {"per place, Natural Earth polygon (see Place names below)" if names else "region level (approximate, from the region registry, no per-cell lookup)"}.
 - **`ROLE`** = tuning / validation / screening (from the region), or **missed** for known sites the pipeline does
   not rank; `MISSED_REASON` says why ({', '.join(m['name'] for m in missed)}).
 - **`LAT`/`LON`** = Polar: the crater's low point; Mare: the base pad.
-- Mare scores stay **empty** until the lunar Mare targets (Mateo) are verified; raw values are already there.
-
+{"- **`EXCLUDED`** = config-v1.1 post-run filter reason(s); empty = not excluded (see below)." + chr(10) if post else ""}- {"Mare scores: similarity to the frozen mare-v1 lunar target (`targets.json` → mare)." if any(x["BASE_TYPE"] == "mare" and x["SCORE_TOTAL"] is not None for x in rows) else "Mare scores stay **empty** until the lunar Mare targets (Mateo) are verified; raw values are already there."}
+{"" if not cmdline else chr(10) + "Re-create: `" + cmdline + "`" + chr(10)}
 ## Display-only columns (Polar, weight 0, never in SCORE_TOTAL)
 {chr(10).join(f"- **{c}** ({v[2]}): {v[3]}" for c, v in DISPLAY_COLUMNS.items())}
 - Impact list: {len(impacts)} confirmed structures (incomplete; "0" = not in this list).
@@ -525,6 +629,57 @@ target (same rule, weights and tolerances as `SCORE_TOTAL`; today's target equal
 `BEST_SCORE` = best-matching target of the row's base type. Targets: `targets[BASE_TYPE].lunar_targets`
 (see docs/MULTI_TARGET.md).
 """)
+    if post:
+        pc = post.cfg
+        pol = [x for x in rows if x["BASE_TYPE"] in post.base_types and x["RUN"]]
+        mine_r, dry_r = pc["mine"]["reason"], pc["dry_bowl"]["reason"]
+        n_mine = sum(1 for x in pol if mine_r in x["EXCLUDED"])
+        n_dry = sum(1 for x in pol if dry_r in x["EXCLUDED"])
+        n_both = sum(1 for x in pol if mine_r in x["EXCLUDED"] and dry_r in x["EXCLUDED"])
+        n_ex = sum(1 for x in pol if x["EXCLUDED"])
+        near = [x for x in pol if not x["EXCLUDED"] and x["_pf"] and x["_pf"]["mine_dist_km"] is not None
+                and x["_pf"]["mine_dist_km"] <= pc["mine"].get("near_km", 1.0)]
+        db = pc["dry_bowl"]
+        readme += f"""
+## config-v1.1: post-run filters (Polar only; config-v1 scoring unchanged)
+Rules in `{a.post_filters.as_posix()}`, code `src/post_filters.py`. An excluded place keeps `SCORE_TOTAL` and its raw
+values, gets **`EXCLUDED`** = reason(s) (`raw_values.csv` → `EXCLUDED_DETAIL`), has **no `RANK`** and **no heatmap point**;
+its cell has status `excluded` in `cells.json`. Remaining places keep their scores; only their ranks move up.
+- **`{mine_r}`**: low point inside a mining polygon of Maus et al. (2022), Global-scale mining polygons v2,
+  PANGAEA https://doi.org/10.1594/PANGAEA.942325 (CC BY-SA 4.0). {"**NOT APPLIED: " + post.mines_missing + "**" if post.mines_missing else f"{post.mines.n} polygons."}
+- **`{dry_r}`**: `BARE_SHARE` < {db['bare_min']:g} or `ICE_FLOOR_SHARE` > {db['ice_floor_max']:g} or `ICE_RIM_SHARE` > {db['ice_rim_max']:g}
+  (WorldCover 2021 shares from config-v1; an empty share = no data = not tested).
+
+| Polar places in this export | count |
+|---|---|
+| before the filters | {len(pol)} |
+| {mine_r} | {n_mine} |
+| {dry_r} | {n_dry} |
+| both reasons | {n_both} |
+| excluded in total | {n_ex} |
+| ranked after the filters | {len(pol) - n_ex - sum(1 for x in pol if x["SCORE_TOTAL"] is None and not x["EXCLUDED"])} |
+
+Not excluded but within {pc["mine"].get("near_km", 1.0):g} km of a mining polygon (`MINE_DIST_KM`, for a manual look): {len(near)}{" (ranks " + ", ".join(str(x["RANK"]) for x in sorted(near, key=lambda x: x["RANK"] or 1e9)[:15]) + (" ..." if len(near) > 15 else "") + ")" if near else ""}.
+"""
+    if names:
+        readme += """
+## Place names (offline)
+`NAME` (when no known site or impact structure matches) = nearest populated place from GeoNames `cities1000`
+(CC BY 4.0, https://www.geonames.org), "34 km SW of Balkhash"; among places within 1.5 × the nearest distance the
+most populous is used. Beyond 60 km the Natural Earth geographic region is added, beyond 400 km only the region is
+shown. `COUNTRY` = Natural Earth 1:10m Admin 0 polygon containing the point (public domain; de-facto borders as
+Natural Earth draws them). Computed per place by `src/place_names.py`; no web lookup.
+"""
+    if duplicates:
+        readme += f"""
+## Same bowl in two runs ({len(duplicates)} rows dropped, `--dedupe-km {a.dedupe_km:g}`)
+The region run's row is kept (tuning sites keep the values their docs quote); the night (world-grid) row is dropped,
+its cell has status `duplicate` in `cells.json`. Scores differ slightly because the 60 m grid is laid on a different cell.
+
+| dropped (run cell, score) | kept (run cell, score) |
+|---|---|
+""" + "".join(f"| {x['RUN']} {x['CELL']}, {_fmt(x['SCORE_TOTAL'])} | {k['RUN']} {k['CELL']}, {_fmt(k['SCORE_TOTAL'])} |\n"
+              for x, k in duplicates)
     (a.out / "README.md").write_text(readme, encoding="utf-8")
     print(f"{len(rows)} rows ({', '.join(f'{b} {n_by[b]}' for b in ref)}, missed {len(missed)}) from {len(runs)} runs -> {a.out}")
     for x in rows[:12]:
