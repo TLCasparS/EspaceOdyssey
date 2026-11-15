@@ -229,14 +229,19 @@
       {
         "label": "KJZZ/Fronteras: Tour operators look for a solution to blockades at El Pinacate (2022)",
         "url": "https://www.kjzz.org/content/1826278/tour-operators-look-solution-blockades-el-pinacate-biosphere-reserve"
+      },
+      {
+        "label": "USGS Open-File Report 2005-1190, Table 1: astronaut geologic field training, 1963–1972 (Schaber)",
+        "url": "https://pubs.usgs.gov/of/2005/1190/of2005-1190_table1.pdf"
       }
     ],
     "zoom": 13.5,
     "outlook": {
       "opportunities": [
         {
-          "text": "Apollo astronauts trained for lunar exploration in the Pinacate volcanic field, with University of Arizona geologists.",
+          "text": "Apollo astronauts trained in the Pinacate volcanic field from 1965 on, including the Apollo 14 crew (Shepard, Mitchell) in February 1970.",
           "src": [
+            6,
             4
           ]
         },
@@ -289,13 +294,18 @@
       {
         "label": "KJZZ/Fronteras: Tour operators look for a solution to blockades at El Pinacate (2022)",
         "url": "https://www.kjzz.org/content/1826278/tour-operators-look-solution-blockades-el-pinacate-biosphere-reserve"
+      },
+      {
+        "label": "USGS Open-File Report 2005-1190, Table 1: astronaut geologic field training, 1963–1972 (Schaber)",
+        "url": "https://pubs.usgs.gov/of/2005/1190/of2005-1190_table1.pdf"
       }
     ],
     "outlook": {
       "opportunities": [
         {
-          "text": "Same volcanic field where Apollo astronauts trained for lunar exploration.",
+          "text": "Apollo astronauts trained in the Pinacate volcanic field from 1965 on, including the Apollo 14 crew (Shepard, Mitchell) in February 1970.",
           "src": [
+            4,
             2
           ]
         },
