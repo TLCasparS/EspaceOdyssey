@@ -27,7 +27,7 @@ Base types: polar (1825 rows), mare (500 rows); plus 3 missed known sites.
 - **`EXCLUDED`** = config-v1.1 post-run filter reason(s); empty = not excluded (see below).
 - Mare scores: similarity to the frozen mare-v1 lunar target (`targets.json` → mare).
 
-Re-create: `python src/export_app.py out/night_polar out/night_mare out/meteor_crater out/pinacate --post-filters config/post_filters.yaml --place-names <data dir> --anchors config/site_anchors.csv --glim <data dir> --dedupe-km 1 --cells-near-km 16`
+Re-create: `python src/export_app.py out/night_polar out/night_mare out/meteor_crater out/pinacate --cells-near-km 16 --post-filters config/post_filters.yaml --place-names $LOCALAPPDATA/espaceodyssey_data --anchors config/site_anchors.csv --glim $LOCALAPPDATA/espaceodyssey_data/glim_pangaea_0p5deg --mare-c30 out/mare_v11/c30_night_mare.csv --mare-common-tolerance --macrostrat data/macrostrat/rock_site.csv --dedupe-km 1`
 
 ## Display-only columns (Polar, weight 0, never in SCORE_TOTAL)
 - **DRIVABLE** (more is better): share of pixels flatter than display.drivable_slope_deg within display.drivable_radius_km of the base pad
@@ -55,11 +55,11 @@ cell in `ranking.csv`); another target might prefer a different bowl in the same
 
 | base | BEST_TARGET | places (excluded included) |
 |---|---|---|
-| mare | mare_20cells | 401 |
+| mare | mare_20cells | 280 |
 | mare | mare_crisium | 13 |
-| mare | mare_imbrium | 37 |
-| mare | mare_serenitatis | 20 |
-| mare | mare_tranquillitatis | 29 |
+| mare | mare_imbrium | 110 |
+| mare | mare_serenitatis | 41 |
+| mare | mare_tranquillitatis | 56 |
 | polar | polar_haworth | 805 |
 | polar | polar_sl2 | 957 |
 | polar | shackleton | 63 |

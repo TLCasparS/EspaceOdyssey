@@ -43,6 +43,12 @@ Optional (15 Nov 2026; without these flags nothing changes):
   DISPLAY columns in raw_values.csv: ROCK_CLASS, ROCK_CLASS_NAME, BASALT_SHARE_5KM, GLIM_COVERED_SHARE,
   BASALT_REGION (team decision 15 Nov 2026: BASALT_REGION = 1 if the class AT the point is vb, else 0; a point in a
   cell GLiM counts as sea, or GLiM "nd", = no data, nothing borrowed from neighbours). Never in a score.
+- --mare-c30 PATH: out/mare_v11/c30_night_mare.csv (src/mare_v11_rescore.py; RUN,CELL,C30_PER_KM2): c30 small-crater
+  density as ONE DISPLAY column SMALL_CRATERS_PER_KM2 at the very END of raw_values.csv for Mare rows (weight 0, never
+  in a score; empty = no data, Polar rows empty) + targets.json "_mare_c30" (team decision 15 Nov 2026, docs/MARE_V11.md).
+- --mare-common-tolerance: fair Mare twins (team decision 15 Nov 2026): every Mare lunar target is scored with the
+  20-cell target's tolerance per criterion (multi_target.common_tolerance). Changes only BEST_TARGET / BEST_SCORE /
+  SCORE_<mare target>; SCORE_TOTAL and RANK unchanged.
 - --macrostrat PATH: data/macrostrat/rock_site.csv (src/compute_macrostrat.py; Macrostrat, CC BY 4.0) as DISPLAY
   columns at the END of raw_values.csv: ROCK_SITE, ROCK_SITE_LITH, ROCK_SITE_SOURCE, ROCK_SITE_SCALE, BASALT_SITE
   (joined on RUN + CELL; empty = no data). targets.json -> _rock_site. Never in a score; no other column changes.
@@ -291,9 +297,54 @@ def _dist_km(lat1, lon1, lat2, lon2):
     return math.hypot((lat1 - lat2) * 110.6, (lon1 - lon2) * 111.3 * math.cos(math.radians(lat1)))
 
 
+def _portable(v) -> str:
+    """Path for the README re-create line: repo-relative (out/..., data/..., config/...); under %LOCALAPPDATA% ->
+    $LOCALAPPDATA/...; anything else -> <data dir>/<name>. Never a local user path."""
+    import os
+    p = Path(v).resolve()
+    try:
+        return p.relative_to(ROOT).as_posix()
+    except ValueError:
+        pass
+    la = os.environ.get("LOCALAPPDATA")
+    if la:
+        try:
+            return "$LOCALAPPDATA/" + p.relative_to(Path(la).resolve()).as_posix()
+        except ValueError:
+            pass
+    return f"<data dir>/{p.name}"
+
+
+def recreate_line(ap, a) -> str:
+    """The exact export command: the runs + EVERY option whose value differs from its default (store_true flags
+    as bare flags), paths made portable (_portable)."""
+    parts = ["python src/export_app.py", *(_portable(p) for p in a.runs)]
+    for act in ap._actions:
+        if not act.option_strings or act.dest in ("help",):
+            continue
+        v = getattr(a, act.dest)
+        if v == act.default or v is None or v is False:
+            continue
+        flag = act.option_strings[-1]
+        if v is True:
+            parts.append(flag)
+        elif isinstance(v, Path):
+            parts.append(f"{flag} {_portable(v)}")
+        elif isinstance(v, float):
+            parts.append(f"{flag} {v:g}")
+        else:
+            parts.append(f"{flag} {v}")
+    return " ".join(parts)
+
+
 def main():
     import sys
     import yaml
+    for stream in (sys.stdout, sys.stderr):                # Windows cp1252 console: place names like "ā" must not crash
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("runs", nargs="+", type=Path, help="out/<run> folders (radar.json + ranking.csv), Polar or Mare")
     ap.add_argument("--out", type=Path, default=ROOT / "outputs")
@@ -316,6 +367,10 @@ def main():
     ap.add_argument("--anchors", type=Path, help="CSV SITE,LAT,LON,MAX_KM: keep site_info keys for these places")
     ap.add_argument("--glim", type=Path,
                     help="GLiM 0.5 deg ASCII grid (.asc) or a folder containing it: rock class display columns")
+    ap.add_argument("--mare-c30", type=Path,
+                    help="out/mare_v11/c30_night_mare.csv: c30 small-crater density display column (Mare, weight 0)")
+    ap.add_argument("--mare-common-tolerance", action="store_true",
+                    help="fair Mare twins: all Mare lunar targets scored with the 20-cell tolerance (BEST_TARGET only)")
     ap.add_argument("--macrostrat", type=Path,
                     help="data/macrostrat/rock_site.csv: Macrostrat rock-at-site display columns in raw_values.csv")
     ap.add_argument("--dedupe-km", type=float, default=0.0,
@@ -377,6 +432,12 @@ def main():
                         for x_id, ax in axes.items()} for base, (_, axes, _) in ref.items() if base in mt.BUILTIN}
     lunar_targets = mt.build_targets(base_crit, mt.load_candidates(a.candidates), a.include_unverified,
                                      {"mare": cfg.get("mare", {}).get("tolerance_floor", {})})
+    if a.mare_common_tolerance:
+        mt.common_tolerance(lunar_targets, "mare")
+    c30 = None
+    if a.mare_c30:
+        with open(a.mare_c30, newline="", encoding="utf-8") as f:
+            c30 = {(r["RUN"], r["CELL"]): _num(r["C30_PER_KM2"]) for r in csv.DictReader(f)}
     multi = any(not t["builtin"] for t in lunar_targets)   # False: outputs exactly as before Task 3
     mt_preview = multi and any(t["preview"] for t in lunar_targets)
     mt_cols = ([t["column"] for t in lunar_targets] + ["BEST_TARGET", "BEST_SCORE"]
@@ -507,7 +568,8 @@ def main():
     pf_raw = ["EXCLUDED", "EXCLUDED_DETAIL", "MINE_DIST_KM"] if post else []
     raw_cols = ["SITE", "LAT", "LON", *crit_cols, *EXTRA_RAW.values(), *DISPLAY_RAW.values(),
                 "IMPACT_NAME", "IMPACT_DIAMETER_KM", "IMPACT_DIST_KM", "IMPACT_SOURCE", "RUN", "CELL", "BASE_TYPE",
-                *pf_raw, *(ROCK_COLS if glim else []), *(ms.COLUMNS if macro is not None else [])]
+                *pf_raw, *(ROCK_COLS if glim else []), *(ms.COLUMNS if macro is not None else []),
+                *(["SMALL_CRATERS_PER_KM2"] if c30 is not None else [])]
     with open(a.out / "raw_values.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(raw_cols)
@@ -524,7 +586,9 @@ def main():
                            _fmt(pf["mine_dist_km"], 3) if pf else ""] if post else []),
                         *([x["_rock"][c] if c in ("ROCK_CLASS", "ROCK_CLASS_NAME") else _fmt(x["_rock"][c])
                            for c in ROCK_COLS] if glim else []),
-                        *(ms.export_values(macro, x["RUN"], x["CELL"]) if macro is not None else [])])
+                        *(ms.export_values(macro, x["RUN"], x["CELL"]) if macro is not None else []),
+                        *([_fmt(c30.get((x["RUN"], x["CELL"]))) if x["BASE_TYPE"] == "mare" else ""]
+                          if c30 is not None else [])])
 
     targets = {"_note": ("Lunar reference per base type. The 0-1 values in scores.csv ARE the similarity to the "
                          "Moon (1 = equal); no 0-1 target values. Moon values are raw, in earth_unit. score_method: "
@@ -576,11 +640,26 @@ def main():
                      "value; otherwise it is empty (no data) and cannot be BEST_TARGET: missing values never score "
                      "better than real ones. RANK stays the rank of SCORE_TOTAL."
                      + (" PREVIEW: unverified targets or criteria are included (--include-unverified); "
-                        "not for real results." if mt_preview else ""))}
+                        "not for real results." if mt_preview else "")
+                     + (" Mare COMMON TOLERANCE (--mare-common-tolerance, team decision 15 Nov 2026): every Mare "
+                        "target is scored with the built-in 20-cell target's tolerance per criterion (not its own), "
+                        "so BEST_TARGET compares closeness to the lunar values, not tolerance width; SCORE_TOTAL and "
+                        "RANK unchanged." if a.mare_common_tolerance else ""))}
     if glim:
         targets["_material"] = glim["meta"]
     if macro is not None:
         targets["_rock_site"] = ms.export_meta(macro)
+    if c30 is not None:
+        lt = cfg["lunar_targets"].get("mare", {}).get("criteria", {}).get("c30_small_craters") or {}
+        targets["_mare_c30"] = {
+            "column": "SMALL_CRATERS_PER_KM2", "file": "raw_values.csv", "base_type": "mare", "criterion": "c30_small_craters",
+            "score_method": "display", "weight": 0, "counts": False,
+            "earth_unit": "closed depressions per km2 (>= 10 m deep, >= 300 m wide, elongation <= 2) within 5 km of the base pad",
+            "moon": {"value": lt.get("value"), "iqr": lt.get("iqr"), "n_cells": lt.get("n_cells"), "source": lt.get("source"),
+                     "verified": lt.get("verified"), "check": lt.get("check")},
+            "note": ("Display only (team decision 15 Nov 2026), never in a score; empty = no data. Computed for the 500 "
+                     "places of the night run's Mare shortlist, not a new search. On Earth most values are 0 and the "
+                     "high ones lie in sand seas (dune hollows, not impact craters); docs/MARE_V11.md.")}
     (a.out / "targets.json").write_text(json.dumps(targets, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     heat = [{"lat": x["_centre"][0], "lng": x["_centre"][1], "weight": round(x["SCORE_TOTAL"], 4),
@@ -652,18 +731,7 @@ def main():
     (a.out / "regions.json").write_text(json.dumps(reg_out, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 
     n_by = {b: sum(1 for x in rows if x["BASE_TYPE"] == b and x["ROLE"] != "missed") for b in ref}
-    cmdline = ""
-    if post or names or anchors_in or duplicates or glim:  # new-style export: write the exact command
-        def rel(v):
-            try:
-                return Path(v).resolve().relative_to(ROOT).as_posix()
-            except ValueError:
-                return "<data dir>" if any(d and Path(v) == d for d in (a.place_names, a.glim)) else Path(v).as_posix()
-        cmdline = "python src/export_app.py " + " ".join(rel(p) for p in a.runs) + "".join(
-            f" --{k.replace('_', '-')} {rel(v)}" for k, v in (("post_filters", a.post_filters),
-                                                            ("place_names", a.place_names), ("anchors", a.anchors),
-                                                            ("glim", a.glim)) if v) \
-            + (f" --dedupe-km {a.dedupe_km:g}" if a.dedupe_km else "") + f" --cells-near-km {a.cells_near_km:g}"
+    cmdline = recreate_line(ap, a)
     readme = f"""# outputs/ for the app
 
 Written by `src/export_app.py` from {len(runs)} runs: {', '.join(n for _, n, _, _ in runs)}.

@@ -237,6 +237,10 @@ def test_export_regression_only_todays_targets(tmp_path, runs):
     a = _export(tmp_path, runs, "out_none", None)
     b = _export(tmp_path, runs, "out_draft", [FAKE_DRAFT, SKIPPED])
     for f in FILES:
+        if f == "README.md":            # the README records the exact command (incl. --candidates): skip that line
+            strip = lambda p: b"".join(ln for ln in p.read_bytes().splitlines(True) if not ln.startswith(b"Re-create:"))
+            assert strip(a / f) == strip(b / f), f
+            continue
         assert (a / f).read_bytes() == (b / f).read_bytes(), f
     head = next(csv.reader(open(a / "scores.csv")))
     assert not any(h.startswith("SCORE_") and h != "SCORE_TOTAL" for h in head) and "BEST_TARGET" not in head

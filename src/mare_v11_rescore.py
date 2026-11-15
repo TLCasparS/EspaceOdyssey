@@ -10,7 +10,8 @@ Then scores, before (mare-v1) and after (display additions; identical totals whi
   before: SCORE_TOTAL = mare-v1 (4 criteria, 20-cell target); BEST_TARGET with each target's own tolerance
           (the rule of the current export, multi_target.build_targets)
   after:  SCORE_TOTAL with c30 at weight mare_v11.c30_weight (0 = mare-v1); BEST_TARGET with the common tolerance
-Outputs in out/mare_v11/ (git-ignored): places.csv, c30_earth.csv (cache), summary.json.
+Outputs in out/mare_v11/ (git-ignored): places.csv, c30_earth.csv (cache), summary.json, and c30_<run>.csv
+(RUN,CELL,C30_PER_KM2,C30_REASON; empty = no data) = the table for `export_app.py --mare-c30`.
 
     python src/mare_v11_rescore.py [--work %LOCALAPPDATA%/espaceodyssey_night] [--workers 8]
 """
@@ -169,11 +170,19 @@ def main():
     ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 2))
     ap.add_argument("--out", type=Path, default=ROOT / "out" / "mare_v11")
     ap.add_argument("--whatif-weight", type=float, default=1.0, help="extra columns *_w: scores with this c30 weight")
+    ap.add_argument("--run-name", default="night_mare", help="export run folder of the B2 records (RUN in the c30 table)")
     a = ap.parse_args()
     np.seterr(invalid="ignore")
     cfg = load_config()
     recs = load_b2(a.work)
     c30 = earth_c30(recs, a.work, cfg, a.out / "c30_earth.csv", a.workers)
+    with open(a.out / f"c30_{a.run_name}.csv", "w", newline="", encoding="utf-8") as f:   # export_app --mare-c30
+        w = csv.writer(f)
+        w.writerow(["RUN", "CELL", "C30_PER_KM2", "C30_REASON"])
+        for rec in recs:
+            cid = rec["cell"]["id"]
+            v = (c30.get(cid) or {}).get(C30)
+            w.writerow([a.run_name, cid, "" if v is None else v, (c30.get(cid) or {}).get("c30_reason", "")])
     rows = score_places(recs, c30, cfg)
     wi = {r["id"]: r for r in score_places(recs, c30, cfg, c30_weight=a.whatif_weight)}
     for r in rows:

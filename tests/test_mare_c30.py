@@ -143,3 +143,40 @@ def test_missing_c30_never_wins_best_target():
     tg = v11_targets(cfg, _cands())
     raw = {"c9_relief": 150.0, "c10_flat_base": 0.3, "c12_drivable": 0.99, "c13_roughness": 1.9, C30: None}
     assert all(mt.score(raw, t) is None for t in tg)
+
+
+# --- export: common tolerance + re-create line ------------------------------------------------------------------
+
+def test_export_common_tolerance_uses_builtin_tolerance_and_keeps_builtin():
+    base_crit = {"mare": copy.deepcopy(CFG["mare"]["criteria"])}
+    targets = mt.build_targets(base_crit, _cands(), False, {"mare": CFG["mare"]["tolerance_floor"]})
+    before = copy.deepcopy(targets[0])
+    mt.common_tolerance(targets, "mare")
+    assert targets[0] == before                                     # built-in (= SCORE_TOTAL) untouched
+    x = targets[1]
+    for k, cc in x["criteria"].items():
+        assert cc["tolerance"] == targets[0]["criteria"][k]["tolerance"]
+    assert x["criteria"]["c9_relief"]["target"] == 120.0 and x["complete"]
+
+
+def test_export_recreate_line_lists_options_without_user_paths(monkeypatch, tmp_path):
+    import argparse
+    import os
+    from export_app import ROOT, recreate_line
+    la = tmp_path / "AppData" / "Local"
+    (la / "espaceodyssey_data").mkdir(parents=True)
+    monkeypatch.setenv("LOCALAPPDATA", str(la))
+    ap = argparse.ArgumentParser()
+    ap.add_argument("runs", nargs="+", type=Path)
+    ap.add_argument("--glim", type=Path)
+    ap.add_argument("--mare-c30", type=Path)
+    ap.add_argument("--mare-common-tolerance", action="store_true")
+    ap.add_argument("--dedupe-km", type=float, default=0.0)
+    ap.add_argument("--cells-near-km", type=float, default=50.0)
+    a = ap.parse_args([str(ROOT / "out" / "night_mare"), "--glim", str(la / "espaceodyssey_data" / "glim"),
+                       "--mare-c30", str(ROOT / "out" / "mare_v11" / "c30_night_mare.csv"),
+                       "--mare-common-tolerance", "--dedupe-km", "1"])
+    line = recreate_line(ap, a)
+    assert line == ("python src/export_app.py out/night_mare --glim $LOCALAPPDATA/espaceodyssey_data/glim "
+                    "--mare-c30 out/mare_v11/c30_night_mare.csv --mare-common-tolerance --dedupe-km 1")
+    assert str(tmp_path) not in line and "Users" not in line and os.sep + "Users" not in line
