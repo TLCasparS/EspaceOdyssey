@@ -214,7 +214,7 @@ pipeline itself to be the base that others build on.
 - globe.gl 2.32.0 and MapLibre GL JS 4.7.1, loaded from unpkg.
 - Python: NumPy, SciPy, rasterio, pyproj, GeoPandas, pandas, PyYAML, pystac-client, planetary-computer, Matplotlib,
   Plotly, pytest.
-- Our code: https://github.com/TLCasparS/EspaceOdyssey
+- Our code: https://github.com/TLCasparS/EspaceOdyssey (Apache License 2.0; data licences listed in the README)
 
 **Methods and references**
 - Team criteria document: `docs/Moon Analog Criteria and Datasets.md` (29 criteria, data sources and caveats).
@@ -227,6 +227,5 @@ pipeline itself to be the base that others build on.
 - **Demo link:** public deck link, tested in a private window.
 - **Images:** 1–3 app screenshots for the page (for example `pitch/img/app_map_tianshan.png`, `pitch/img/app_card.png`).
 - **OurAirports licence:** `docs/ACCESS.md` could not open ourairports.com/data first-hand; open it once and confirm.
-- **Licence for our code:** there is no `LICENSE` file yet. Without one, NASA distributes our code under Apache 2.0.
 - **At submission:** the two tick boxes (Terms; original work with all resources listed in References), the
   China-review question and the SI confirmation are answered by the team.
