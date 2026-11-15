@@ -477,3 +477,7 @@ a { color: var(--earth); }
   .globe-legend { left: 8px; bottom: 8px; padding: 7px 9px; gap: 4px; font-size: 11px; max-width: 200px; }
   .globe-legend .legend-bar, .globe-legend .legend-scale { display: none; }
 }
+/* Mare list: note on why the scores are so close, and the "basalt at site only" switch */
+.mare-note { border-color: var(--border); }
+.basalt-only { display: inline-flex; align-items: center; gap: 6px; margin-left: 4px; color: var(--text); white-space: nowrap; cursor: pointer; }
+.site-meta .tag-basalt { margin-left: 0; }

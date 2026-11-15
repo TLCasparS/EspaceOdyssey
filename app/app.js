@@ -421,6 +421,13 @@ function fmtVal(v, unit) {
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const pct = v => (v == null ? '–' : Math.round(v * 100) + '%');
+// Similarity score as shown. Mare scores sit at 97–99.6 %, so whole percents would show "100%" for many places:
+// for Mare, one decimal, and never "100%" unless the score is exactly 1. Display only, the scores are unchanged.
+const isMareSite = site => (site?.BASE_TYPE ?? state.base) === 'mare';
+const scoreText = (v, site) => (v == null ? '–' : !isMareSite(site) ? pct(v)
+  : v >= 1 ? '100%' : `${Math.min(99.9, Math.round(v * 1000) / 10).toFixed(1)}%`);
+// Macrostrat: basalt / mafic volcanic rock in the map unit at the Mare base pad (1); 0 = other rock, empty = unknown.
+const basaltAtSite = site => site?.raw?.BASALT_SITE === 1;
 const fmtCoord = (lat, lng) => `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(2)}°${lng >= 0 ? 'E' : 'W'}`;
 const research = s => esc(s).replace(/\[([^\]]+)\]/g, '<span class="todo">[$1]</span>');
 // Source links under a research box; only http(s) links, opened in a new tab.
@@ -606,9 +613,10 @@ function siteRowHTML(s) {
           <span class="site-name">${esc(nameOf(s))}</span>
           <span class="site-meta">
             ${s.sim == null ? '<span class="not-scored">Not scored yet</span>' : `<span class="bar"><span style="width:${Math.round(s.sim * 100)}%"></span></span>
-            <span class="pct">${pct(s.sim)}</span>`}
+            <span class="pct">${scoreText(s.sim, s)}</span>`}
             <span>${s.type === 'known' ? 'Known' : 'New'}</span>
             ${isTuning(s) ? `<span class="tag-tuning" title="${esc(TUNING_NOTE)}">Tuning</span>` : ''}
+            ${basaltAtSite(s) ? '<span class="tag-basalt" title="Macrostrat geological map: basalt or mafic volcanic rock at the base pad (display only, not in the score)">basalt at site</span>' : ''}
           </span>
         </span>
       </button>
@@ -617,7 +625,11 @@ function siteRowHTML(s) {
 function renderList() {
   const list = document.getElementById('siteList');
   const ofType = s => state.typeFilter === 'all' || s.type === state.typeFilter;
-  const rows = visibleSites().filter(s => s.sim != null && ofType(s));          // the ranking: scored sites only
+  // Mare: optional "basalt at site only" (offered only when some place has BASALT_SITE = 1).
+  const mareList = state.base === 'mare' && isPipeline();
+  const hasBasalt = mareList && visibleSites().some(basaltAtSite);
+  if (!hasBasalt) state.basaltOnly = false;
+  const rows = visibleSites().filter(s => s.sim != null && ofType(s) && (!state.basaltOnly || basaltAtSite(s)));   // the ranking: scored sites only
   const reference = visibleSites().filter(s => s.sim == null && !s.missed && !s.EXCLUDED && ofType(s));   // known analogs, not scored yet
   const excluded = visibleSites().filter(s => s.EXCLUDED).sort((a, b) => (b.excludedSim ?? -1) - (a.excludedSim ?? -1));
   const missedSites = visibleSites().filter(s => s.missed);
@@ -625,6 +637,13 @@ function renderList() {
   document.getElementById('listHint').textContent = state.active.size
     ? `${shown} of ${total} sites pass the filters. Ranked by similarity to a ${baseLabel().toLowerCase()} base.`
     : `Ranked by similarity to ${moonBase(state.base) ? `${moonBase(state.base).name} (${baseLabel().toLowerCase()} base)` : `a ${baseLabel().toLowerCase()} base`} on the ${similarityCriteria().length} criteria that count.`;
+  const mareNote = document.getElementById('mareNote');
+  mareNote.hidden = !mareList;
+  if (mareList) {
+    mareNote.innerHTML = 'Flat, smooth mare-like terrain is common on Earth, so the top places differ only slightly. Rock at site (basalt) and crater texture tell them apart.'
+      + (hasBasalt ? ` <label class="basalt-only"><input type="checkbox" id="basaltOnly" ${state.basaltOnly ? 'checked' : ''}> basalt at site only</label>` : '');
+    mareNote.querySelector('#basaltOnly')?.addEventListener('change', e => { state.basaltOnly = e.target.checked; state.listLimit = LIST_STEP; renderList(); });
+  }
   const pending = state.moonInfo && state.moonInfo !== state.base ? moonBase(state.moonInfo) : null;
   const note = document.getElementById('listNote');
   note.hidden = !pending;
@@ -675,7 +694,7 @@ function renderList() {
         <p class="regions-hint">Taken out of the ranking by our post-run filters (config-v1.1); their scores are unchanged.
           ${Object.entries(why).map(([r, n]) => `${esc(r.replace(/^excluded: /, ''))}: ${n}`).join(' · ')}.
           Best ${Math.min(40, excluded.length)} by score:</p>
-        ${top.map(s => `<button type="button" class="region-btn site-btn-ref${s.SITE === state.selected ? ' is-current' : ''}" data-site="${esc(s.SITE)}">${esc(nameOf(s))} <span class="muted">· ${pct(s.excludedSim)} · ${esc(s.EXCLUDED.replace(/excluded: /g, ''))}</span></button>`).join('')}
+        ${top.map(s => `<button type="button" class="region-btn site-btn-ref${s.SITE === state.selected ? ' is-current' : ''}" data-site="${esc(s.SITE)}">${esc(nameOf(s))} <span class="muted">· ${scoreText(s.excludedSim, s)} · ${esc(s.EXCLUDED.replace(/excluded: /g, ''))}</span></button>`).join('')}
       </details>
     </li>`);
     list.querySelector('.excluded-ref details').addEventListener('toggle', e => { state.excludedOpen = e.target.open; });
@@ -832,7 +851,7 @@ function renderCard() {
         ${twin ? `<p class="card-twin" title="Score against each verified lunar target, same rule and weights; this target scores highest. The rank uses Shackleton.">Closest lunar twin: <b>${esc(twin.label)}</b> (${pct(twin.score)})</p>` : ''}
       </div>
       <div class="score">
-        <strong>${pct(s.EXCLUDED ? s.excludedSim : s.sim)}</strong>
+        <strong>${scoreText(s.EXCLUDED ? s.excludedSim : s.sim, s)}</strong>
         <span>${s.EXCLUDED ? 'similar to the Moon, but<br>not ranked (config-v1.1)' : missed ? 'not found by our<br>pipeline (config-v1)' : info.validation ? `validation test:<br>${esc(info.validation.result)}` : unscored ? 'not scored yet' : `similar to the Moon (${esc(baseLabel().toLowerCase())} base)<br>rank ${s.RANK ?? s.rank} of ${scoredCount()}`}</span>
       </div>
     </div>
@@ -1067,7 +1086,7 @@ function initGlobe() {
     .pointResolution(10)
     .pointsMerge(false)
     .pointsTransitionDuration(0)
-    .pointLabel(d => `${esc(nameOf(d))}${d.sim == null ? '' : ` · ${pct(d.sim)} like the Moon`}`)
+    .pointLabel(d => `${esc(nameOf(d))}${d.sim == null ? '' : ` · ${scoreText(d.sim, d)} like the Moon`}`)
     .onPointClick(d => { el.style.cursor = ''; select(d.SITE, true); })
     .onPointHover(d => { el.style.cursor = d ? 'pointer' : ''; })
     // Pins: a dark disc with a white rim under every dot you can click, so sites stand apart from the haze.
@@ -1077,7 +1096,7 @@ function initGlobe() {
     .polygonSideColor(() => 'rgba(0,0,0,0)')
     .polygonStrokeColor(d => (d.selected ? '#FFFFFF' : 'rgba(255,255,255,0.85)'))
     .polygonsTransitionDuration(0)
-    .polygonLabel(d => `${esc(nameOf(d))}${d.sim == null ? '' : ` · ${pct(d.sim)} like the Moon`}`)
+    .polygonLabel(d => `${esc(nameOf(d))}${d.sim == null ? '' : ` · ${scoreText(d.sim, d)} like the Moon`}`)
     .onPolygonClick(d => { el.style.cursor = ''; select(d.SITE, true); })
     .onPolygonHover(d => { el.style.cursor = d ? 'pointer' : ''; })
     // Outlines of every region the pipeline searched (from cells.json); dashed Moon-cream: searched next (Mare).
@@ -1394,7 +1413,7 @@ function renderMoonInfo() {
     <p class="moon-why">${esc(b.why)}</p>
     ${rows || facts ? `<details class="moon-fold"><summary>${crit ? `Show ${esc(b.name)}’s values` : 'What a lunar mare base site looks like'}</summary>${crit ? '<p class="moon-fold-hint">What Earth sites are compared with</p>' : ''}<ul class="moon-vals">${rows}${facts}</ul></details>` : ''}
     ${b.detail ? `<p class="moon-detail">${esc(b.detail)}</p>` : ''}
-    ${crit && b.id === state.base ? `<p class="moon-sub">Closest Earth twins</p><div class="moon-twins">${twinsOf().map(t => `<button type="button" class="moon-twin" data-twin="${esc(t.SITE)}"><span class="rank ${t.type === 'known' ? 'known' : 'new'}">${t.rank}</span><span>${esc(nameOf(t))}</span><b>${pct(t.sim)}</b>${isTuning(t) ? '<i>tuning</i>' : t.SITE === bestTwin(twinsOf())?.SITE ? '<i class="best">best independent</i>' : ''}</button>`).join('')}</div>` : ''}
+    ${crit && b.id === state.base ? `<p class="moon-sub">Closest Earth twins</p><div class="moon-twins">${twinsOf().map(t => `<button type="button" class="moon-twin" data-twin="${esc(t.SITE)}"><span class="rank ${t.type === 'known' ? 'known' : 'new'}">${t.rank}</span><span>${esc(nameOf(t))}</span><b>${scoreText(t.sim, t)}</b>${isTuning(t) ? '<i>tuning</i>' : t.SITE === bestTwin(twinsOf())?.SITE ? '<i class="best">best independent</i>' : ''}</button>`).join('')}</div>` : ''}
     ${crit ? '' : `<p class="moon-soon">Earth twins for this base come with tonight’s pipeline run. Where we search:</p><div class="moon-twins">${PLANNED_REGIONS.map(r => `<button type="button" class="moon-twin" data-planned="${r.run}"><span>${esc(r.label)}</span><i>${esc(r.country)}</i></button>`).join('')}</div>`}
     <a class="moon-fig" href="${esc(b.figure)}" target="_blank" rel="noopener" hidden>${esc(b.figureLabel ?? 'See the target figure')}</a>`;
   // Show the figure link only if the figure is in the repo (the mare map arrives with Mateo's branch).
@@ -1418,7 +1437,7 @@ function moonTargetHTML(b, t, crit, row) {
     <p class="moon-title"><b>${esc(b.title)}</b> · ${esc(t.label)}${esc(where)}</p>
     <p class="moon-why">${esc(why)}</p>
     ${rows ? `<details class="moon-fold"><summary>Show ${esc(t.label)}’s values</summary><p class="moon-fold-hint">What Earth sites are compared with</p><ul class="moon-vals">${rows}</ul></details>` : ''}
-    ${twins.length ? `<p class="moon-sub">Closest Earth twins to this target</p><div class="moon-twins">${twins.map((x, i) => `<button type="button" class="moon-twin" data-twin="${esc(x.SITE)}"><span class="rank ${x.type === 'known' ? 'known' : 'new'}">${i + 1}</span><span>${esc(nameOf(x))}</span><b>${pct(x[t.column])}</b></button>`).join('')}</div>
+    ${twins.length ? `<p class="moon-sub">Closest Earth twins to this target</p><div class="moon-twins">${twins.map((x, i) => `<button type="button" class="moon-twin" data-twin="${esc(x.SITE)}"><span class="rank ${x.type === 'known' ? 'known' : 'new'}">${i + 1}</span><span>${esc(nameOf(x))}</span><b>${scoreText(x[t.column], x)}</b></button>`).join('')}</div>
       <p class="nodata">The ranking and the main score use ${esc(lunarTargets(b.id).find(x => x.builtin)?.label ?? 'today’s target')}.</p>` : ''}
     ${t.preview ? `<a class="moon-fig" href="../${esc(t.preview)}" target="_blank" rel="noopener" hidden>See the target preview figure</a>` : ''}`;
   if (t.preview) setTimeout(() => {
