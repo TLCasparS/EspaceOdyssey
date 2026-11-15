@@ -830,17 +830,21 @@ function renderCard() {
       ${missingNote.length ? `<p class="nodata">${esc(missingNote.join(' '))} Left out of the score, not counted as zero.</p>` : ''}
     </div>`}
 
-    ${ground.length || impact || accessHTML(s) ? `<details class="note-box prac-box fold-box">
-      <summary><h3>On the ground</h3> <span class="fold-hint">access, land cover · not in the score</span></summary>
+    ${accessHTML(s) ? `<div class="note-box prac-box access-box">
+      ${accessHTML(s)}
+      <p class="nodata">A rough guide from a travel-time model (roads of 2015, airport in a straight line), not a trip plan. Not part of the score.</p>
+    </div>` : ''}
+
+    ${ground.length || impact ? `<details class="note-box prac-box fold-box">
+      <summary><h3>On the ground</h3> <span class="fold-hint">land cover · not in the score</span></summary>
       ${ground.length ? `<div class="prac">${ground.map(c => `
         <span title="${esc(meta(c.key).earthUnit)}">${esc(c.label)}</span>
         <span class="bar"><span style="width:${Math.round(s[c.key] * 100)}%"></span></span>
         <span class="pct">${Math.round(s[c.key] * 100)}%</span>`).join('')}
-      </details>` : ''}
+      </div>` : ''}
       ${impact ? `<p class="impact-line"><span>Impact crater</span> ${impact}</p>` : ''}
-      ${accessHTML(s)}
-      <p class="nodata">About the place itself, not compared with the Moon${ground.length ? ' (bars: more is better)' : ''}. Not part of the score.${accessOf(s) ? ' Access is a model (roads of 2015, airport in a straight line): a rough guide to how remote the place is, not a trip plan.' : ''}</p>
-    </div>` : ''}
+      <p class="nodata">About the place itself, not compared with the Moon${ground.length ? ' (bars: more is better)' : ''}. Not part of the score.</p>
+    </details>` : ''}
 
     ${practical.length ? `<div class="note-box prac-box">
       <h3>Practical</h3>
