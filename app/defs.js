@@ -1,4 +1,4 @@
-/* Earth Twins of the Moon: definitions on the card chips.
+/* Moon Twins on Earth: definitions on the card chips.
  * Hover (or tab to) a chip such as "Steep walls" and a small box says what the word means; it goes away when
  * the mouse leaves. Only the card's chips have it (team request). Text follows docs/"Moon Analog Criteria and
  * Datasets.md" ("What we measure on Earth"), in plain words. Loaded after app.js (uses byKey and esc).

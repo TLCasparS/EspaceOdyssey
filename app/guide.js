@@ -45,7 +45,7 @@ const GUIDE_TERMS = [
 const guide = { open: false, tab: 'tour', step: 0, answer: null };
 const GUIDE_TOUR = [
   { sel: '.globe-wrap', title: '1 · The Earth',
-    text: 'This globe shows where our search found Moon-like places: warmer heatmap colours are better matches, and the outlines are the regions we searched. Drag to turn it; click a dot to open that site.' },
+    text: 'This globe shows where our search found Moon-like places. The violet glow marks where many good craters are; it is only a guide, not something to click. The pins (a dot with a white ring) are sites: click one to open its card. Drag to turn the globe.' },
   { sel: '.list-panel', title: '2 · The Earth twins',
     text: 'The ranking: every crater our pipeline scored, ordered by how similar it is to the lunar base you picked. “Tuning” marks the regions we used to set up our method.' },
   { sel: '.card-panel', title: '3 · The site card',

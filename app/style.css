@@ -102,7 +102,7 @@ a { color: var(--earth); }
 .globe { position: absolute; inset: 0; }
 .globe-legend { position: absolute; left: 12px; bottom: 12px; background: rgba(6,18,28,.85); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; max-width: 240px; }
 .legend-title { font-weight: 600; }
-.legend-bar { height: 8px; border-radius: 4px; background: linear-gradient(90deg, #1b2a6b, #2c7fb8, #7fcdbb, #ffffbf, #fdae61, #d7191c); }
+.legend-bar { height: 8px; border-radius: 4px; background: linear-gradient(90deg, rgba(70,50,160,.25), rgb(130,80,220), rgb(190,120,255), rgb(235,190,255)); }
 .legend-scale { display: flex; justify-content: space-between; color: var(--muted); }
 .legend-note { color: var(--warn); }
 /* 3D terrain view, on top of the globe */
@@ -117,44 +117,14 @@ a { color: var(--earth); }
 .view-btn[aria-pressed="true"] { background: var(--brand); border-color: var(--signal); box-shadow: inset 0 -3px 0 var(--signal); }
 .terrain-caption { position: absolute; left: 12px; bottom: 12px; z-index: 3; margin: 0; max-width: calc(100% - 24px); background: rgba(6,18,28,.88); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: var(--muted); }
 .terrain-caption b { color: var(--text); font-size: 14px; }
-/* Values panel over the 3D view (right side, left of the map's zoom and tilt buttons) */
-.terrain-values { position: absolute; top: 12px; right: 52px; z-index: 3; width: 260px; max-width: calc(100% - 64px); max-height: calc(100% - 110px); overflow: auto; background: rgba(6,18,28,.9); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px 10px; font-size: 12px; color: var(--muted); }
-.terrain-values[hidden] { display: none; }
-.tv-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-.tv-head b { display: block; color: var(--text); font-size: 14px; line-height: 1.25; }
-.tv-score { display: block; color: var(--signal); font-weight: 600; margin-top: 2px; }
-.tv-toggle { flex: none; font: inherit; font-weight: 600; color: var(--text); background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
-.tv-toggle:hover, .tv-toggle:focus-visible { border-color: var(--signal); }
-.tv-group { margin: 10px 0 4px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
-.terrain-values ul { list-style: none; margin: 0; padding: 0; }
-.tv-row { display: grid; grid-template-columns: 1fr auto; column-gap: 8px; padding: 3px 0; }
-.tv-label { color: var(--text); }
-.tv-val { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.tv-val.tv-wide { white-space: normal; }
-.tv-bar { grid-column: 1 / -1; height: 4px; margin-top: 3px; border-radius: 2px; background: rgba(255,255,255,.1); overflow: hidden; }
-.tv-bar i { display: block; height: 100%; background: var(--signal); border-radius: 2px; }
-.tv-bar.is-plain i { background: var(--muted); }
-.tv-note { margin: 8px 0 0; font-size: 11px; line-height: 1.4; }
-/* Narrow map: sit under the Back/Moon buttons; while open, hide the help caption to make room */
 .globe-wrap { container-type: inline-size; }
 .base-less { display: none; }   /* short caption text, shown on narrow maps only (below) */
-/* With three buttons in the top-left, the values panel goes under them until the map is wide enough */
-@container (max-width: 820px) {
-  .terrain-values { top: 60px; max-height: calc(100% - 200px); }
-}
-/* Narrow map: as before (values under the buttons, caption hidden while the values are open) */
+/* Narrow map: smaller buttons, shorter caption */
 @container (max-width: 600px) {
-  .terrain-values { top: 60px; max-height: calc(100% - 132px); }
-  .terrain-values.is-open { max-height: calc(100% - 72px); }
-  .globe-wrap:has(.terrain-values.is-open) .terrain-caption { display: none; }
   .view-btn { padding: 6px 10px; min-height: 36px; font-size: 13px; }
   .wide-only, .base-more, .cap-help.is-base { display: none; }
-  .globe-wrap:has(#baseBtn:not([hidden])) .terrain-values { top: 104px; max-height: calc(100% - 176px); }
   .base-less { display: inline; }
 }
-.cell-key { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 4px; }
-.cell-key i { display: inline-block; width: 14px; height: 0; border-top: 2.5px solid; margin-left: 4px; }
-.cell-key i:first-child { margin-left: 0; }
 .globe-wrap .maplibregl-ctrl-attrib { font-size: 10px; }
 .globe-error { position: absolute; inset: auto 16px 50% 16px; text-align: center; color: var(--muted); }
 
@@ -449,3 +419,104 @@ a { color: var(--earth); }
 .sc-key { flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #F0C85D; color: #1A1005; font-size: 12px; font-weight: 700; }
 @media (max-width: 1000px) { .findings-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 600px) { .findings { padding: 0 12px; } .find-title { font-size: 20px; } .fn-num { font-size: 24px; } .find-panel { padding: 14px; } }
+
+/* ---------- Opening screen: Earthrise (hero.js fades it on scroll) ---------- */
+/* The section is taller than the screen; its stage sticks to the top while the photo fades (the extra 70vh). */
+.hero { position: relative; height: 170vh; height: 170svh; background: var(--bg); }
+.hero-stage { position: sticky; top: 0; height: 100vh; height: 100svh; min-height: 520px; overflow: hidden; isolation: isolate; }
+.hero-bg { position: absolute; inset: 0; z-index: -2; will-change: opacity, transform;
+  /* Apollo 8 Earthrise, NASA AS08-14-2383, 3000 x 3000 px. Earth sits a bit right of centre, the horizon low. */
+  background: #000 url("assets/earthrise-apollo8-as08-14-2383.jpg") 57% 62% / cover no-repeat; }
+/* Darker top for the title, and a soft fade into the app's background colour at the bottom. */
+.hero-shade { position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 38%, rgba(0,0,0,0) 85%, var(--bg) 100%); }
+.hero-text { position: absolute; left: 50%; top: 7vh; width: min(92vw, 1100px); translate: -50% 0;
+  text-align: center; will-change: opacity, transform; }
+.hero-eyebrow { margin: 0 0 10px; font-size: clamp(14px, 1.4vw, 18px); letter-spacing: .08em; color: #CFE0EA; }
+.hero-title { margin: 0; font-family: var(--title); font-weight: 700; color: #fff; line-height: .95;
+  font-size: clamp(52px, 9vw, 150px); text-shadow: 0 4px 30px rgba(0,0,0,.5); }
+.hero-sub { margin: 14px 0 0; font-size: clamp(18px, 2.1vw, 28px); color: #E6EEF3; }
+.hero-go { position: absolute; left: 50%; bottom: 9vh; translate: -50% 0; will-change: opacity; white-space: nowrap; padding: 12px 22px; border-radius: 999px; font-size: 18px; font-weight: 600;
+  color: var(--on-signal); background: var(--signal); text-decoration: none; }
+.hero-go:hover, .hero-go:focus-visible { background: var(--signal-soft); outline: 2px solid #fff; outline-offset: 3px; }
+.hero-go span { display: inline-block; animation: hero-bob 1.8s ease-in-out infinite; }
+@keyframes hero-bob { 50% { transform: translateY(4px); } }
+.hero-credit { position: absolute; left: 16px; bottom: 12px; margin: 0; font-size: 12px; color: rgba(230,238,243,.75); }
+@media (prefers-reduced-motion: reduce) { .hero-go span { animation: none; } }
+@media (max-width: 600px) {
+  .hero-text { top: 12vh; }
+  .hero-credit { right: 96px; }
+}
+
+/* Folded boxes: "On the ground" on the card and the Moon target values. Closed by default, ▸ / ▾ marker. */
+.fold-box > summary, .moon-fold > summary { cursor: pointer; list-style: none; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.fold-box > summary::-webkit-details-marker, .moon-fold > summary::-webkit-details-marker { display: none; }
+.fold-box > summary::before, .moon-fold > summary::before { content: "▸"; color: var(--accent); }
+.fold-box[open] > summary::before, .moon-fold[open] > summary::before { content: "▾"; }
+.fold-box > summary h3 { display: inline; margin: 0; }
+.fold-hint { color: var(--muted); font-size: 12px; font-weight: 400; }
+.fold-box[open] > summary { margin-bottom: 8px; }
+.moon-fold { margin-top: 8px; }
+.moon-fold > summary { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.moon-fold[open] > summary { margin-bottom: 4px; }
+.moon-fold-hint { margin: 0 0 4px !important; font-size: 12px; color: var(--muted); }
+.moon-fold > summary::before { font-size: 15px; letter-spacing: 0; line-height: 1; }
+/* Access: its own box, bigger, so it is easy to spot. */
+.access-box .impact-line { margin: 0 0 10px; font-size: 17px; line-height: 1.4; }
+.access-box .impact-line > span:first-child { display: block; min-width: 0; margin-bottom: 2px; font-family: var(--title); font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: var(--text); }
+.access-box .impact-line b { color: var(--signal); font-size: 19px; }
+/* Globe legend: what you can click (pins) vs. the glow behind them (heatmap). */
+.legend-key { display: flex; align-items: center; gap: 8px; color: var(--text); line-height: 1.3; }
+.legend-pin { flex: none; width: 14px; height: 14px; border-radius: 50%; background: rgba(3,10,18,.9); border: 1.5px solid #fff; box-shadow: inset 0 0 0 3px rgba(3,10,18,.9), inset 0 0 0 7px #F2C14E; }
+.legend-glow { flex: none; width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle, rgba(235,190,255,.9), rgba(130,80,220,.5) 55%, rgba(70,50,160,0) 75%); }
+/* Phones: keep the legend small so it does not cover the globe (the two keys are what matter). */
+@media (max-width: 600px) {
+  .globe-legend { left: 8px; bottom: 8px; padding: 7px 9px; gap: 4px; font-size: 11px; max-width: 200px; }
+  .globe-legend .legend-bar, .globe-legend .legend-scale { display: none; }
+}
+/* Mare list: note on why the scores are so close, and the "basalt at site only" switch */
+.mare-note { border-color: var(--border); }
+.basalt-only { display: inline-flex; align-items: center; gap: 6px; margin-left: 4px; color: var(--text); white-space: nowrap; cursor: pointer; }
+.site-meta .tag-basalt { margin-left: 0; }
+
+/* ---------- Earth stage (wide screens) ----------
+   The Earth fills the whole width as the main stage; the twins list floats on the left and the Moon on the top
+   right, as see-through panels over it. The card follows below. Narrower screens keep the stacked layout. */
+@media (min-width: 1181px) {
+  .layout { grid-template-columns: 330px minmax(0, 1fr) 340px; grid-template-rows: clamp(640px, calc(100vh - 140px), 940px) auto;
+    grid-template-areas: none; gap: 20px; padding: 0 0 20px; }
+  .globe-wrap { grid-column: 1 / -1; grid-row: 1; border: 0; border-radius: 0;
+    background: radial-gradient(ellipse 60% 70% at 50% 50%, #0B2233 0%, #04101A 60%, #030A12 100%); }
+  .list-panel, .moon-wrap { z-index: 4; background: rgba(12,30,44,.72); border-color: rgba(36,70,94,.7);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+  .list-panel { grid-column: 1; grid-row: 1; position: relative; top: auto; align-self: stretch; margin: 24px 0 24px 24px;
+    max-height: none; min-height: 0; }
+  .moon-wrap { grid-column: 3; grid-row: 1; align-self: start; margin: 24px 24px 0 0; max-height: calc(100% - 48px); min-height: 0; }
+  .moon-globe-box { flex: none; height: 230px; background: transparent; }
+  .moon-info { max-height: none; flex: 1 1 auto; min-height: 0; }
+  .card-panel { grid-column: 1 / -1; grid-row: 2; margin: 0 24px; }
+  /* Tools in the middle at the top; legend and 3D caption clear of the side panels. */
+  .view-tools { top: 24px; left: 50%; transform: translateX(-50%); justify-content: center; width: max-content; max-width: calc(100% - 760px); }
+  /* Legend: one slim bar at the bottom centre (the Guide button sits at the bottom right). */
+  .globe-legend { left: 50%; right: auto; bottom: 20px; transform: translateX(-50%); width: max-content; max-width: calc(100% - 760px);
+    flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 18px; padding: 8px 16px;
+    background: rgba(12,30,44,.72); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+  .globe-legend .legend-bar { flex: none; width: 110px; }
+  .globe-legend .legend-note { flex-basis: 100%; text-align: center; }
+  .terrain-caption { left: 50%; transform: translateX(-50%); bottom: 24px; max-width: calc(100% - 760px); }
+  .globe-wrap .maplibregl-ctrl-top-right { top: 12px; right: 380px; }
+}
+
+/* ---------- Cleaner look ----------
+   Calmer top bars and a flatter twins list (rows instead of boxes). */
+.topbar { background: transparent; border-bottom: 1px solid rgba(36,70,94,.5); }
+.filters { background: transparent; border-bottom: 0; }
+.site-list { gap: 2px; }
+.site-btn { background: transparent; border: 1px solid transparent; padding: 9px 10px; }
+.site-btn:hover { background: rgba(18,41,59,.7); border-color: transparent; }
+.site-btn[aria-current="true"] { background: var(--panel-2); border-color: rgba(108,180,238,.6); }
+.bar { height: 4px; }
+.bar > span { background: var(--signal); }
+/* Legend scale: "few, weak [colour bar] many, strong" on one line */
+.legend-scale { align-items: center; gap: 8px; }
+.legend-scale .legend-bar { flex: 1; min-width: 60px; }
