@@ -67,3 +67,20 @@ Suggested short label for a tooltip: "Moon: Sun disc · Earth: Sun centre".
 - `raw_values.csv` has text columns (`IMPACT_NAME`, `IMPACT_SOURCE`, `RUN`, `CELL`): parse them as text.
 - Practical criteria (ACCESS, STATION_NEARBY) stay filters, never part of the similarity.
 
+
+## Research station nearby, criterion 29 (15 Nov 2026, display only)
+From Mateo's side. Nothing in the app is changed. Full details: `docs/ACCESS.md`, sections R1–R7.
+
+- **New columns in `data/access/access_hours.csv`** (the file the app already loads for Access):
+  `STATION_NAME`, `STATION_KM`, `STATION_TYPE`, `ANALOG_STATION_NAME`, `ANALOG_STATION_KM`. Straight-line km, empty = no data.
+  Add the three name/type columns to `TEXT_COLUMNS`, otherwise they parse as NaN.
+- **New file `data/stations/stations.csv`**: 102 stations (96 INTERACT research stations + 6 planetary analog
+  stations such as HMPRS, FMARS, MDRS, HI-SEAS), with `name, operator, lat, lon, type, season, analog, source`.
+  Use it for a station layer on the globe.
+- **Proposed card line** (code in `docs/ACCESS.md` R5): "Research station: *name*, *km* (*type*)", plus the nearest
+  analog station. Show only within 500 km, else "none listed within 500 km" (2,094 of 2,325 places). The list is
+  polar and alpine, so far away means "not in our list", not "no station".
+- **Proposed globe layer** (code in R6): "Research stations" toggle, off by default, `htmlElementsData`, analog
+  stations larger and labelled.
+- Licence line for the footer / references: "Stations: INTERACT GIS station list (interact-gis.org, accessed
+  15 Nov 2026); own list of analog stations". COMNAP was dropped (non-commercial licence).

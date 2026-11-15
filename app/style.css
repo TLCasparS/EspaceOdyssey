@@ -246,6 +246,7 @@ a { color: var(--earth); }
 /* "On the ground" box: impact-crater fact under the bars */
 .impact-line { margin: 10px 0 0; font-size: 13.5px; color: var(--text); }
 .impact-line > span:first-child { display: inline-block; min-width: 110px; color: var(--muted); }
+.tag-basalt { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--accent); color: #1A1405; font-size: 11px; font-weight: 600; letter-spacing: .02em; white-space: nowrap; }
 .impact-line a { color: var(--signal-soft); }
 .region-btn .muted { color: var(--muted); font-weight: 400; }
 
@@ -464,9 +465,9 @@ a { color: var(--earth); }
 .moon-fold-hint { margin: 0 0 4px !important; font-size: 12px; color: var(--muted); }
 .moon-fold > summary::before { font-size: 15px; letter-spacing: 0; line-height: 1; }
 /* Access: its own box, bigger, so it is easy to spot. */
-.access-box .access-line { margin: 0 0 6px; font-size: 17px; line-height: 1.4; }
-.access-box .access-line > span:first-child { display: block; min-width: 0; margin-bottom: 2px; font-family: var(--title); font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: var(--text); }
-.access-box .access-line b { color: var(--signal); font-size: 19px; }
+.access-box .impact-line { margin: 0 0 10px; font-size: 17px; line-height: 1.4; }
+.access-box .impact-line > span:first-child { display: block; min-width: 0; margin-bottom: 2px; font-family: var(--title); font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: var(--text); }
+.access-box .impact-line b { color: var(--signal); font-size: 19px; }
 /* Globe legend: what you can click (pins) vs. the glow behind them (heatmap). */
 .legend-key { display: flex; align-items: center; gap: 8px; color: var(--text); line-height: 1.3; }
 .legend-pin { flex: none; width: 14px; height: 14px; border-radius: 50%; background: rgba(3,10,18,.9); border: 1.5px solid #fff; box-shadow: inset 0 0 0 3px rgba(3,10,18,.9), inset 0 0 0 7px #F2C14E; }

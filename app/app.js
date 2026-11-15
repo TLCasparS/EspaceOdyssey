@@ -143,7 +143,6 @@ function attachAccess(rows) {
   const byCell = new Map(rows.map(a => [`night_${a.run}|${a.cell}`, a]));
   const polar = rows.filter(a => a.run === 'polar' && a.lat != null && a.lon != null);
   for (const s of state.sites) {
-    if (s.raw?.ACCESS_HOURS != null || s.raw?.AIRPORT_KM != null) continue;
     let a = s.RUN ? byCell.get(`${s.RUN}|${s.CELL}`) : null;
     if (!a && !s.missed && !s.unscored && (s.BASE_TYPE ?? 'polar') === 'polar' && s.LAT != null) {
       let best = Infinity;
@@ -154,7 +153,9 @@ function attachAccess(rows) {
       }
       if (best > ACCESS_MATCH_KM) a = null;
     }
-    if (a) s.access = { ACCESS_HOURS: a.ACCESS_HOURS, AIRPORT_KM: a.AIRPORT_KM, AIRPORT_NAME: a.AIRPORT_NAME, AIRPORT_TYPE: a.AIRPORT_TYPE };
+    if (a) s.access = { ACCESS_HOURS: a.ACCESS_HOURS, AIRPORT_KM: a.AIRPORT_KM, AIRPORT_NAME: a.AIRPORT_NAME, AIRPORT_TYPE: a.AIRPORT_TYPE,
+      STATION_NAME: a.STATION_NAME, STATION_KM: a.STATION_KM, STATION_TYPE: a.STATION_TYPE,
+      ANALOG_STATION_NAME: a.ANALOG_STATION_NAME, ANALOG_STATION_KM: a.ANALOG_STATION_KM };
   }
 }
 function accessOf(s) {
@@ -175,6 +176,25 @@ function accessHTML(s) {
   const kind = a.AIRPORT_TYPE === 'large_airport' ? 'large airport' : 'medium airport';
   return `<p class="impact-line access-line" title="Modelled travel time over land to the nearest city (a place with 1,500+ people per km² or 50,000+ inhabitants), roads of 2015 (Weiss et al. 2018, Malaria Atlas Project). Airport: straight-line distance, OurAirports; says nothing about flights.">
     <span>Access</span> ${t == null ? 'no travel-time data' : `<b>${t}</b> to the nearest city`}${km == null ? '' : ` · ${Math.round(km).toLocaleString('en')} km to ${esc(a.AIRPORT_NAME ?? 'an airport')} (${kind})`}</p>`;
+}
+
+// Nearest research station (Mateo's c29, docs/ACCESS.md R5). The list (INTERACT + our 6 planetary analog
+// stations) is polar and alpine, so a station is shown only within STATION_MAX_KM: farther means "not in our list",
+// not "no station". Straight-line km; display only.
+const STATION_MAX_KM = 500;
+const kmText = km => `${Math.round(km).toLocaleString('en')} km`;
+function stationHTML(s) {
+  const a = s.access;
+  if (!a || a.STATION_KM == null) return '';
+  const near = a.STATION_KM <= STATION_MAX_KM;
+  const sameAnalog = a.ANALOG_STATION_NAME && a.ANALOG_STATION_NAME === a.STATION_NAME;
+  const main = near
+    ? `${esc(a.STATION_NAME)}, <b>${kmText(a.STATION_KM)}</b>${sameAnalog ? ' (planetary analog station)' : a.STATION_TYPE ? ` (${esc(a.STATION_TYPE)})` : ''}`
+    : `none in our list within ${STATION_MAX_KM} km`;
+  const analog = !sameAnalog && a.ANALOG_STATION_KM != null && a.ANALOG_STATION_KM <= STATION_MAX_KM
+    ? `<br>Planetary analog station: ${esc(a.ANALOG_STATION_NAME)}, <b>${kmText(a.ANALOG_STATION_KM)}</b>` : '';
+  return `<p class="impact-line station-line" title="Straight-line distance to the nearest station in the INTERACT list (Arctic and alpine research stations) and our list of 6 planetary analog stations (HMPRS, FMARS, MDRS, HI-SEAS, Biosphere 2, LunAres). The list covers polar and alpine regions: far away means 'not in this list', not 'no station'.">
+    <span>Research station</span> ${main}${analog}</p>`;
 }
 
 function parseCSV(text) {
@@ -199,7 +219,21 @@ const TEXT_COLUMNS = new Set(['SITE', 'RUN', 'CELL', 'BASE_TYPE', 'IMPACT_NAME',
   'run', 'cell', 'AIRPORT_NAME', 'AIRPORT_TYPE', 'AIRPORT_IDENT',
   'ROLE', 'NAME', 'COUNTRY', 'MISSED_REASON',
   'EXCLUDED', 'EXCLUDED_DETAIL', 'BEST_TARGET',
-  'ROCK_CLASS', 'ROCK_CLASS_NAME']);   // night export text columns (EXCLUDED*: config-v1.1; ROCK_*: GLiM display)
+  'ROCK_CLASS', 'ROCK_CLASS_NAME',     // night export text columns (EXCLUDED*: config-v1.1; ROCK_CLASS*: GLiM display)
+  'ROCK_SITE', 'ROCK_SITE_LITH', 'ROCK_SITE_SOURCE', 'ROCK_SITE_SCALE',
+  'STATION_NAME', 'STATION_TYPE', 'ANALOG_STATION_NAME']);   // nearest research / analog station (c29, display)   // Macrostrat map unit at the site (display)
+
+// Rock type on Mare cards, display only (never in the score). Site level: the geological map unit under the base
+// pad from Macrostrat (CC BY 4.0); how fine it is depends on the source map (ROCK_SITE_SCALE). Regional: GLiM 0.5° grid.
+function rockHTML(s) {
+  const raw = s.raw ?? {};
+  if (s.BASE_TYPE !== 'mare') return '';
+  const lith = raw.ROCK_SITE_LITH || raw.ROCK_SITE;
+  const where = [raw.ROCK_SITE_SOURCE, raw.ROCK_SITE_SCALE ? `${raw.ROCK_SITE_SCALE}-scale map` : null].filter(Boolean).join(', ');
+  const site = lith ? `<p class="impact-line rock-line" title="Geological map unit at the base pad${raw.ROCK_SITE ? `: ${esc(raw.ROCK_SITE)}` : ''}. Source: Macrostrat (macrostrat.org), CC BY 4.0. How fine the map is depends on the source map."><span>Rock at site</span> ${esc(lith)}${where ? ` (${esc(where)})` : ''}${raw.BASALT_SITE === 1 ? ' <span class="tag-basalt">Basalt at site</span>' : ''}</p>` : '';
+  const region = raw.ROCK_CLASS_NAME ? `<p class="impact-line rock-line" title="Dominant rock class of the 0.5° grid cell (about 55 km), GLiM (Hartmann &amp; Moosdorf 2012), CC BY 3.0."><span>Rock, regional</span> ${esc(raw.ROCK_CLASS_NAME)}, regional (0.5° map)</p>` : '';
+  return site + region;
+}
 
 const getText = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.text(); });
 const getJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.json(); });
@@ -830,19 +864,21 @@ function renderCard() {
       ${missingNote.length ? `<p class="nodata">${esc(missingNote.join(' '))} Left out of the score, not counted as zero.</p>` : ''}
     </div>`}
 
-    ${accessHTML(s) ? `<div class="note-box prac-box access-box">
+    ${accessHTML(s) || stationHTML(s) ? `<div class="note-box prac-box access-box">
       ${accessHTML(s)}
-      <p class="nodata">A rough guide from a travel-time model (roads of 2015, airport in a straight line), not a trip plan. Not part of the score.</p>
+      ${stationHTML(s)}
+      <p class="nodata">A rough guide, not a trip plan: travel time from a model (roads of 2015); airport and station distances in a straight line. A listed station gives no right of use. Not part of the score.</p>
     </div>` : ''}
 
-    ${ground.length || impact ? `<details class="note-box prac-box fold-box">
-      <summary><h3>On the ground</h3> <span class="fold-hint">land cover · not in the score</span></summary>
+    ${ground.length || impact || rockHTML(s) ? `<details class="note-box prac-box fold-box">
+      <summary><h3>On the ground</h3> <span class="fold-hint">${rockHTML(s) ? 'land cover, rock' : 'land cover'} · not in the score</span></summary>
       ${ground.length ? `<div class="prac">${ground.map(c => `
         <span title="${esc(meta(c.key).earthUnit)}">${esc(c.label)}</span>
         <span class="bar"><span style="width:${Math.round(s[c.key] * 100)}%"></span></span>
         <span class="pct">${Math.round(s[c.key] * 100)}%</span>`).join('')}
       </div>` : ''}
       ${impact ? `<p class="impact-line"><span>Impact crater</span> ${impact}</p>` : ''}
+      ${rockHTML(s)}
       <p class="nodata">About the place itself, not compared with the Moon${ground.length ? ' (bars: more is better)' : ''}. Not part of the score.</p>
     </details>` : ''}
 
@@ -1829,7 +1865,7 @@ function refresh() {
   // Name only the data the app really shows. Planned sources: Copernicus DEM, ESA WorldCover, MODIS, LOLA, LROC, Diviner.
   document.getElementById('footNote').textContent = DATA.isFake
     ? 'Scores and heatmap are sample values, not results yet'
-    : 'Scores from our pipeline: Earth terrain from Copernicus DEM GLO-30, Moon terrain from LOLA (LDEM 80°S, 20 m, Barker et al. 2023)';
+    : 'Scores from our pipeline: Earth terrain from Copernicus DEM GLO-30, Moon terrain from LOLA (LDEM 80°S, 20 m, Barker et al. 2023). Rock at site: Macrostrat, CC BY 4.0. Stations: INTERACT GIS station list (interact-gis.org, accessed 15 Nov 2026); own list of analog stations';
   wireFilters();
   wireViewTools();
   initGlobe();

@@ -6,7 +6,8 @@ Reads out/ only. Display data: changes no score and no export.
     python src/compute_access.py
     python src/compute_access.py --raster <travel_time.tif> --airports <airports.csv>
 
-Columns: run, cell, lon, lat, ACCESS_HOURS, AIRPORT_KM, AIRPORT_NAME, AIRPORT_TYPE, AIRPORT_IDENT.
+Columns: run, cell, lon, lat, ACCESS_HOURS, AIRPORT_KM, AIRPORT_NAME, AIRPORT_TYPE, AIRPORT_IDENT, and, when
+data/stations/stations.csv exists, the station columns of src/compute_stations.py (criterion 29).
 Empty = no data (never 0). Sources and limits: docs/ACCESS.md.
 """
 from __future__ import annotations
@@ -37,6 +38,8 @@ def main(argv=None):
     ap.add_argument("--raster", default=str(DEFAULT_RASTER), help="travel time to cities GeoTIFF (minutes)")
     ap.add_argument("--airports", default=str(DEFAULT_AIRPORTS), help="OurAirports airports.csv")
     ap.add_argument("--dest", default=str(ROOT / "data" / "access" / "access_hours.csv"))
+    ap.add_argument("--stations", default=str(ROOT / "data" / "stations" / "stations.csv"),
+                    help="stations.csv for the criterion 29 columns; skipped if the file is missing")
     a = ap.parse_args(argv)
 
     airports = load_airports(a.airports)
@@ -73,6 +76,12 @@ def main(argv=None):
         w.writeheader()
         w.writerows(rows)
     print("wrote", dest, len(rows), "rows")
+
+    if Path(a.stations).exists():
+        from compute_stations import main as add_stations
+        add_stations(["--stations", a.stations, "--access", str(dest)])
+    else:
+        print("no", a.stations, "- station columns skipped (run src/build_stations.py)")
 
 
 if __name__ == "__main__":
