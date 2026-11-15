@@ -1,6 +1,6 @@
 # EspaceOdyssey
 
-**Earth Twins of the Moon**: a map of the places on Earth that look most like candidate Moon-base sites,
+**Moon Twins on Earth**: a map of the places on Earth that look most like candidate Moon-base sites,
 measured with the same code on Earth and Moon elevation data.
 
 - Live app: https://tlcaspars.github.io/EspaceOdyssey/app/ (GitHub Pages, served from `main`)

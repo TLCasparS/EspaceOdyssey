@@ -11,8 +11,8 @@ open-pit-mine filter. Checklist and sources: `docs/SUBMISSION_CHECKLIST.md`. All
 ## Project Name (options)
 No NASA / Space Apps names or mission identifiers in the title (SI branding rule).
 
-1. **Earth Twins of the Moon** (current name in the app; the team chose to keep it)
-2. Moon Twins on Earth: ranking where to rehearse a lunar base
+1. **Moon Twins on Earth** (chosen 15 Nov 2026: name of the app and the pitch deck)
+2. Earth Twins of the Moon (earlier working name)
 3. Lunar Analog Finder: measuring how Moon-like a place on Earth is
 4. Shackleton's Twins: Earth craters ranked against the lunar south pole
 5. One Ruler, Two Worlds: Earth analogs for lunar bases
@@ -22,14 +22,15 @@ Tagline (for the cover slide): *Which places on Earth come closest to a lunar ba
 ---
 
 ## High-Level Project Summary (~150 words)
-We built a pipeline and a web app that rank places on Earth by how closely they match a planned lunar base site.
-The reference is Shackleton crater at the lunar south pole: from NASA's LOLA elevation map we measure its bowl
-shape, wall steepness and flat ground, and from NASA's illumination map its sunny rim and shadowed floor. The same
-code then measures Earth (Copernicus DEM) on the same 60 m grid and turns each difference into a 0–100 % similarity.
-In one night it searched about 265,000 grid cells of 15 km and ranked 1,825 crater-like places; from elevation
-alone it found real impact craters such as Meteor Crater, Roter Kamm and Pingualuit. The app shows the results on
-two linked globes, Earth and Moon, with a card per site that says what matches and where the analogy breaks down,
-to help pick Earth field sites for testing equipment and operations.
+We built an open, reusable pipeline that ranks places on Earth by how closely they match a lunar base site, and a
+web app on top of it. From NASA's LOLA elevation and PGDA illumination maps it measures Shackleton crater at the
+lunar south pole (bowl shape, steep walls, flat landing pad, sunlit rim, dark floor); the same code then measures
+Earth (Copernicus DEM) on the same 60 m grid and turns each difference into a 0–100 % similarity. In one night it
+searched about 265,000 cells of 15 km and scored 1,825 crater-like places; from elevation alone it found real
+impact craters such as Meteor Crater, Roter Kamm and Pingualuit. After filtering out open-pit mines and icy bowls,
+1,261 places are ranked. New regions, lunar sites and criteria plug in through config files, so others can build
+on it. The app shows the results on two linked globes, Earth and Moon, with a card per site that says what matches
+and where the analogy breaks down.
 
 ---
 
@@ -46,7 +47,7 @@ to help pick Earth field sites for testing equipment and operations.
 ## Detailed Project Description
 
 ### What it does
-Earth Twins of the Moon answers one question: which places on Earth best stand in for a lunar base site, and by
+Moon Twins on Earth answers one question: which places on Earth best stand in for a lunar base site, and by
 how much? Instead of choosing analog sites by eye, it measures each candidate against a real lunar target with the
 same definitions on both worlds, and it says where the comparison fails.
 
