@@ -91,7 +91,7 @@ def test_target_from_cells_median_iqr_floor():
 def test_config_loader_uses_verified_mare_targets(tmp_path):
     from pipeline.config import TARGETS_PATH
     targets = json.loads(Path(TARGETS_PATH).read_text(encoding="utf-8"))
-    assert set(targets["mare"]["criteria"]) == set(MARE_CRITERIA) == set(CFG["mare"]["criteria"])
+    assert set(targets["mare"]["criteria"]) - {"c30_small_craters"} == set(MARE_CRITERIA) == set(CFG["mare"]["criteria"])
     # the loader passes a value through only when verified (independent of what the file holds today)
     for c in MARE_CRITERIA:
         targets["mare"]["criteria"][c]["verified"] = False

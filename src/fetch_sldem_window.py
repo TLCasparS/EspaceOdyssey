@@ -18,7 +18,10 @@ values themselves (mare plains lie ~1-3 km below 1737.4 km): 99th percentile of 
     python src/fetch_sldem_window.py --cells config/mare_cells.json --first 5   # the cells used (+ Apollo 11)
     python src/fetch_sldem_window.py --cells config/mare_cells.json          # all candidates (spares too)
     python src/fetch_sldem_window.py --lat 0.67416 --lon 23.47314 --name apollo_11
-    python src/fetch_sldem_window.py --cells config/mare_cells.json --tiles-dir data/moon/sldem_tiles
+    python src/fetch_sldem_window.py --cells config/mare_cells.json --tiles-dir <folder>
+
+Tiles live OUTSIDE the repo (OneDrive must not sync ~800 MB): default --tiles-dir is
+%LOCALAPPDATA%/espaceodyssey_data/sldem_tiles (DEFAULT_TILES_DIR) if that folder exists; --tiles-dir "" = mosaic.
 """
 from __future__ import annotations
 
@@ -36,6 +39,7 @@ from pipeline.config import load_config  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "data" / "moon" / "sldem"
+DEFAULT_TILES_DIR = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "espaceodyssey_data" / "sldem_tiles"
 USGS_MOSAIC = ("https://planetarymaps.usgs.gov/mosaic/LolaKaguya_Topo/"
                "Lunar_LRO_LOLAKaguya_DEMmerge_60N60S_512ppd.tif")
 R_MOON = 1737400.0
@@ -178,7 +182,8 @@ def main():
     ap.add_argument("--lat", type=float)
     ap.add_argument("--lon", type=float)
     ap.add_argument("--name")
-    ap.add_argument("--tiles-dir", help="folder with downloaded SLDEM2015 512 ppd tiles")
+    ap.add_argument("--tiles-dir", default=str(DEFAULT_TILES_DIR) if DEFAULT_TILES_DIR.is_dir() else None,
+                    help=f"folder with downloaded SLDEM2015 512 ppd tiles (default {DEFAULT_TILES_DIR} if it exists)")
     ap.add_argument("--half-km", type=float, help="default: grid.cell_km / 2 + polar.buffer_m")
     ap.add_argument("--first", type=int, help="only candidates with order <= N (+ the named site); "
                     "fetch spares later only if compute_mare_target.py skips cells")

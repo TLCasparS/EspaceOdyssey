@@ -44,18 +44,22 @@ def main():
     ap.add_argument("--top", type=int, default=10)
     ap.add_argument("--base", choices=["polar", "mare"], default="polar",
                     help="base type: polar (frozen config-v1) or mare (src/pipeline/run_mare.py)")
+    ap.add_argument("--mare-v11", action="store_true",
+                    help="with --base mare: display additions (c30 small craters + common-tolerance BEST_TARGET, docs/MARE_V11.md)")
     a = ap.parse_args()
 
     cfg = load_config(a.config)
     if a.base == "mare":
         from pipeline.mare import MARE_CRITERIA
         from pipeline.run_mare import run_mare
-        _, kept = run_mare(tuple(a.bbox), a.name, cfg, a.res, a.pop, a.out)
+        _, kept = run_mare(tuple(a.bbox), a.name, cfg, a.res, a.pop, a.out, v11=a.mare_v11)
         print()
         print(f"Mare: {len(kept)} kept cells (score vs Moon empty until the lunar Mare targets exist); first {a.top}:")
         for r in kept[:a.top]:
             vals = " ".join(f"{c.split('_', 1)[1]} {fmt(r.get(c), 3)}" for c in MARE_CRITERIA)
-            print(f"  {r['id']}  score {fmt(r.get('score'), 3)}  {vals}  base {r.get('base_lat')} {r.get('base_lon')}")
+            v11 = (f"  c30 {fmt(r.get('c30_small_craters'), 4)}  score_v1 {fmt(r.get('score_v1'), 3)}  "
+                   f"best {r.get('BEST_TARGET')}") if a.mare_v11 else ""
+            print(f"  {r['id']}  score {fmt(r.get('score'), 3)}  {vals}{v11}  base {r.get('base_lat')} {r.get('base_lon')}")
         return
     rows, ranked = run(tuple(a.bbox), a.name, cfg, a.res, a.pop, a.out)
 

@@ -136,6 +136,27 @@ def build_targets(base_criteria: dict, candidates: list[dict], include_unverifie
     return out
 
 
+def common_tolerance(targets: list[dict], base: str) -> list[dict]:
+    """Fair twins (team decision 15 Nov 2026, docs/MARE_V11.md): every non-built-in target of `base` is scored with
+    the BUILT-IN target's tolerance per criterion (Mare: the 20-cell median's), so BEST_TARGET compares closeness to
+    the lunar values, not tolerance width. Lunar values and the built-in target (= SCORE_TOTAL) are unchanged.
+    In place; returns targets."""
+    ref = next((t for t in targets if t["builtin"] and t["base_type"] == base), None)
+    if ref is None:
+        return targets
+    for t in targets:
+        if t["base_type"] != base or t["builtin"]:
+            continue
+        for name, cc in t["criteria"].items():
+            tol = (ref["criteria"].get(name) or {}).get("tolerance")
+            cc["tolerance"] = tol
+            if not tol:
+                cc["target"] = None
+        t["complete"] = all(method(t["criteria"][c]) == "target" for c in t["required"])
+        t["common_tolerance"] = True
+    return targets
+
+
 def score(raw: dict, target: dict) -> float | None:
     """Score vs Moon of one place's raw values against one target (same rule and rounding as the pipeline).
 

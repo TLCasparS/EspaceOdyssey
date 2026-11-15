@@ -703,6 +703,186 @@
           "crisium_05"
         ],
         "date": "2026-11-14"
+      },
+      "c30_small_craters": {
+        "value": 0.23551,
+        "iqr": 0.12094,
+        "tolerance": 0.12094,
+        "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127); display only, not used in a score",
+        "n_cells": 20,
+        "cells": [
+          "tranquillitatis_01",
+          "tranquillitatis_02",
+          "tranquillitatis_03",
+          "tranquillitatis_04",
+          "tranquillitatis_05",
+          "serenitatis_01",
+          "serenitatis_02",
+          "serenitatis_03",
+          "serenitatis_04",
+          "serenitatis_05",
+          "imbrium_01",
+          "imbrium_02",
+          "imbrium_03",
+          "imbrium_04",
+          "imbrium_05",
+          "crisium_01",
+          "crisium_02",
+          "crisium_03",
+          "crisium_04",
+          "crisium_05"
+        ],
+        "cell_values": [
+          0.30552,
+          0.39462,
+          0.39462,
+          0.24187,
+          0.26733,
+          0.21641,
+          0.11457,
+          0.42008,
+          0.24187,
+          0.15276,
+          0.1273,
+          0.22914,
+          0.26733,
+          0.17822,
+          0.26733,
+          0.08911,
+          0.17822,
+          0.11457,
+          0.26733,
+          0.1273
+        ],
+        "repro_note": "base spot recomputed with mare_cell on the SLDEM2015 tile windows; c9/c10/c12/c13 differ slightly from the frozen per-cell values (repro_diff = now - frozen), see compute_mare_c30.py",
+        "unit": "closed depressions per km2 (>= 10 m deep, >= 300 m wide, elongation <= 2) within 5 km of the base spot",
+        "source": "SLDEM2015 windows (src/fetch_sldem_window.py) on the 60 m grid as compute_mare_target.py; pipeline.mare.small_crater_density via src/compute_mare_c30.py",
+        "date": "2026-11-15",
+        "verified": false,
+        "check": "computed by Claude Code, to be checked by Mateo",
+        "version": "display only (weight 0); mare-v1 score unchanged",
+        "repro_diff": {
+          "tranquillitatis_01": {
+            "c9_relief": -0.077,
+            "c10_flat_base": -0.0064,
+            "c12_drivable": 0.0,
+            "c13_roughness": -0.0002
+          },
+          "tranquillitatis_02": {
+            "c9_relief": 0.1128,
+            "c10_flat_base": 0.002,
+            "c12_drivable": 0.0,
+            "c13_roughness": 0.0067
+          },
+          "tranquillitatis_03": {
+            "c9_relief": -0.1872,
+            "c10_flat_base": -0.0073,
+            "c12_drivable": 0.0001,
+            "c13_roughness": 0.0001
+          },
+          "tranquillitatis_04": {
+            "c9_relief": -0.605,
+            "c10_flat_base": -0.0202,
+            "c12_drivable": -0.0001,
+            "c13_roughness": -0.0044
+          },
+          "tranquillitatis_05": {
+            "c9_relief": -0.4145,
+            "c10_flat_base": -0.0024,
+            "c12_drivable": -0.0001,
+            "c13_roughness": 0.006
+          },
+          "serenitatis_01": {
+            "c9_relief": -12.8496,
+            "c10_flat_base": 0.0096,
+            "c12_drivable": 0.0006,
+            "c13_roughness": -0.0521
+          },
+          "serenitatis_02": {
+            "c9_relief": -1.857,
+            "c10_flat_base": -0.0047,
+            "c12_drivable": 0.0,
+            "c13_roughness": -0.0789
+          },
+          "serenitatis_03": {
+            "c9_relief": -7.3459,
+            "c10_flat_base": -0.0324,
+            "c12_drivable": 0.0001,
+            "c13_roughness": 0.0139
+          },
+          "serenitatis_04": {
+            "c9_relief": 62.1806,
+            "c10_flat_base": -0.0167,
+            "c12_drivable": -0.0125,
+            "c13_roughness": 0.0289
+          },
+          "serenitatis_05": {
+            "c9_relief": 0.0276,
+            "c10_flat_base": 0.0013,
+            "c12_drivable": 0.0001,
+            "c13_roughness": -0.0008
+          },
+          "imbrium_01": {
+            "c9_relief": 0.0297,
+            "c10_flat_base": 0.0041,
+            "c12_drivable": -0.0001,
+            "c13_roughness": -0.0059
+          },
+          "imbrium_02": {
+            "c9_relief": 1.0111,
+            "c10_flat_base": 0.0102,
+            "c12_drivable": 0.0,
+            "c13_roughness": 0.0013
+          },
+          "imbrium_03": {
+            "c9_relief": 0.1504,
+            "c10_flat_base": -0.0124,
+            "c12_drivable": 0.0001,
+            "c13_roughness": -0.0013
+          },
+          "imbrium_04": {
+            "c9_relief": -0.0718,
+            "c10_flat_base": -0.0003,
+            "c12_drivable": 0.0,
+            "c13_roughness": -0.0006
+          },
+          "imbrium_05": {
+            "c9_relief": -0.0227,
+            "c10_flat_base": -0.0117,
+            "c12_drivable": 0.0,
+            "c13_roughness": 0.0005
+          },
+          "crisium_01": {
+            "c9_relief": -0.0935,
+            "c10_flat_base": 0.0038,
+            "c12_drivable": -0.0001,
+            "c13_roughness": -0.0021
+          },
+          "crisium_02": {
+            "c9_relief": -0.2527,
+            "c10_flat_base": 0.0108,
+            "c12_drivable": -0.0001,
+            "c13_roughness": -0.0013
+          },
+          "crisium_03": {
+            "c9_relief": 0.0544,
+            "c10_flat_base": 0.0055,
+            "c12_drivable": 0.0,
+            "c13_roughness": -0.0026
+          },
+          "crisium_04": {
+            "c9_relief": -0.0341,
+            "c10_flat_base": 0.0139,
+            "c12_drivable": 0.0,
+            "c13_roughness": 0.0006
+          },
+          "crisium_05": {
+            "c9_relief": -0.0715,
+            "c10_flat_base": -0.0028,
+            "c12_drivable": 0.0001,
+            "c13_roughness": 0.0027
+          }
+        }
       }
     },
     "display": {

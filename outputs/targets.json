@@ -619,7 +619,7 @@
         "criteria": {
           "c9_relief": {
             "value": 241.1616,
-            "tolerance": 101.3036,
+            "tolerance": 163.1498,
             "weight": 1.0
           },
           "c10_flat_base": {
@@ -652,7 +652,7 @@
         "criteria": {
           "c9_relief": {
             "value": 118.0635,
-            "tolerance": 47.7364,
+            "tolerance": 163.1498,
             "weight": 1.0
           },
           "c10_flat_base": {
@@ -685,7 +685,7 @@
         "criteria": {
           "c9_relief": {
             "value": 121.272,
-            "tolerance": 42.1821,
+            "tolerance": 163.1498,
             "weight": 1.0
           },
           "c10_flat_base": {
@@ -718,7 +718,7 @@
         "criteria": {
           "c9_relief": {
             "value": 285.5308,
-            "tolerance": 116.3284,
+            "tolerance": 163.1498,
             "weight": 1.0
           },
           "c10_flat_base": {
@@ -742,7 +742,7 @@
   },
   "_multi_target": {
     "preview": false,
-    "note": "scores.csv SCORE_<TARGET> = score vs Moon against that lunar target (same rule, weights and tolerances as SCORE_TOTAL; a target's own tolerance wins, Mare: max(own, floor)); BEST_TARGET = target with the highest score among the row's base type, BEST_SCORE = that score. targets[base].lunar_targets lists each target (builtin = today's target, = SCORE_TOTAL). A SCORE_<TARGET> is only given when every counting criterion has both a lunar and an Earth value; otherwise it is empty (no data) and cannot be BEST_TARGET: missing values never score better than real ones. RANK stays the rank of SCORE_TOTAL."
+    "note": "scores.csv SCORE_<TARGET> = score vs Moon against that lunar target (same rule, weights and tolerances as SCORE_TOTAL; a target's own tolerance wins, Mare: max(own, floor)); BEST_TARGET = target with the highest score among the row's base type, BEST_SCORE = that score. targets[base].lunar_targets lists each target (builtin = today's target, = SCORE_TOTAL). A SCORE_<TARGET> is only given when every counting criterion has both a lunar and an Earth value; otherwise it is empty (no data) and cannot be BEST_TARGET: missing values never score better than real ones. RANK stays the rank of SCORE_TOTAL. Mare COMMON TOLERANCE (--mare-common-tolerance, team decision 15 Nov 2026): every Mare target is scored with the built-in 20-cell target's tolerance per criterion (not its own), so BEST_TARGET compares closeness to the lunar values, not tolerance width; SCORE_TOTAL and RANK unchanged."
   },
   "_material": {
     "source": "Hartmann & Moosdorf (2012) GLiM v1.0 gridded to 0.5 deg, PANGAEA doi:10.1594/PANGAEA.788537 (CC-BY 3.0); cite doi:10.1029/2012GC004370",
@@ -817,5 +817,24 @@
     "point": "Mare base pad",
     "n_places": 500,
     "details": "docs/MACROSTRAT_REPORT.md"
+  },
+  "_mare_c30": {
+    "column": "SMALL_CRATERS_PER_KM2",
+    "file": "raw_values.csv",
+    "base_type": "mare",
+    "criterion": "c30_small_craters",
+    "score_method": "display",
+    "weight": 0,
+    "counts": false,
+    "earth_unit": "closed depressions per km2 (>= 10 m deep, >= 300 m wide, elongation <= 2) within 5 km of the base pad",
+    "moon": {
+      "value": 0.23551,
+      "iqr": 0.12094,
+      "n_cells": 20,
+      "source": "SLDEM2015 windows (src/fetch_sldem_window.py) on the 60 m grid as compute_mare_target.py; pipeline.mare.small_crater_density via src/compute_mare_c30.py",
+      "verified": false,
+      "check": "computed by Claude Code, to be checked by Mateo"
+    },
+    "note": "Display only (team decision 15 Nov 2026), never in a score; empty = no data. Computed for the 500 places of the night run's Mare shortlist, not a new search. On Earth most values are 0 and the high ones lie in sand seas (dune hollows, not impact craters); docs/MARE_V11.md."
   }
 }
