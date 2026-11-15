@@ -119,6 +119,7 @@ const state = {
   base: 'polar', group: 'all', active: new Set(), threshold: 0.7,
   typeFilter: 'all', selected: null, globe: null, moon: null,
   knownOpen: false,      // the folded "Known analog sites" box under the ranking
+  excludedOpen: false,   // the folded "Excluded after scoring" box (config-v1.1 post-run filters)
   valuesOpen: null,      // values panel over the 3D view (null = decide by screen width)
   view: 'globe', moonColours: false,   // 'globe' or 'terrain' (3D close-up of the selected site)
 };
@@ -193,7 +194,8 @@ function parseCSV(text) {
 }
 const TEXT_COLUMNS = new Set(['SITE', 'RUN', 'CELL', 'BASE_TYPE', 'IMPACT_NAME', 'IMPACT_SOURCE',
   'run', 'cell', 'AIRPORT_NAME', 'AIRPORT_TYPE', 'AIRPORT_IDENT',
-  'ROLE', 'NAME', 'COUNTRY', 'MISSED_REASON']);   // night export text columns
+  'ROLE', 'NAME', 'COUNTRY', 'MISSED_REASON',
+  'EXCLUDED', 'EXCLUDED_DETAIL', 'BEST_TARGET']);   // night export text columns (EXCLUDED*: config-v1.1)
 
 const getText = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.text(); });
 const getJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.json(); });
@@ -323,9 +325,15 @@ function passesFilters(site) {
 // place is scored against the lunar mare, so it must never show up in the Polar ranking. Rows without
 // BASE_TYPE (first-run data, known sites not scored yet, missed craters) show for every base.
 const ofBase = s => s.BASE_TYPE == null || s.BASE_TYPE === state.base;
+// config-v1.1 post-run filters (outputs/README.md): an EXCLUDED place (open-pit mine, bowl that is not dry) keeps
+// its score (excludedSim) but is not ranked, not in the heatmap and not on the globe; it is listed in a folded
+// box with its reason.
 function ranked() {
   return state.sites.filter(ofBase)
-    .map(s => ({ ...s, ...scoreSite(s), type: typeOf(s) }))
+    .map(s => {
+      const sc = scoreSite(s);
+      return s.EXCLUDED ? { ...s, ...sc, sim: null, excludedSim: sc.sim, type: typeOf(s) } : { ...s, ...sc, type: typeOf(s) };
+    })
     .sort((a, b) => (b.sim ?? -1) - (a.sim ?? -1))
     .map((s, i) => ({ ...s, rank: s.sim == null ? null : i + 1, passes: passesFilters(s) }));
 }
@@ -340,9 +348,11 @@ const RUN_LABELS = {
 };
 const runLabel = r => RUN_LABELS[r] ?? r.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
 // Every searched region, from cells.json: centre, outline and what was found.
+// Night (world-grid) runs are scattered over the whole Earth: one outline around them would wrap the globe, so
+// they are left out here (their places show in the list, heatmap and globe; their cells in the 3D view).
 function searchedRegions() {
   const by = {};
-  state.cells.forEach(c => {
+  state.cells.filter(c => !/^night_/.test(c.run ?? '')).forEach(c => {
     const r = by[c.run] ??= { run: c.run, label: runLabel(c.run), cells: 0, ranked: 0, bbox: [...c.bbox], status: {} };
     r.cells++; if (c.status === 'ranked') r.ranked++;
     r.status[c.status] = (r.status[c.status] ?? 0) + 1;
@@ -351,7 +361,7 @@ function searchedRegions() {
   return Object.values(by).map(r => ({ ...r, lat: (r.bbox[1] + r.bbox[3]) / 2, lng: (r.bbox[0] + r.bbox[2]) / 2 }));
 }
 const pipelineAreas = () => searchedRegions().map(r => r.label).join(', ') || 'none yet';
-const scoredCount = () => state.sites.filter(s => ofBase(s) && scoreSite(s).sim != null).length;
+const scoredCount = () => state.sites.filter(s => ofBase(s) && !s.EXCLUDED && scoreSite(s).sim != null).length;
 
 // "23.9° vs 27.2°": raw values with a short unit taken from earth_unit (e.g. "deg (inner wall slope)").
 function fmtVal(v, unit) {
@@ -561,7 +571,8 @@ function renderList() {
   const list = document.getElementById('siteList');
   const ofType = s => state.typeFilter === 'all' || s.type === state.typeFilter;
   const rows = visibleSites().filter(s => s.sim != null && ofType(s));          // the ranking: scored sites only
-  const reference = visibleSites().filter(s => s.sim == null && !s.missed && ofType(s));   // known analogs, not scored yet
+  const reference = visibleSites().filter(s => s.sim == null && !s.missed && !s.EXCLUDED && ofType(s));   // known analogs, not scored yet
+  const excluded = visibleSites().filter(s => s.EXCLUDED).sort((a, b) => (b.excludedSim ?? -1) - (a.excludedSim ?? -1));
   const missedSites = visibleSites().filter(s => s.missed);
   const total = scoredCount(), shown = visibleSites().filter(s => s.sim != null).length;
   document.getElementById('listHint').textContent = state.active.size
@@ -602,6 +613,26 @@ function renderList() {
     </li>`);
     list.querySelector('.known-ref details').addEventListener('toggle', e => { state.knownOpen = e.target.open; });
     list.querySelectorAll('.site-btn-ref').forEach(b => b.addEventListener('click', () => select(b.dataset.site, true)));
+  }
+  // Places taken out after scoring (config-v1.1): open-pit mines and bowls that are not dry. Folded, best first.
+  if (excluded.length && state.typeFilter !== 'known') {
+    const why = {};
+    excluded.forEach(s => s.EXCLUDED.split(' + ').forEach(r => { why[r] = (why[r] ?? 0) + 1; }));
+    const top = excluded.slice(0, 40);
+    if (state.selected && !top.some(s => s.SITE === state.selected)) {
+      const cur = excluded.find(s => s.SITE === state.selected); if (cur) top.push(cur);
+    }
+    list.insertAdjacentHTML('beforeend', `<li class="regions excluded-ref">
+      <details ${state.excludedOpen || top.some(s => s.SITE === state.selected) ? 'open' : ''}>
+        <summary class="regions-title">Excluded after scoring <span class="muted">· ${excluded.length} places</span></summary>
+        <p class="regions-hint">Taken out of the ranking by our post-run filters (config-v1.1); their scores are unchanged.
+          ${Object.entries(why).map(([r, n]) => `${esc(r.replace(/^excluded: /, ''))}: ${n}`).join(' · ')}.
+          Best ${Math.min(40, excluded.length)} by score:</p>
+        ${top.map(s => `<button type="button" class="region-btn site-btn-ref${s.SITE === state.selected ? ' is-current' : ''}" data-site="${esc(s.SITE)}">${esc(nameOf(s))} <span class="muted">· ${pct(s.excludedSim)} · ${esc(s.EXCLUDED.replace(/excluded: /g, ''))}</span></button>`).join('')}
+      </details>
+    </li>`);
+    list.querySelector('.excluded-ref details').addEventListener('toggle', e => { state.excludedOpen = e.target.open; });
+    list.querySelectorAll('.excluded-ref .site-btn-ref').forEach(b => b.addEventListener('click', () => select(b.dataset.site, true)));
   }
   // Regions the pipeline searched without finding a crater: also a result, worth showing.
   const empty = searchedRegions().filter(r => !r.ranked);
@@ -749,16 +780,17 @@ function renderCard() {
   el.innerHTML = `
     <div class="card-top">
       <div class="card-title">
-        <span class="badge ${missed ? 'badge-missed' : s.type === 'known' ? 'badge-known' : 'badge-new'}">${missed ? 'Missed by our method' : s.type === 'known' ? 'Known analog' : 'New candidate'}</span>
+        <span class="badge ${missed || s.EXCLUDED ? 'badge-missed' : s.type === 'known' ? 'badge-known' : 'badge-new'}">${s.EXCLUDED ? 'Excluded after scoring' : missed ? 'Missed by our method' : s.type === 'known' ? 'Known analog' : 'New candidate'}</span>
         <h2 style="margin-top:8px">${esc(nameOf(s))}</h2>
-        <p class="card-place">${esc(info.place ?? '')}${info.place ? ' · ' : ''}${fmtCoord(s.lat, s.lng)}${craterFacts.length ? ' · crater ' + esc(craterFacts.join(', ')) : ''}</p>
+        <p class="card-place">${esc(info.place ?? s.COUNTRY ?? '')}${info.place || s.COUNTRY ? ' · ' : ''}${fmtCoord(s.lat, s.lng)}${craterFacts.length ? ' · crater ' + esc(craterFacts.join(', ')) : ''}</p>
       </div>
       <div class="score">
-        <strong>${pct(s.sim)}</strong>
-        <span>${missed ? 'not found by our<br>pipeline (config-v1)' : info.validation ? `validation test:<br>${esc(info.validation.result)}` : unscored ? 'not scored yet' : `similar to the Moon (${esc(baseLabel().toLowerCase())} base)<br>rank ${s.RANK ?? s.rank} of ${scoredCount()}`}</span>
+        <strong>${pct(s.EXCLUDED ? s.excludedSim : s.sim)}</strong>
+        <span>${s.EXCLUDED ? 'similar to the Moon, but<br>not ranked (config-v1.1)' : missed ? 'not found by our<br>pipeline (config-v1)' : info.validation ? `validation test:<br>${esc(info.validation.result)}` : unscored ? 'not scored yet' : `similar to the Moon (${esc(baseLabel().toLowerCase())} base)<br>rank ${s.RANK ?? s.rank} of ${scoredCount()}`}</span>
       </div>
     </div>
 
+    ${s.EXCLUDED ? `<p class="tuning-note"><span class="tag-tuning">Excluded</span> Reason: ${esc(s.EXCLUDED.split(' + ').map(r => r.replace(/^excluded: /, '')).join(' and '))}${s.raw?.EXCLUDED_DETAIL ? ` (${esc(s.raw.EXCLUDED_DETAIL)})` : ''}. The shape matches, but ${/mine/.test(s.EXCLUDED) ? 'an open-pit mine is not a natural crater' : ''}${/mine/.test(s.EXCLUDED) && /dry/.test(s.EXCLUDED) ? ', and ' : ''}${/dry/.test(s.EXCLUDED) ? 'a bowl with plants, ice or water is no stand-in for a dry lunar crater' : ''}, so our post-run filter takes it out of the ranking. The score is unchanged.</p>` : ''}
     ${info.why ? `<p class="why">${research(info.why)}</p>` : ''}
     ${isTuning(s) ? `<p class="tuning-note"><span class="tag-tuning">Tuning site</span> We used this region to check and set up our method, so its high rank is partly built in. The fair test results are the screening regions, such as Al Wahbah and Roter Kamm.</p>` : ''}
 
@@ -1040,7 +1072,7 @@ function pauseRotation(ms) {
 function updateGlobe(fly) {
   const g = state.globe;
   if (!g) return;
-  const shown = visibleSites();
+  const shown = visibleSites().filter(x => !x.EXCLUDED || x.SITE === state.selected);   // excluded: only when picked
   const s = shown.find(x => x.SITE === state.selected);
   const named = new Set(shown.filter(x => x.sim != null).slice(0, LABEL_LIMIT).map(x => x.SITE));
   const onGlobe = shown.filter(x => x.sim == null || named.has(x.SITE) || typeOf(x) === 'known' || x.SITE === state.selected
@@ -1175,12 +1207,13 @@ const TILT = { pitch: 68, bearing: -25 }; // the tilted 3D view; the 2D/3D butto
 
 const currentSite = () => visibleSites().find(s => s.SITE === state.selected);
 
-const CELL_COLORS = { ranked: '#3CC8B4', filtered: '#F2A35C', no_bowl: '#A7BAC7', ice_floor: '#9CCFF2' };
-// Searched cells from cells.json as outlines (bbox = [W, S, E, N]).
+const CELL_COLORS = { ranked: '#3CC8B4', filtered: '#F2A35C', no_bowl: '#A7BAC7', ice_floor: '#9CCFF2', excluded: '#FF8A70' };
+// Searched cells from cells.json as outlines (bbox = [W, S, E, N]); cells of the other base are hidden, Mare
+// "kept" cells draw like ranked ones, "excluded" (config-v1.1) in coral.
 function cellsGeoJSON() {
-  return { type: 'FeatureCollection', features: state.cells.filter(c => Array.isArray(c.bbox)).map(c => {
+  return { type: 'FeatureCollection', features: state.cells.filter(c => Array.isArray(c.bbox) && (c.base == null || c.base === state.base)).map(c => {
     const [w, so, e, n] = c.bbox;
-    return { type: 'Feature', properties: { status: c.status, reason: c.reason ?? '' },
+    return { type: 'Feature', properties: { status: c.status === 'kept' ? 'ranked' : c.status, reason: c.reason ?? '' },
       geometry: { type: 'LineString', coordinates: [[w, so], [e, so], [e, n], [w, n], [w, so]] } };
   }) };
 }
@@ -1203,7 +1236,7 @@ function terrainStyle() {
       // The grid cells the pipeline searched: teal = crater scored, orange = skipped (edge or sea), grey = no crater.
       // (Two layers: MapLibre can't change the dash pattern per feature.)
       { id: 'cells-other', type: 'line', source: 'cells', filter: ['!=', ['get', 'status'], 'ranked'], paint: {
-        'line-color': ['match', ['get', 'status'], 'filtered', CELL_COLORS.filtered, 'ice_floor', CELL_COLORS.ice_floor, CELL_COLORS.no_bowl],
+        'line-color': ['match', ['get', 'status'], 'filtered', CELL_COLORS.filtered, 'ice_floor', CELL_COLORS.ice_floor, 'excluded', CELL_COLORS.excluded, CELL_COLORS.no_bowl],
         'line-width': 1.2, 'line-opacity': 0.65, 'line-dasharray': [2, 2],
       } },
       { id: 'cells-ranked', type: 'line', source: 'cells', filter: ['==', ['get', 'status'], 'ranked'], paint: {
