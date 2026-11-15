@@ -1,4 +1,4 @@
-/* Earth Twins of the Moon: static web app (no build step).
+/* Moon Twins on Earth: static web app (no build step).
  * Reads the pipeline's files in ../outputs/ (written by src/export_app.py) and draws:
  * filter bar, ranked site list, 3D globe with heatmap, analog card, 3D terrain close-up.
  * Add ?sample to the URL to see the old fake sample data instead (for design work).
@@ -124,7 +124,6 @@ const state = {
   typeFilter: 'all', selected: null, globe: null, moon: null,
   knownOpen: false,      // the folded "Known analog sites" box under the ranking
   excludedOpen: false,   // the folded "Excluded after scoring" box (config-v1.1 post-run filters)
-  valuesOpen: null,      // values panel over the 3D view (null = decide by screen width)
   view: 'globe', moonColours: false,   // 'globe' or 'terrain' (3D close-up of the selected site)
 };
 
@@ -144,7 +143,6 @@ function attachAccess(rows) {
   const byCell = new Map(rows.map(a => [`night_${a.run}|${a.cell}`, a]));
   const polar = rows.filter(a => a.run === 'polar' && a.lat != null && a.lon != null);
   for (const s of state.sites) {
-    if (s.raw?.ACCESS_HOURS != null || s.raw?.AIRPORT_KM != null) continue;
     let a = s.RUN ? byCell.get(`${s.RUN}|${s.CELL}`) : null;
     if (!a && !s.missed && !s.unscored && (s.BASE_TYPE ?? 'polar') === 'polar' && s.LAT != null) {
       let best = Infinity;
@@ -155,7 +153,9 @@ function attachAccess(rows) {
       }
       if (best > ACCESS_MATCH_KM) a = null;
     }
-    if (a) s.access = { ACCESS_HOURS: a.ACCESS_HOURS, AIRPORT_KM: a.AIRPORT_KM, AIRPORT_NAME: a.AIRPORT_NAME, AIRPORT_TYPE: a.AIRPORT_TYPE };
+    if (a) s.access = { ACCESS_HOURS: a.ACCESS_HOURS, AIRPORT_KM: a.AIRPORT_KM, AIRPORT_NAME: a.AIRPORT_NAME, AIRPORT_TYPE: a.AIRPORT_TYPE,
+      STATION_NAME: a.STATION_NAME, STATION_KM: a.STATION_KM, STATION_TYPE: a.STATION_TYPE,
+      ANALOG_STATION_NAME: a.ANALOG_STATION_NAME, ANALOG_STATION_KM: a.ANALOG_STATION_KM };
   }
 }
 function accessOf(s) {
@@ -176,6 +176,25 @@ function accessHTML(s) {
   const kind = a.AIRPORT_TYPE === 'large_airport' ? 'large airport' : 'medium airport';
   return `<p class="impact-line access-line" title="Modelled travel time over land to the nearest city (a place with 1,500+ people per km² or 50,000+ inhabitants), roads of 2015 (Weiss et al. 2018, Malaria Atlas Project). Airport: straight-line distance, OurAirports; says nothing about flights.">
     <span>Access</span> ${t == null ? 'no travel-time data' : `<b>${t}</b> to the nearest city`}${km == null ? '' : ` · ${Math.round(km).toLocaleString('en')} km to ${esc(a.AIRPORT_NAME ?? 'an airport')} (${kind})`}</p>`;
+}
+
+// Nearest research station (Mateo's c29, docs/ACCESS.md R5). The list (INTERACT + our 6 planetary analog
+// stations) is polar and alpine, so a station is shown only within STATION_MAX_KM: farther means "not in our list",
+// not "no station". Straight-line km; display only.
+const STATION_MAX_KM = 500;
+const kmText = km => `${Math.round(km).toLocaleString('en')} km`;
+function stationHTML(s) {
+  const a = s.access;
+  if (!a || a.STATION_KM == null) return '';
+  const near = a.STATION_KM <= STATION_MAX_KM;
+  const sameAnalog = a.ANALOG_STATION_NAME && a.ANALOG_STATION_NAME === a.STATION_NAME;
+  const main = near
+    ? `${esc(a.STATION_NAME)}, <b>${kmText(a.STATION_KM)}</b>${sameAnalog ? ' (planetary analog station)' : a.STATION_TYPE ? ` (${esc(a.STATION_TYPE)})` : ''}`
+    : `none in our list within ${STATION_MAX_KM} km`;
+  const analog = !sameAnalog && a.ANALOG_STATION_KM != null && a.ANALOG_STATION_KM <= STATION_MAX_KM
+    ? `<br>Planetary analog station: ${esc(a.ANALOG_STATION_NAME)}, <b>${kmText(a.ANALOG_STATION_KM)}</b>` : '';
+  return `<p class="impact-line station-line" title="Straight-line distance to the nearest station in the INTERACT list (Arctic and alpine research stations) and our list of 6 planetary analog stations (HMPRS, FMARS, MDRS, HI-SEAS, Biosphere 2, LunAres). The list covers polar and alpine regions: far away means 'not in this list', not 'no station'.">
+    <span>Research station</span> ${main}${analog}</p>`;
 }
 
 function parseCSV(text) {
@@ -201,7 +220,8 @@ const TEXT_COLUMNS = new Set(['SITE', 'RUN', 'CELL', 'BASE_TYPE', 'IMPACT_NAME',
   'ROLE', 'NAME', 'COUNTRY', 'MISSED_REASON',
   'EXCLUDED', 'EXCLUDED_DETAIL', 'BEST_TARGET',
   'ROCK_CLASS', 'ROCK_CLASS_NAME',     // night export text columns (EXCLUDED*: config-v1.1; ROCK_CLASS*: GLiM display)
-  'ROCK_SITE', 'ROCK_SITE_LITH', 'ROCK_SITE_SOURCE', 'ROCK_SITE_SCALE']);   // Macrostrat map unit at the site (display)
+  'ROCK_SITE', 'ROCK_SITE_LITH', 'ROCK_SITE_SOURCE', 'ROCK_SITE_SCALE',
+  'STATION_NAME', 'STATION_TYPE', 'ANALOG_STATION_NAME']);   // nearest research / analog station (c29, display)   // Macrostrat map unit at the site (display)
 
 // Rock type on Mare cards, display only (never in the score). Site level: the geological map unit under the base
 // pad from Macrostrat (CC BY 4.0); how fine it is depends on the source map (ROCK_SITE_SCALE). Regional: GLiM 0.5° grid.
@@ -248,6 +268,8 @@ async function loadAll() {
   // Known craters our method searched but missed (type "missed", with lat/lng in site_info.json), e.g.
   // Tenoumer: shown on purpose, as an honest example of a limitation of the pipeline settings.
   if (!DATA.isFake) {
+    // Night export: missed craters are rows of scores.csv with ROLE "missed" (and MISSED_REASON), without scores.
+    state.sites.filter(x => x.ROLE === 'missed').forEach(x => { x.missed = true; x.unscored = true; });
     Object.entries(info).filter(([k, v]) => v?.type === 'missed' && v.lat != null && v.lng != null && !state.sites.some(x => x.SITE === k))
       .forEach(([k, v]) => state.sites.push({ SITE: k, LAT: v.lat, LON: v.lng, lat: v.lat, lng: v.lng, raw: {}, unscored: true, missed: true }));
   }
@@ -324,7 +346,7 @@ function scoreSite(site) {
   return { sim: total, details, coverage: counted.length, possible: similarityCriteria().length };
 }
 
-const typeOf = site => state.info[site.SITE]?.type ?? 'candidate';
+const typeOf = site => (site.missed ? 'missed' : state.info[site.SITE]?.type ?? 'candidate');   // missed: night export ROLE or site_info
 const nameOf = site => state.info[site.SITE ?? site]?.name ?? site.SITE ?? site;
 // Tuning regions (CLAUDE.md, "do not count for validation"): used to check and set up the method, so a
 // high rank there is partly built in. Screening regions (Al Wahbah, Roter Kamm, ...) are the fair results.
@@ -399,6 +421,13 @@ function fmtVal(v, unit) {
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const pct = v => (v == null ? '–' : Math.round(v * 100) + '%');
+// Similarity score as shown. Mare scores sit at 97–99.6 %, so whole percents would show "100%" for many places:
+// for Mare, one decimal, and never "100%" unless the score is exactly 1. Display only, the scores are unchanged.
+const isMareSite = site => (site?.BASE_TYPE ?? state.base) === 'mare';
+const scoreText = (v, site) => (v == null ? '–' : !isMareSite(site) ? pct(v)
+  : v >= 1 ? '100%' : `${Math.min(99.9, Math.round(v * 1000) / 10).toFixed(1)}%`);
+// Macrostrat: basalt / mafic volcanic rock in the map unit at the Mare base pad (1); 0 = other rock, empty = unknown.
+const basaltAtSite = site => site?.raw?.BASALT_SITE === 1;
 const fmtCoord = (lat, lng) => `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(2)}°${lng >= 0 ? 'E' : 'W'}`;
 const research = s => esc(s).replace(/\[([^\]]+)\]/g, '<span class="todo">[$1]</span>');
 // Source links under a research box; only http(s) links, opened in a new tab.
@@ -473,8 +502,12 @@ function renderFilters() {
   // Group tabs, with a count of active criteria per group
   const counts = {};
   state.active.forEach(k => { const g = byKey[k].group; counts[g] = (counts[g] ?? 0) + 1; });
+  // Only criteria someone can actually use: meant for this base and with data. Groups left empty are hidden.
+  const usable = c => c.bases.includes(state.base) && hasData(c.key);
+  const groups = GROUPS.filter(g => CRITERIA.some(c => c.group === g.id && usable(c)));
+  if (state.group !== 'all' && !groups.some(g => g.id === state.group)) state.group = 'all';
   document.getElementById('groupTabs').innerHTML =
-    [{ id: 'all', label: 'All criteria' }, ...GROUPS].map(g =>
+    [{ id: 'all', label: 'All criteria' }, ...groups].map(g =>
       `<button type="button" class="tab" role="tab" data-group="${g.id}" aria-selected="${g.id === state.group}">${esc(g.label)}${counts[g.id] ? `<span class="count">${counts[g.id]}</span>` : ''}</button>`).join('');
 
   // Sub-row: the criteria of the chosen group
@@ -484,8 +517,8 @@ function renderFilters() {
     const g = GROUPS.find(x => x.id === state.group);
     document.getElementById('subHint').textContent = state.group === 'practical'
       ? 'Practical criteria do not change the similarity score. Pick one to hide sites that score below the minimum.'
-      : `Pick criteria to keep only sites close to the Moon on them. Greyed out: not used for a ${baseLabel().toLowerCase()} base, or no data yet.`;
-    document.getElementById('criterionChips').innerHTML = CRITERIA.filter(c => c.group === g.id).map(c => {
+      : 'Pick criteria to keep only sites close to the Moon on them.';
+    document.getElementById('criterionChips').innerHTML = CRITERIA.filter(c => c.group === g.id && usable(c)).map(c => {
       const noData = !hasData(c.key);
       const notForBase = !c.bases.includes(state.base);
       const disabled = noData || notForBase;
@@ -580,9 +613,10 @@ function siteRowHTML(s) {
           <span class="site-name">${esc(nameOf(s))}</span>
           <span class="site-meta">
             ${s.sim == null ? '<span class="not-scored">Not scored yet</span>' : `<span class="bar"><span style="width:${Math.round(s.sim * 100)}%"></span></span>
-            <span class="pct">${pct(s.sim)}</span>`}
+            <span class="pct">${scoreText(s.sim, s)}</span>`}
             <span>${s.type === 'known' ? 'Known' : 'New'}</span>
             ${isTuning(s) ? `<span class="tag-tuning" title="${esc(TUNING_NOTE)}">Tuning</span>` : ''}
+            ${basaltAtSite(s) ? '<span class="tag-basalt" title="Macrostrat geological map: basalt or mafic volcanic rock at the base pad (display only, not in the score)">basalt at site</span>' : ''}
           </span>
         </span>
       </button>
@@ -591,7 +625,11 @@ function siteRowHTML(s) {
 function renderList() {
   const list = document.getElementById('siteList');
   const ofType = s => state.typeFilter === 'all' || s.type === state.typeFilter;
-  const rows = visibleSites().filter(s => s.sim != null && ofType(s));          // the ranking: scored sites only
+  // Mare: optional "basalt at site only" (offered only when some place has BASALT_SITE = 1).
+  const mareList = state.base === 'mare' && isPipeline();
+  const hasBasalt = mareList && visibleSites().some(basaltAtSite);
+  if (!hasBasalt) state.basaltOnly = false;
+  const rows = visibleSites().filter(s => s.sim != null && ofType(s) && (!state.basaltOnly || basaltAtSite(s)));   // the ranking: scored sites only
   const reference = visibleSites().filter(s => s.sim == null && !s.missed && !s.EXCLUDED && ofType(s));   // known analogs, not scored yet
   const excluded = visibleSites().filter(s => s.EXCLUDED).sort((a, b) => (b.excludedSim ?? -1) - (a.excludedSim ?? -1));
   const missedSites = visibleSites().filter(s => s.missed);
@@ -599,6 +637,13 @@ function renderList() {
   document.getElementById('listHint').textContent = state.active.size
     ? `${shown} of ${total} sites pass the filters. Ranked by similarity to a ${baseLabel().toLowerCase()} base.`
     : `Ranked by similarity to ${moonBase(state.base) ? `${moonBase(state.base).name} (${baseLabel().toLowerCase()} base)` : `a ${baseLabel().toLowerCase()} base`} on the ${similarityCriteria().length} criteria that count.`;
+  const mareNote = document.getElementById('mareNote');
+  mareNote.hidden = !mareList;
+  if (mareList) {
+    mareNote.innerHTML = 'Flat, smooth mare-like terrain is common on Earth, so the top places differ only slightly. Rock at site (basalt) and crater texture tell them apart.'
+      + (hasBasalt ? ` <label class="basalt-only"><input type="checkbox" id="basaltOnly" ${state.basaltOnly ? 'checked' : ''}> basalt at site only</label>` : '');
+    mareNote.querySelector('#basaltOnly')?.addEventListener('change', e => { state.basaltOnly = e.target.checked; state.listLimit = LIST_STEP; renderList(); });
+  }
   const pending = state.moonInfo && state.moonInfo !== state.base ? moonBase(state.moonInfo) : null;
   const note = document.getElementById('listNote');
   note.hidden = !pending;
@@ -649,7 +694,7 @@ function renderList() {
         <p class="regions-hint">Taken out of the ranking by our post-run filters (config-v1.1); their scores are unchanged.
           ${Object.entries(why).map(([r, n]) => `${esc(r.replace(/^excluded: /, ''))}: ${n}`).join(' · ')}.
           Best ${Math.min(40, excluded.length)} by score:</p>
-        ${top.map(s => `<button type="button" class="region-btn site-btn-ref${s.SITE === state.selected ? ' is-current' : ''}" data-site="${esc(s.SITE)}">${esc(nameOf(s))} <span class="muted">· ${pct(s.excludedSim)} · ${esc(s.EXCLUDED.replace(/excluded: /g, ''))}</span></button>`).join('')}
+        ${top.map(s => `<button type="button" class="region-btn site-btn-ref${s.SITE === state.selected ? ' is-current' : ''}" data-site="${esc(s.SITE)}">${esc(nameOf(s))} <span class="muted">· ${scoreText(s.excludedSim, s)} · ${esc(s.EXCLUDED.replace(/excluded: /g, ''))}</span></button>`).join('')}
       </details>
     </li>`);
     list.querySelector('.excluded-ref details').addEventListener('toggle', e => { state.excludedOpen = e.target.open; });
@@ -662,11 +707,16 @@ function renderList() {
       <p class="regions-title">Searched, no crater found</p>
       <p class="regions-hint">No bowl at least 50 m deep and 1 km wide in these regions. Click one to see it on the globe.</p>
       ${empty.map(r => `<button type="button" class="region-btn" data-region="${esc(r.run)}" title="${r.cells} grid squares searched">${esc(r.label)}</button>`).join('')}
-      ${missedSites.length ? `<p class="regions-title missed-title">A known crater our method missed</p>
-      <p class="regions-hint">Its rim is too low on one side for our depth rule. Click it to see why.</p>
-      ${missedSites.map(s => `<button type="button" class="region-btn missed-btn site-btn-ref${s.SITE === state.selected ? ' is-current' : ''}" data-site="${esc(s.SITE)}">${esc(nameOf(s))}</button>`).join('')}` : ''}
     </li>`);
     list.querySelectorAll('.region-btn[data-region]').forEach(b => b.addEventListener('click', () => showRegion(b.dataset.region)));
+  }
+  // A known crater our method missed (Tenoumer): its own block, shown even when every searched region found something.
+  if (missedSites.length && !state.active.size && state.typeFilter !== 'known') {
+    list.insertAdjacentHTML('beforeend', `<li class="regions">
+      <p class="regions-title missed-title">${missedSites.length > 1 ? `Known places our method missed (${missedSites.length})` : 'A known crater our method missed'}</p>
+      <p class="regions-hint">Real analog sites our search covered but did not find. Click ${missedSites.length > 1 ? 'one' : 'it'} to see why.</p>
+      ${missedSites.map(s => `<button type="button" class="region-btn missed-btn site-btn-ref${s.SITE === state.selected ? ' is-current' : ''}" data-site="${esc(s.SITE)}">${esc(nameOf(s))}</button>`).join('')}
+    </li>`);
     list.querySelectorAll('.missed-btn').forEach(b => b.addEventListener('click', () => select(b.dataset.site, true)));
   }
   list.querySelectorAll('.site-btn').forEach(b => b.addEventListener('click', () => select(b.dataset.site, true)));
@@ -743,11 +793,8 @@ function radarSVG(site, axes) {
 /* ---------- Analog card ---------- */
 
 // "Steep walls 23.9° vs 27.2°" (pipeline, raw values with units) or "0.62 vs 0.80" (sample).
-const chipTitle = d => `${d.hint} · ${pct(d.sim)} match${meta(d.key)?.limitation ? ' · Moon: Sun disc · Earth: Sun centre' : ''}`;
 // Card chips: hovering or focusing one shows its definition (defs.js) and this match line.
 const chipAttrs = d => `data-def="${esc(d.key)}" data-match="${esc(`${pct(d.sim)} match with the Moon${meta(d.key)?.limitation ? ' · Moon: Sun disc · Earth: Sun centre' : ''}`)}" tabindex="0"`;
-// Short version of targets.json "limitation" for the light criteria (text agreed with Caspar).
-const LIGHT_NOTE = 'Light on the Moon is measured as the visible part of the Sun’s disc (NASA PGDA illumination map); on Earth as the Sun’s centre above the horizon. On flat ground at the pole both agree; on crater rims and floors they can differ a little.';
 const vsText = d => {
   const unit = meta(d.key)?.earthUnit || meta(d.key)?.unit;
   return d.earth == null || d.moon == null ? pct(d.sim) : `${fmtVal(d.earth, unit)} vs ${fmtVal(d.moon, unit)}`;
@@ -763,7 +810,6 @@ function renderCard() {
   const missed = s.type === 'missed';   // a known crater our method searched but did not find
   // Chips: criteria with a value, closest to the Moon first. ≥ 50 % = close, below = what it lacks.
   const scored = s.details.filter(d => d.counts && d.sim != null).sort((a, b) => b.sim - a.sim);
-  const shownOnly = s.details.filter(d => !d.counts && d.sim != null);
   const strengths = scored.filter(d => d.sim >= 0.5).slice(0, 3);
   const gaps = scored.filter(d => d.sim < 0.5).reverse().slice(0, 3);
   // Three kinds of "no value": no data yet, waiting for a lunar value, not computed yet.
@@ -771,11 +817,6 @@ function renderCard() {
   s.details.filter(d => d.sim == null).forEach(d => {
     missing[d.method === 'rank' ? 'rank' : d.method === 'not computed' ? 'notcomputed' : 'nodata'].push(d.label);
   });
-  const displayOnly = s.details.filter(d => !d.counts && d.sim != null).map(d => d.label);
-  const hasLightLimit = s.details.some(d => d.sim != null && meta(d.key)?.limitation);
-  // "No Earth analog possible" facts (Grazing sun), shortened for the card; full text in the tooltip.
-  const facts = s.details.filter(d => meta(d.key)?.fact).map(d => ({ label: d.label, text: meta(d.key).fact,
-    short: d.key === 'GRAZING_SUN' ? 'How high the Sun climbs depends only on latitude: at least 23.4° on Earth (at the poles), 1.9° at Shackleton.' : meta(d.key).fact }));
   const practical = CRITERIA.filter(c => isPractical(c) && c.bases.includes(state.base) && s[c.key] != null);
   const { axes, perGroup } = radarAxes(s);
   const groupName = state.group === 'all' || state.group === 'practical'
@@ -799,7 +840,7 @@ function renderCard() {
   const ground = groundCriteria().filter(c => meta(c.key).kind === 'more is better' && s[c.key] != null);
   const impact = s.IMPACT_CRATER == null ? null : s.IMPACT_CRATER === 1
     ? `Yes: <b>${esc(raw.IMPACT_NAME || 'confirmed impact structure')}</b>${raw.IMPACT_DIAMETER_KM ? `, ${raw.IMPACT_DIAMETER_KM} km` : ''}${/^https?:/.test(raw.IMPACT_SOURCE ?? '') ? ` (<a href="${esc(raw.IMPACT_SOURCE)}" target="_blank" rel="noopener">list</a>)` : ''}`
-    : 'Not in the list of confirmed impact craters (the list is incomplete)';
+    : null;   // "not in the list" said little (the list is incomplete), so only a confirmed crater is shown
 
   el.innerHTML = `
     <div class="card-top">
@@ -810,7 +851,7 @@ function renderCard() {
         ${twin ? `<p class="card-twin" title="Score against each verified lunar target, same rule and weights; this target scores highest. The rank uses Shackleton.">Closest lunar twin: <b>${esc(twin.label)}</b> (${pct(twin.score)})</p>` : ''}
       </div>
       <div class="score">
-        <strong>${pct(s.EXCLUDED ? s.excludedSim : s.sim)}</strong>
+        <strong>${scoreText(s.EXCLUDED ? s.excludedSim : s.sim, s)}</strong>
         <span>${s.EXCLUDED ? 'similar to the Moon, but<br>not ranked (config-v1.1)' : missed ? 'not found by our<br>pipeline (config-v1)' : info.validation ? `validation test:<br>${esc(info.validation.result)}` : unscored ? 'not scored yet' : `similar to the Moon (${esc(baseLabel().toLowerCase())} base)<br>rank ${s.RANK ?? s.rank} of ${scoredCount()}`}</span>
       </div>
     </div>
@@ -823,7 +864,8 @@ function renderCard() {
     <div class="card-col card-col-a">
     ${missed ? `<div class="radar-box missed-box">
       <h3>Missed by our method</h3>
-      <p>Our search covered this crater but found no bowl here. We show it on purpose: a known crater that our method misses is an honest example of its limits, and tells us what to fix next.</p>
+      <p>Our search covered this place but found no bowl here. We show it on purpose: a known site that our method misses is an honest example of its limits, and tells us what to fix next.</p>
+      ${s.MISSED_REASON && info.breaks ? `<p><b>Pipeline note:</b> ${esc(s.MISSED_REASON)} <span class="ref-ours">our data</span></p>` : ''}
     </div>` : info.validation ? `<div class="radar-box missed-box">
       <h3>Validation test: ${esc(info.validation.result)}</h3>
       <p>${research(info.validation.text)}</p>
@@ -838,23 +880,26 @@ function renderCard() {
         <span><span class="swatch" style="border-color:${COLORS.earth}"></span>${esc(nameOf(s))}</span>
         <span><span class="swatch" style="border-color:${COLORS.moon};border-top-style:dashed"></span>${esc(moonName)} = outer ring</span>
       </div>
-      <p class="nodata">Each axis is how close the site is to the Moon: the centre is nothing alike, the outer ring is the same as the Moon.${displayOnly.length ? ` Hollow dots (${esc(displayOnly.join(', '))}) are shown but not counted in the score.` : ''}</p>
       ${missingNote.length ? `<p class="nodata">${esc(missingNote.join(' '))} Left out of the score, not counted as zero.</p>` : ''}
-      ${hasLightLimit ? `<p class="nodata" title="${esc(meta('SUNNY_RIDGE')?.limitation ?? '')}"><b>Light:</b> ${esc(LIGHT_NOTE)}</p>` : ''}
     </div>`}
 
-    ${ground.length || impact || accessHTML(s) || rockHTML(s) ? `<div class="note-box prac-box">
-      <h3>On the ground</h3>
+    ${accessHTML(s) || stationHTML(s) ? `<div class="note-box prac-box access-box">
+      ${accessHTML(s)}
+      ${stationHTML(s)}
+      <p class="nodata">A rough guide, not a trip plan: travel time from a model (roads of 2015); airport and station distances in a straight line. A listed station gives no right of use. Not part of the score.</p>
+    </div>` : ''}
+
+    ${ground.length || impact || rockHTML(s) ? `<details class="note-box prac-box fold-box">
+      <summary><h3>On the ground</h3> <span class="fold-hint">${rockHTML(s) ? 'land cover, rock' : 'land cover'} · not in the score</span></summary>
       ${ground.length ? `<div class="prac">${ground.map(c => `
         <span title="${esc(meta(c.key).earthUnit)}">${esc(c.label)}</span>
         <span class="bar"><span style="width:${Math.round(s[c.key] * 100)}%"></span></span>
         <span class="pct">${Math.round(s[c.key] * 100)}%</span>`).join('')}
       </div>` : ''}
       ${impact ? `<p class="impact-line"><span>Impact crater</span> ${impact}</p>` : ''}
-      ${accessHTML(s)}
       ${rockHTML(s)}
-      <p class="nodata">About the place itself, not compared with the Moon${ground.length ? ' (bars: more is better)' : ''}. Not part of the score.${accessOf(s) ? ' Access is a model (roads of 2015, airport in a straight line): a rough guide to how remote the place is, not a trip plan.' : ''}</p>
-    </div>` : ''}
+      <p class="nodata">About the place itself, not compared with the Moon${ground.length ? ' (bars: more is better)' : ''}. Not part of the score.</p>
+    </details>` : ''}
 
     ${practical.length ? `<div class="note-box prac-box">
       <h3>Practical</h3>
@@ -878,16 +923,11 @@ function renderCard() {
       <div class="chips">${gaps.length ? gaps.map(d => `<span class="chip gap" ${chipAttrs(d)}><b>${esc(d.label)}</b> ${d.signed == null ? '' : d.signed < 0 ? 'too little ' : 'too much '}(${esc(vsText(d))})</span>`).join('') : '<span class="chip">No big gaps</span>'}</div>
     </div>
 
-    ${shownOnly.length ? `<div>
-      <h3>Also compared, not in the score</h3>
-      <div class="chips">${shownOnly.map(d => `<span class="chip" ${chipAttrs(d)}><b>${esc(d.label)}</b> ${esc(vsText(d))}</span>`).join('')}</div>
-      ${facts.map(f => `<p class="nodata" title="${esc(f.text)}"><b>${esc(f.label)}: no place on Earth can match.</b> ${esc(f.short)}</p>`).join('')}
-    </div>` : ''}
-    ${isPipeline() ? '<p class="nodata">Earth value vs Moon value. Hover a chip for what it means and how well it matches.</p>' : ''}`}
+    `}
 
     <div class="note-box">
       <h3>${missed ? 'Why our method missed it' : 'Where the analogy breaks down'}</h3>
-      ${info.breaks ? `<p>${research(info.breaks)}</p>` : auto ? `<ul class="outlook">${auto.breaks.map(t => `<li>${esc(t)} <span class="ref-ours">our data</span></li>`).join('')}<li>${esc(auto.general)}</li></ul>` : '<p><span class="todo">[to research]</span></p>'}
+      ${info.breaks ? `<p>${research(info.breaks)}</p>` : missed && s.MISSED_REASON ? `<p>${esc(s.MISSED_REASON[0].toUpperCase() + s.MISSED_REASON.slice(1))}. <span class="ref-ours">our data</span></p>` : auto ? `<ul class="outlook">${auto.breaks.map(t => `<li>${esc(t)} <span class="ref-ours">our data</span></li>`).join('')}<li>${esc(auto.general)}</li></ul>` : '<p><span class="todo">[to research]</span></p>'}
     </div>
 
     ${info.outlook ? `${isNew || missed ? '' : `<div class="note-box">
@@ -902,7 +942,7 @@ function renderCard() {
       <h3>Opportunities &amp; challenges</h3>
       ${outlookHTML({ outlook: auto.outlook, sources: [] })}
       <p class="nodata">Nobody on our team has researched this place yet: these lines come only from our pipeline’s measurements.</p>
-    </div>` : `<div class="note-box">
+    </div>` : missed && !info.helps ? '' : `<div class="note-box">
       <h3>${missed ? 'What we change next' : isNew ? 'What we could test here' : 'How it has helped exploration'}</h3>
       <p>${info.helps ? research(info.helps) : `<span class="todo">${isNew ? '[to write once ranked: what we could test here]' : '[to research]'}</span>`}</p>
       ${sourcesHTML(info.sources)}
@@ -975,6 +1015,28 @@ function setHitRadii(g, items, dotDeg, maxDeg) {
   });
   return items;
 }
+// Heatmap colour, t = 0 (few, weak craters) to 1 (many strong ones): see-through violet to pale lilac.
+const HEAT_STOPS = [[70, 50, 160], [130, 80, 220], [190, 120, 255], [235, 190, 255]];
+function heatColor(t) {
+  t = Math.max(0, Math.min(1, t));
+  const x = t * (HEAT_STOPS.length - 1), i = Math.min(HEAT_STOPS.length - 2, Math.floor(x)), f = x - i;
+  const c = HEAT_STOPS[i].map((v, k) => Math.round(v + (HEAT_STOPS[i + 1][k] - v) * f));
+  return `rgba(${c},${(0.8 * Math.sqrt(t)).toFixed(3)})`;
+}
+// A small circle (radius in degrees) around a site, drawn as a polygon: the pin under the dot.
+function pinOf(site, r) {
+  const ring = [];
+  for (let i = 0; i <= 24; i++) {
+    const a = (i / 24) * 2 * Math.PI;
+    ring.push([site.lng + (r * Math.sin(a)) / Math.max(0.2, Math.cos((site.lat * Math.PI) / 180)), site.lat + r * Math.cos(a)]);
+  }
+  return { ...site, selected: site.SITE === state.selected, geometry: { type: 'Polygon', coordinates: [ring] } };
+}
+// The globe's label font has plain English letters only ("Ovacık" showed as "Ovac?k"): drop accents for the
+// globe labels. The list and the cards keep the real spelling.
+const PLAIN = { ı: 'i', İ: 'I', ł: 'l', Ł: 'L', ø: 'o', Ø: 'O', ß: 'ss', đ: 'd', Đ: 'D', æ: 'ae', Æ: 'AE', œ: 'oe', Œ: 'OE', 'ʻ': "'", 'ʼ': "'", '’': "'", '‘': "'", '–': '-', '—': '-' };
+const plainText = t => String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x00-\x7F]/g, ch => PLAIN[ch] ?? '');
+
 function initGlobe() {
   const el = document.getElementById('globe');
   if (!hasWebGL() || typeof Globe !== 'function') { document.getElementById('globeError').hidden = false; return; }
@@ -982,10 +1044,8 @@ function initGlobe() {
   const heat = DATA.isFake ? fakeHeatPoints() : baseHeat();
   heatPoints = heat;
   setHeatNote();
-  const regions = searchedRegions();
-  const regionNote = document.getElementById('regionNote');
-  regionNote.hidden = !regions.length;
-  regionNote.innerHTML = `Searched regions (${regions.length}): <i style="border-color:${REGION_COLORS.found}"></i>crater found <i style="border-color:${REGION_COLORS.none}"></i>nothing found<span class="planned-key" hidden><i style="border-color:${COLORS.moon};border-top-style:dashed"></i>searched tonight (Mare)</span>`;
+  // Legend line only for the dashed Mare boxes (shown while a base without results is picked).
+  document.getElementById('regionNote').innerHTML = `<i style="border-color:${COLORS.moon};border-top-style:dashed"></i>searched tonight (Mare)`;
 
   const g = Globe()(el)
     // NASA Blue Marble Next Generation, July 2004, topography + bathymetry (NASA Earth Observatory),
@@ -1001,11 +1061,13 @@ function initGlobe() {
     .heatmapPointWeight('weight')
     .heatmapBandwidth(DATA.isFake ? 2.4 : 0.9)   // real data: one point per crater, so smaller blobs
     .heatmapColorSaturation(2.2)
+    // A soft violet haze, flat on the ground: it shows where good craters cluster without looking like buttons.
+    .heatmapColorFn(() => heatColor)
     .heatmapBaseAltitude(0.005 * labelScale)
-    .heatmapTopAltitude(0.06 * labelScale)
+    .heatmapTopAltitude(0.005 * labelScale)
     .labelLat('lat')
     .labelLng('lng')
-    .labelText(d => labelTextOf(d))
+    .labelText(d => plainText(labelTextOf(d)))
     .labelSize(d => (d.SITE === state.selected ? 1.6 : 1.0) * labelScale)
     .labelDotRadius(d => (d.SITE === state.selected ? 0.7 : d.sim == null ? 0.3 : 0.45) * labelScale)
     // Scored sites stand out; known analogs not scored yet are faint grey dots without a name.
@@ -1024,9 +1086,19 @@ function initGlobe() {
     .pointResolution(10)
     .pointsMerge(false)
     .pointsTransitionDuration(0)
-    .pointLabel(d => `${esc(nameOf(d))}${d.sim == null ? '' : ` · ${pct(d.sim)} like the Moon`}`)
+    .pointLabel(d => `${esc(nameOf(d))}${d.sim == null ? '' : ` · ${scoreText(d.sim, d)} like the Moon`}`)
     .onPointClick(d => { el.style.cursor = ''; select(d.SITE, true); })
     .onPointHover(d => { el.style.cursor = d ? 'pointer' : ''; })
+    // Pins: a dark disc with a white rim under every dot you can click, so sites stand apart from the haze.
+    .polygonGeoJsonGeometry('geometry')
+    .polygonAltitude(() => 0.068 * labelScale)
+    .polygonCapColor(d => (d.selected ? 'rgba(3,10,18,0.75)' : 'rgba(3,10,18,0.6)'))
+    .polygonSideColor(() => 'rgba(0,0,0,0)')
+    .polygonStrokeColor(d => (d.selected ? '#FFFFFF' : 'rgba(255,255,255,0.85)'))
+    .polygonsTransitionDuration(0)
+    .polygonLabel(d => `${esc(nameOf(d))}${d.sim == null ? '' : ` · ${scoreText(d.sim, d)} like the Moon`}`)
+    .onPolygonClick(d => { el.style.cursor = ''; select(d.SITE, true); })
+    .onPolygonHover(d => { el.style.cursor = d ? 'pointer' : ''; })
     // Outlines of every region the pipeline searched (from cells.json); dashed Moon-cream: searched next (Mare).
     .pathPoints('points')
     .pathPointLat(p => p[0])
@@ -1052,7 +1124,7 @@ function initGlobe() {
   controls.addEventListener('start', () => pauseRotation(0));
   controls.addEventListener('end', () => pauseRotation(4000));
   controls.addEventListener('change', onGlobeZoom);
-  g.pointOfView({ lat: 35, lng: 10, altitude: 2.3 });
+  g.pointOfView({ lat: 35, lng: 10, altitude: innerWidth > 1180 ? 2.0 : 2.3 });   // wide screens: the Earth is the stage
   ghostHitAreas(g);
   state.globe = g;
   setEarthPaths();
@@ -1104,7 +1176,7 @@ function onGlobeZoom() {
   if (Math.abs(scale - labelScale) / labelScale < 0.15) return;   // redraw only on a real zoom change
   labelScale = scale;
   // Heatmap and labels float above the globe; zoomed in, bring them down so they sit on the ground.
-  g.heatmapBaseAltitude(0.005 * scale).heatmapTopAltitude(0.06 * scale);
+  g.heatmapBaseAltitude(0.005 * scale).heatmapTopAltitude(0.005 * scale);
   if (heatShown !== scale >= HEAT_MIN_SCALE) {
     heatShown = scale >= HEAT_MIN_SCALE;
     g.heatmapsData(heatShown ? [{ points: heatPoints }] : []);
@@ -1117,8 +1189,9 @@ const boxPath = (r, extra) => { const [w, so, e, n] = r.bbox; return { ...r, ...
 function setEarthPaths() {
   const g = state.globe; if (!g) return;
   const planned = state.moonInfo && !state.targets[state.moonInfo];
-  g.pathsData([...searchedRegions().map(r => boxPath(r)), ...(planned ? PLANNED_REGIONS.map(r => boxPath(r, { planned: true })) : [])]);
-  const key = document.querySelector('#regionNote .planned-key'); if (key) key.hidden = !planned;
+  // The searched-region outlines were removed (too busy); only the planned Mare boxes are drawn.
+  g.pathsData(planned ? PLANNED_REGIONS.map(r => boxPath(r, { planned: true })) : []);
+  document.getElementById('regionNote').hidden = !planned;
 }
 // Turn the Earth to the regions searched next (Mare), or to one of them.
 function showPlanned(run) {
@@ -1158,6 +1231,7 @@ function updateGlobe(fly) {
   declutterLabels(onGlobe);
   g.labelsData(onGlobe.map(x => ({ ...x })));   // new objects so globe.gl redraws sizes and texts
   g.pointsData(setHitRadii(g, onGlobe.map(x => ({ ...x })), d => (d.SITE === state.selected ? 0.7 : 0.45) * labelScale, 4));   // invisible hit areas
+  g.polygonsData(onGlobe.map(x => pinOf(x, (x.SITE === state.selected ? 0.7 : x.sim == null ? 0.3 : 0.45) * labelScale * 1.9)));
   g.ringsData([...(s ? [{ lat: s.lat, lng: s.lng }] : []),
     ...shown.filter(x => state.twinFlash?.includes(x.SITE) && x.SITE !== state.selected).map(x => ({ lat: x.lat, lng: x.lng, twin: true })),
     ...(state.moonInfo && !state.targets[state.moonInfo] ? PLANNED_REGIONS.map(r => ({ lat: (r.bbox[1] + r.bbox[3]) / 2, lng: (r.bbox[0] + r.bbox[2]) / 2, planned: true })) : [])]);
@@ -1231,7 +1305,7 @@ function initMoon() {
     .labelLng('lng')
     // Several targets of one base: only the picked one has its name written (the others on hover). The polar
     // targets lie within 3.5° of the pole, so their dots and text are smaller.
-    .labelText(b => (b.target && !b.sel ? '' : b.name))
+    .labelText(b => (b.target && !b.sel ? '' : plainText(b.name)))
     .labelSize(b => (b.crowded ? 2.2 : b.target ? 3 : b.sel ? 4.2 : 3.4))
     .labelDotRadius(b => (b.crowded ? (b.sel ? 0.9 : 0.7) : b.sel ? 1.6 : 1.2))
     .labelColor(b => (b.sel ? '#FFFFFF' : moonReady(b.id) ? COLORS.signal : 'rgba(167,186,199,0.75)'))
@@ -1337,9 +1411,9 @@ function renderMoonInfo() {
     <p class="moon-title"><b>${esc(b.title)}</b> · ${esc(b.name)} (${esc(b.place)}), ${esc(fmtLatLng(b.lat, b.lng))}</p>
     ${b.subtitle ? `<p class="moon-facts">${esc(b.subtitle)}</p>` : ''}
     <p class="moon-why">${esc(b.why)}</p>
-    ${rows || facts ? `<p class="moon-sub">${crit ? 'Target values (what Earth sites are compared with)' : 'What a lunar mare base site looks like'}</p><ul class="moon-vals">${rows}${facts}</ul>` : ''}
+    ${rows || facts ? `<details class="moon-fold"><summary>${crit ? `Show ${esc(b.name)}’s values` : 'What a lunar mare base site looks like'}</summary>${crit ? '<p class="moon-fold-hint">What Earth sites are compared with</p>' : ''}<ul class="moon-vals">${rows}${facts}</ul></details>` : ''}
     ${b.detail ? `<p class="moon-detail">${esc(b.detail)}</p>` : ''}
-    ${crit && b.id === state.base ? `<p class="moon-sub">Closest Earth twins</p><div class="moon-twins">${twinsOf().map(t => `<button type="button" class="moon-twin" data-twin="${esc(t.SITE)}"><span class="rank ${t.type === 'known' ? 'known' : 'new'}">${t.rank}</span><span>${esc(nameOf(t))}</span><b>${pct(t.sim)}</b>${isTuning(t) ? '<i>tuning</i>' : t.SITE === bestTwin(twinsOf())?.SITE ? '<i class="best">best independent</i>' : ''}</button>`).join('')}</div>` : ''}
+    ${crit && b.id === state.base ? `<p class="moon-sub">Closest Earth twins</p><div class="moon-twins">${twinsOf().map(t => `<button type="button" class="moon-twin" data-twin="${esc(t.SITE)}"><span class="rank ${t.type === 'known' ? 'known' : 'new'}">${t.rank}</span><span>${esc(nameOf(t))}</span><b>${scoreText(t.sim, t)}</b>${isTuning(t) ? '<i>tuning</i>' : t.SITE === bestTwin(twinsOf())?.SITE ? '<i class="best">best independent</i>' : ''}</button>`).join('')}</div>` : ''}
     ${crit ? '' : `<p class="moon-soon">Earth twins for this base come with tonight’s pipeline run. Where we search:</p><div class="moon-twins">${PLANNED_REGIONS.map(r => `<button type="button" class="moon-twin" data-planned="${r.run}"><span>${esc(r.label)}</span><i>${esc(r.country)}</i></button>`).join('')}</div>`}
     <a class="moon-fig" href="${esc(b.figure)}" target="_blank" rel="noopener" hidden>${esc(b.figureLabel ?? 'See the target figure')}</a>`;
   // Show the figure link only if the figure is in the repo (the mare map arrives with Mateo's branch).
@@ -1362,8 +1436,8 @@ function moonTargetHTML(b, t, crit, row) {
   const html = `
     <p class="moon-title"><b>${esc(b.title)}</b> · ${esc(t.label)}${esc(where)}</p>
     <p class="moon-why">${esc(why)}</p>
-    ${rows ? `<p class="moon-sub">Target values (what Earth sites are compared with)</p><ul class="moon-vals">${rows}</ul>` : ''}
-    ${twins.length ? `<p class="moon-sub">Closest Earth twins to this target</p><div class="moon-twins">${twins.map((x, i) => `<button type="button" class="moon-twin" data-twin="${esc(x.SITE)}"><span class="rank ${x.type === 'known' ? 'known' : 'new'}">${i + 1}</span><span>${esc(nameOf(x))}</span><b>${pct(x[t.column])}</b></button>`).join('')}</div>
+    ${rows ? `<details class="moon-fold"><summary>Show ${esc(t.label)}’s values</summary><p class="moon-fold-hint">What Earth sites are compared with</p><ul class="moon-vals">${rows}</ul></details>` : ''}
+    ${twins.length ? `<p class="moon-sub">Closest Earth twins to this target</p><div class="moon-twins">${twins.map((x, i) => `<button type="button" class="moon-twin" data-twin="${esc(x.SITE)}"><span class="rank ${x.type === 'known' ? 'known' : 'new'}">${i + 1}</span><span>${esc(nameOf(x))}</span><b>${scoreText(x[t.column], x)}</b></button>`).join('')}</div>
       <p class="nodata">The ranking and the main score use ${esc(lunarTargets(b.id).find(x => x.builtin)?.label ?? 'today’s target')}.</p>` : ''}
     ${t.preview ? `<a class="moon-fig" href="../${esc(t.preview)}" target="_blank" rel="noopener" hidden>See the target preview figure</a>` : ''}`;
   if (t.preview) setTimeout(() => {
@@ -1392,17 +1466,7 @@ const TILT = { pitch: 68, bearing: -25 }; // the tilted 3D view; the 2D/3D butto
 
 const currentSite = () => visibleSites().find(s => s.SITE === state.selected);
 
-const CELL_COLORS = { ranked: '#3CC8B4', filtered: '#F2A35C', no_bowl: '#A7BAC7', ice_floor: '#9CCFF2', excluded: '#FF8A70' };
-// Searched cells from cells.json as outlines (bbox = [W, S, E, N]); cells of the other base are hidden, Mare
-// "kept" cells draw like ranked ones, "excluded" (config-v1.1) in coral.
-function cellsGeoJSON() {
-  return { type: 'FeatureCollection', features: state.cells.filter(c => Array.isArray(c.bbox) && (c.base == null || c.base === state.base)).map(c => {
-    const [w, so, e, n] = c.bbox;
-    return { type: 'Feature', properties: { status: c.status === 'kept' ? 'ranked' : c.status, reason: c.reason ?? '' },
-      geometry: { type: 'LineString', coordinates: [[w, so], [e, so], [e, n], [w, n], [w, so]] } };
-  }) };
-}
-
+// (The searched-cell outlines in the 3D view were removed: they added noise without a clear purpose.)
 function terrainStyle() {
   const dem = { type: 'raster-dem', tiles: [TERRAIN.dem], tileSize: 256, maxzoom: 15, encoding: 'terrarium' };
   return {
@@ -1412,21 +1476,11 @@ function terrainStyle() {
         attribution: 'Imagery: <a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless</a> by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2016), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>' },
       dem: { ...dem, attribution: 'Elevation: <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">Terrain Tiles on AWS</a> (Mapzen)' },
       shade: dem,
-      cells: { type: 'geojson', data: cellsGeoJSON() },
     },
     layers: [
       { id: 'space', type: 'background', paint: { 'background-color': '#030A12' } },
       { id: 'img', type: 'raster', source: 'img', paint: moonPaint() },
       { id: 'shade', type: 'hillshade', source: 'shade', paint: { 'hillshade-exaggeration': 0.3, 'hillshade-shadow-color': '#000000' } },
-      // The grid cells the pipeline searched: teal = crater scored, orange = skipped (edge or sea), grey = no crater.
-      // (Two layers: MapLibre can't change the dash pattern per feature.)
-      { id: 'cells-other', type: 'line', source: 'cells', filter: ['!=', ['get', 'status'], 'ranked'], paint: {
-        'line-color': ['match', ['get', 'status'], 'filtered', CELL_COLORS.filtered, 'ice_floor', CELL_COLORS.ice_floor, 'excluded', CELL_COLORS.excluded, CELL_COLORS.no_bowl],
-        'line-width': 1.2, 'line-opacity': 0.65, 'line-dasharray': [2, 2],
-      } },
-      { id: 'cells-ranked', type: 'line', source: 'cells', filter: ['==', ['get', 'status'], 'ranked'], paint: {
-        'line-color': CELL_COLORS.ranked, 'line-width': 2.5, 'line-opacity': 0.95,
-      } },
     ],
     terrain: { source: 'dem', exaggeration: TERRAIN.exaggeration },
   };
@@ -1717,7 +1771,6 @@ function flyToShackleton(s) {
 
 function toggleBase() {
   state.showBase = !state.showBase;
-  if (state.showBase) state.valuesOpen = false;   // fold the values panel so the base has room
   const s = currentSite();
   drawBaseLayer(s);
   if (state.showBase) flyToBase(s); else flyTerrainTo(s);
@@ -1736,58 +1789,6 @@ function baseCaptionHTML() {
     <button type="button" class="base-jump" data-base-jump="shackleton">Compare with Shackleton</button>`;
 }
 
-/* ---------- Values panel over the 3D view ---------- */
-
-// The selected site's numbers next to its terrain: score, light and shape (Earth vs Moon with a match bar),
-// and the "on the ground" values. Folded by default on narrow screens.
-function terrainValuesHTML(s) {
-  const open = state.valuesOpen;
-  const head = `<div class="tv-head">
-    <span><b>${esc(nameOf(s))}</b>${s.sim != null ? `<span class="tv-score">${pct(s.sim)} similar to the Moon · rank ${s.RANK ?? s.rank} of ${scoredCount()}</span>` : ''}</span>
-    <button type="button" class="tv-toggle" data-tv-toggle aria-expanded="${open}">${open ? 'Hide' : 'Values'}</button>
-  </div>`;
-  if (!open) return head;
-  const info = state.info[s.SITE] ?? {};
-  if (s.sim == null) {
-    const why = s.type === 'missed' ? 'A known crater our method missed (config-v1), so it has no values.'
-      : info.validation ? `Tested in our validation run: ${info.validation.result}, so it has no values.`
-      : 'Not scored yet: our pipeline hasn’t searched this region.';
-    return head + `<p class="tv-note">${esc(why)} See the card for details.</p>`;
-  }
-  const row = d => `<li class="tv-row" title="${esc(chipTitle(d))}">
-      <span class="tv-label">${esc(d.label)}</span>
-      <span class="tv-val">${esc(vsText(d))}</span>
-      <span class="tv-bar" aria-hidden="true"><i style="width:${Math.round(d.sim * 100)}%"></i></span>
-    </li>`;
-  const group = (title, ds) => (ds.length ? `<p class="tv-group">${title}</p><ul>${ds.map(row).join('')}</ul>` : '');
-  // Only the criteria that count: the display-only ones (Grazing sun, Relief, ...) stay on the card, with their reasons.
-  const withVal = s.details.filter(d => d.counts && d.sim != null);
-  const extra = s.details.filter(d => !d.counts && d.sim != null).length;
-  const raw = s.raw ?? {};
-  const ground = groundCriteria().filter(c => meta(c.key).kind === 'more is better' && s[c.key] != null);
-  const groundRows = ground.map(c => `<li class="tv-row"><span class="tv-label">${esc(c.label)}</span>
-      <span class="tv-val">${Math.round(s[c.key] * 100)}%</span>
-      <span class="tv-bar is-plain" aria-hidden="true"><i style="width:${Math.round(s[c.key] * 100)}%"></i></span></li>`).join('');
-  const impact = s.IMPACT_CRATER == null ? '' : `<li class="tv-row"><span class="tv-label">Impact crater</span>
-      <span class="tv-val tv-wide">${s.IMPACT_CRATER === 1 ? `Yes${raw.IMPACT_NAME ? ` (${esc(raw.IMPACT_NAME)})` : ''}` : 'Not in the list'}</span></li>`;
-  return head + `<div class="tv-body">
-    ${group('Light', withVal.filter(d => d.group === 'light'))}
-    ${group('Shape', withVal.filter(d => d.group === 'terrain'))}
-    ${group('Other', withVal.filter(d => d.group !== 'light' && d.group !== 'terrain'))}
-    ${groundRows || impact ? `<p class="tv-group">On the ground</p><ul>${groundRows}${impact}</ul>` : ''}
-    <p class="tv-note">${isPipeline() ? 'Earth vs Moon. ' : ''}Bar = match with the Moon.${extra ? ` ${extra} more value${extra > 1 ? 's' : ''} compared on the card, not in the score.` : ''}</p>
-  </div>`;
-}
-
-function renderTerrainValues(s) {
-  const el = document.getElementById('terrainValues');
-  el.hidden = !s;
-  if (!s) return;
-  if (state.valuesOpen == null) state.valuesOpen = window.innerWidth >= 900;   // open on desktop, folded on phones
-  el.innerHTML = terrainValuesHTML(s);
-  el.classList.toggle('is-open', !!state.valuesOpen);
-}
-
 function syncViewUI() {
   const inTerrain = state.view === 'terrain';
   const s = currentSite();
@@ -1804,10 +1805,8 @@ function syncViewUI() {
   fly.disabled = !inTerrain && !s;
   const cap = document.getElementById('terrainCaption');
   cap.hidden = !inTerrain || !s;
-  renderTerrainValues(inTerrain ? s : null);
   if (s) cap.innerHTML = `<b>${esc(nameOf(s))}</b><span class="cap-help${state.showBase ? ' is-base' : ''}"><br>3D terrain, heights ×${TERRAIN.exaggeration}. Drag to look around, scroll to zoom.</span>`
-    + (state.showBase ? `<br>${baseCaptionHTML()}` : '')
-    + (state.cells.length && !state.showBase ? `<br><span class="cell-key"><i style="border-color:${CELL_COLORS.ranked}"></i>scored crater <i style="border-color:${CELL_COLORS.filtered}"></i>skipped (edge or sea) <i style="border-color:${CELL_COLORS.no_bowl}"></i>no crater found${state.cells.some(c => c.status === 'ice_floor') ? ` <i style="border-color:${CELL_COLORS.ice_floor}"></i>ice-filled floor` : ''}</span>` : '');
+    + (state.showBase ? `<br>${baseCaptionHTML()}` : '');
 }
 
 function wireViewTools() {
@@ -1820,11 +1819,6 @@ function wireViewTools() {
     (b.dataset.baseJump === 'shackleton' ? flyToShackleton : flyToBase)(currentSite());
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.view === 'terrain') closeTerrain(); });
-  document.getElementById('terrainValues').addEventListener('click', e => {
-    if (!e.target.closest('[data-tv-toggle]')) return;
-    state.valuesOpen = !state.valuesOpen;
-    renderTerrainValues(currentSite());
-  });
 }
 
 /* ---------- Wiring ---------- */
@@ -1869,7 +1863,7 @@ function refresh() {
   // Name only the data the app really shows. Planned sources: Copernicus DEM, ESA WorldCover, MODIS, LOLA, LROC, Diviner.
   document.getElementById('footNote').textContent = DATA.isFake
     ? 'Scores and heatmap are sample values, not results yet'
-    : 'Scores from our pipeline: Earth terrain from Copernicus DEM GLO-30, Moon terrain from LOLA (LDEM 80°S, 20 m, Barker et al. 2023). Rock at site: Macrostrat, CC BY 4.0';
+    : 'Scores from our pipeline: Earth terrain from Copernicus DEM GLO-30, Moon terrain from LOLA (LDEM 80°S, 20 m, Barker et al. 2023). Rock at site: Macrostrat, CC BY 4.0. Stations: INTERACT GIS station list (interact-gis.org, accessed 15 Nov 2026); own list of analog stations';
   wireFilters();
   wireViewTools();
   initGlobe();
