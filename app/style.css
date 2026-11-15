@@ -188,6 +188,15 @@ a { color: var(--earth); }
 .chip.good { border-color: rgba(127,209,168,.55); }
 .chip.gap { border-color: rgba(240,163,93,.65); }
 .chip b { font-weight: 600; }
+.chip[data-def] { cursor: help; }
+.chip[data-def]:hover, .chip[data-def]:focus-visible { background: var(--panel); border-color: var(--muted); outline: none; }
+/* Definition box for the card chips (defs.js) */
+.def-tip { position: fixed; z-index: 1000; max-width: 300px; padding: 10px 12px; border-radius: 8px; pointer-events: none;
+  background: var(--panel); color: var(--text); border: 1px solid var(--muted); box-shadow: 0 6px 20px rgba(0,0,0,.45);
+  font-size: 14px; line-height: 1.4; display: grid; gap: 4px; }
+.def-tip[hidden] { display: none; }
+.def-tip b { font-size: 15px; }
+.def-tip small { font-size: 13px; color: var(--muted); }
 .note-box { background: var(--panel-2); border-radius: 10px; padding: 12px 14px; font-size: 14px; line-height: 1.5; }
 .note-box p { margin: 0; }
 .prac { display: grid; grid-template-columns: 1fr 90px 36px; gap: 6px 10px; align-items: center; font-size: 13px; }
