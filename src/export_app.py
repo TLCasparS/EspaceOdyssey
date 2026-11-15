@@ -23,6 +23,12 @@ Rules:
 - SITE = name of a known site from site_info.json if its point (from --sites-coords, Sofia's approximate
   coordinates) lies inside the cell, else "<run> <cell>". No commas in names (the app splits on ",").
 - All runs must use the same scoring config (methods, weights, lunar targets), else the script stops.
+- Several lunar targets (night Task 3, docs/MULTI_TARGET.md, src/pipeline/multi_target.py): if
+  config/lunar_targets_candidates.json (--candidates) has a target in use (verified: true, or any with
+  --include-unverified = PREVIEW), scores.csv gets SCORE_<TARGET> per target (today's target included, e.g.
+  SCORE_SHACKLETON = SCORE_TOTAL), BEST_TARGET, BEST_SCORE (+ MULTI_TARGET_PREVIEW = 1 in a preview), appended
+  after the existing columns; targets.json gets targets[base].lunar_targets and _multi_target. With only
+  today's targets nothing changes: all files are identical to before.
 """
 from __future__ import annotations
 
@@ -229,11 +235,17 @@ def main():
     ap.add_argument("--missed", type=Path, default=ROOT / "config" / "missed_sites.yaml")
     ap.add_argument("--cells-near-km", type=float, default=50.0,
                     help="cells.json: only cells within this distance of a ranked/kept place")
+    ap.add_argument("--candidates", type=Path, default=ROOT / "config" / "lunar_targets_candidates.json",
+                    help="extra lunar targets (Task 5 format, docs/MULTI_TARGET.md); only verified ones are used")
+    ap.add_argument("--include-unverified", action="store_true",
+                    help="PREVIEW: also score unverified candidate targets / criteria; outputs are marked as preview")
     a = ap.parse_args()
     sys.path.insert(0, str(ROOT / "src"))
     from impact_list import load as load_impacts
     from pipeline.config import load_config
-    disp = load_config().get("display", {})
+    from pipeline import multi_target as mt
+    cfg = load_config()
+    disp = cfg.get("display", {})
     impacts = load_impacts(a.impacts)
     regions = load_regions(a.regions, a.night_regions)
     sites = known_sites(a.sites_info, a.sites_coords)
@@ -253,6 +265,17 @@ def main():
         if diff:
             raise SystemExit(f"{base} run {name} was scored with a different config than {ref[base][0]} "
                              f"({sorted(diff)}): rerun it")
+
+    # several lunar targets: today's target = the run's axes (as scored); candidates from --candidates
+    base_crit = {base: {x_id: {"weight": ax["weight"], "tolerance": ax.get("tolerance"),
+                               "target": ax.get("target") if ax.get("method") == "target" else None}
+                        for x_id, ax in axes.items()} for base, (_, axes, _) in ref.items() if base in mt.BUILTIN}
+    lunar_targets = mt.build_targets(base_crit, mt.load_candidates(a.candidates), a.include_unverified,
+                                     {"mare": cfg.get("mare", {}).get("tolerance_floor", {})})
+    multi = any(not t["builtin"] for t in lunar_targets)   # False: outputs exactly as before Task 3
+    mt_preview = multi and any(t["preview"] for t in lunar_targets)
+    mt_cols = ([t["column"] for t in lunar_targets] + ["BEST_TARGET", "BEST_SCORE"]
+               + (["MULTI_TARGET_PREVIEW"] if mt_preview else [])) if multi else []
 
     rows = []
     for p, name, radar, ranking in runs:
@@ -288,6 +311,8 @@ def main():
             known = [nm for nm, la, lo in sites if s <= la <= n and w <= lo <= e]
             short = r["id"].split("_")[-1]
             row["NAME"] = known[0] if known else hit["name"] if hit else f"{rg['title'] if rg else name} {short}"
+            if multi:
+                row.update(mt.score_row(r, base, lunar_targets))
             rows.append(row)
 
     for base in ref:                                       # rank per base type
@@ -320,7 +345,14 @@ def main():
             x[k] = str(x[k] or "").replace(",", ";")       # the app splits on ","
 
     a.out.mkdir(parents=True, exist_ok=True)
-    cols = ["SITE", "LAT", "LON", *APP_COLUMNS.values(), *DISPLAY_COLUMNS, *EXTRA_COLS]
+    cols = ["SITE", "LAT", "LON", *APP_COLUMNS.values(), *DISPLAY_COLUMNS, *EXTRA_COLS, *mt_cols]
+    if multi:                                              # today's target re-scored from raw must equal SCORE_TOTAL
+        off = [x["SITE"] for x in rows for t in lunar_targets if t["builtin"] and t["base_type"] == x["BASE_TYPE"]
+               and x["SCORE_TOTAL"] is not None and x.get(t["column"]) is not None
+               and abs(x[t["column"]] - x["SCORE_TOTAL"]) > 2e-4]
+        if off:
+            print(f"WARNING: {len(off)} rows: built-in target re-scored from raw values != SCORE_TOTAL "
+                  f"(e.g. {off[:3]}); check the run's radar.json")
     with open(a.out / "scores.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(cols)
@@ -328,7 +360,9 @@ def main():
             w.writerow([x["SITE"], _fmt(x["LAT"], 5), _fmt(x["LON"], 5), *[_fmt(x[c]) for c in APP_COLUMNS.values()],
                         *[_fmt(x[c]) for c in DISPLAY_COLUMNS], x["RUN"], x["CELL"], x["BASE_TYPE"],
                         _fmt(x["SCORE_TOTAL"]), x["RANK"] or "", x["NAME"], x["COUNTRY"], x["ROLE"],
-                        _fmt(x["TERRAIN_SCORE"]), _fmt(x["LIGHT_SCORE"]), x["MISSED_REASON"]])
+                        _fmt(x["TERRAIN_SCORE"]), _fmt(x["LIGHT_SCORE"]), x["MISSED_REASON"],
+                        *[x.get(c) or "" if c == "BEST_TARGET" else "1" if c == "MULTI_TARGET_PREVIEW"
+                          else _fmt(x.get(c)) for c in mt_cols]])
 
     crit_cols = list(dict.fromkeys([*APP_COLUMNS.values(), *MARE_COLUMNS.values()]))   # Polar + Mare raw columns
     raw_cols = ["SITE", "LAT", "LON", *crit_cols, *EXTRA_RAW.values(), *DISPLAY_RAW.values(),
@@ -383,6 +417,17 @@ def main():
                                   "score_method": "display", "fact": txt, "moon": None})
         targets[base] = {"label": lunar.get("label") or base, "named_site": lunar.get("named_site"),
                          "total_rule": radar.get("score_label", "score vs Moon"), "criteria": crit_list}
+        if multi:
+            targets[base]["lunar_targets"] = mt.targets_summary([t for t in lunar_targets if t["base_type"] == base])
+    if multi:
+        targets["_multi_target"] = {
+            "preview": mt_preview,
+            "note": ("scores.csv SCORE_<TARGET> = score vs Moon against that lunar target (same rule, weights and "
+                     "tolerances as SCORE_TOTAL; a target's own tolerance wins, Mare: max(own, floor)); BEST_TARGET = "
+                     "target with the highest score among the row's base type, BEST_SCORE = that score. "
+                     "targets[base].lunar_targets lists each target (builtin = today's target, = SCORE_TOTAL)."
+                     + (" PREVIEW: unverified targets or criteria are included (--include-unverified); "
+                        "not for real results." if mt_preview else ""))}
     (a.out / "targets.json").write_text(json.dumps(targets, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     heat = [{"lat": x["_centre"][0], "lng": x["_centre"][1], "weight": round(x["SCORE_TOTAL"], 4),
@@ -472,6 +517,14 @@ Base types: {', '.join(f"{b} ({n_by[b]} rows)" for b in ref)}; plus {len(missed)
 ## Known limitation: Sun disc vs Sun centre (SUNNY_RIDGE, DARK_FLOOR, LIGHT_NEAR_DARK)
 {DISC_VS_CENTRE}
 """
+    if multi:
+        readme += (f"""
+## Several lunar targets ("closest lunar twin"){" — PREVIEW, includes unverified targets" if mt_preview else ""}
+Columns after `MISSED_REASON`: {', '.join(f'`{c}`' for c in mt_cols)}. `SCORE_<TARGET>` = score vs Moon against that
+target (same rule, weights and tolerances as `SCORE_TOTAL`; today's target equals `SCORE_TOTAL`); `BEST_TARGET` /
+`BEST_SCORE` = best-matching target of the row's base type. Targets: `targets[BASE_TYPE].lunar_targets`
+(see docs/MULTI_TARGET.md).
+""")
     (a.out / "README.md").write_text(readme, encoding="utf-8")
     print(f"{len(rows)} rows ({', '.join(f'{b} {n_by[b]}' for b in ref)}, missed {len(missed)}) from {len(runs)} runs -> {a.out}")
     for x in rows[:12]:
