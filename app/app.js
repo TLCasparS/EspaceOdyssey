@@ -22,6 +22,7 @@ const DATA = USE_SAMPLE ? {
   cells: OUT + 'cells.json',    // every searched cell, with status (ranked / no_bowl / filtered)
   info: 'sample/site_info.json',     // Sofia's research notes per site (export_app.py reads it too)
   coords: 'sample/scores.csv',       // only SITE,LAT,LON: puts sites the pipeline hasn't scored yet on the map
+  access: '../data/access/access_hours.csv', // Mateo's c26: travel time to a city + nearest airport (display only)
   isFake: false,
 };
 
@@ -124,11 +125,62 @@ const state = {
 
 /* ---------- Loading ---------- */
 
+// Access (criterion 26, display only, docs/ACCESS.md): travel time to the nearest city (Weiss et al. 2018) and
+// straight-line distance to the nearest medium/large airport (OurAirports), one value per place.
+// If the export already puts ACCESS_HOURS / AIRPORT_* into raw_values.csv, those win. Otherwise we join Mateo's
+// file on RUN/CELL (night export: RUN "night_polar" = run "polar") or, for the first-run data, on the nearest
+// Polar point within 1.5 km (same craters, low points within 0.5 km of each other).
+const ACCESS_MATCH_KM = 1.5;
+function kmBetween(lat1, lon1, lat2, lon2) {
+  const r = Math.PI / 180, x = (lon2 - lon1) * r * Math.cos((lat1 + lat2) / 2 * r), y = (lat2 - lat1) * r;
+  return 6371 * Math.hypot(x, y);
+}
+function attachAccess(rows) {
+  const byCell = new Map(rows.map(a => [`night_${a.run}|${a.cell}`, a]));
+  const polar = rows.filter(a => a.run === 'polar' && a.lat != null && a.lon != null);
+  for (const s of state.sites) {
+    if (s.raw?.ACCESS_HOURS != null || s.raw?.AIRPORT_KM != null) continue;
+    let a = s.RUN ? byCell.get(`${s.RUN}|${s.CELL}`) : null;
+    if (!a && !s.missed && !s.unscored && (s.BASE_TYPE ?? 'polar') === 'polar' && s.LAT != null) {
+      let best = Infinity;
+      for (const p of polar) {
+        if (Math.abs(p.lat - s.LAT) > 0.05) continue;
+        const d = kmBetween(s.LAT, s.LON, p.lat, p.lon);
+        if (d < best) { best = d; a = p; }
+      }
+      if (best > ACCESS_MATCH_KM) a = null;
+    }
+    if (a) s.access = { ACCESS_HOURS: a.ACCESS_HOURS, AIRPORT_KM: a.AIRPORT_KM, AIRPORT_NAME: a.AIRPORT_NAME, AIRPORT_TYPE: a.AIRPORT_TYPE };
+  }
+}
+function accessOf(s) {
+  const raw = s.raw ?? {};
+  return raw.ACCESS_HOURS != null || raw.AIRPORT_KM != null ? raw : (s.access ?? null);
+}
+function fmtTravel(h) {
+  if (h == null) return null;
+  if (h < 1) return `~${Math.max(5, Math.round(h * 60 / 5) * 5)} min`;
+  if (h < 48) return `~${Math.round(h)} h`;
+  return `~${Math.round(h / 24)} days`;
+}
+function accessHTML(s) {
+  const a = accessOf(s);
+  if (!a) return '';
+  const t = fmtTravel(a.ACCESS_HOURS), km = a.AIRPORT_KM;
+  if (t == null && km == null) return '';
+  const kind = a.AIRPORT_TYPE === 'large_airport' ? 'large airport' : 'medium airport';
+  return `<p class="impact-line access-line" title="Modelled travel time over land to the nearest city (a place with 1,500+ people per km² or 50,000+ inhabitants), roads of 2015 (Weiss et al. 2018, Malaria Atlas Project). Airport: straight-line distance, OurAirports; says nothing about flights.">
+    <span>Access</span> ${t == null ? 'no travel-time data' : `<b>${t}</b> to the nearest city`}${km == null ? '' : ` · ${Math.round(km).toLocaleString('en')} km to ${esc(a.AIRPORT_NAME ?? 'an airport')} (${kind})`}</p>`;
+}
+
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
   const head = lines.shift().split(',').map(s => s.trim());
   const rows = lines.filter(Boolean).map(line => {
-    const cells = line.split(',');
+    // Split on commas outside double quotes ("Svalbard Airport, Longyear" stays one cell).
+    const cells = line.includes('"')
+      ? (line.match(/("([^"]|"")*"|[^,]*)(,|$)/g) ?? []).map(c => c.replace(/,$/, '').replace(/^"|"$/g, '').replace(/""/g, '"'))
+      : line.split(',');
     const row = {};
     head.forEach((h, i) => {
       const raw = (cells[i] ?? '').trim();
@@ -139,14 +191,15 @@ function parseCSV(text) {
   });
   return { head, rows };
 }
-const TEXT_COLUMNS = new Set(['SITE', 'RUN', 'CELL', 'BASE_TYPE', 'IMPACT_NAME', 'IMPACT_SOURCE']);
+const TEXT_COLUMNS = new Set(['SITE', 'RUN', 'CELL', 'BASE_TYPE', 'IMPACT_NAME', 'IMPACT_SOURCE',
+  'run', 'cell', 'AIRPORT_NAME', 'AIRPORT_TYPE', 'AIRPORT_IDENT']);
 
 const getText = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.text(); });
 const getJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.json(); });
 const optional = (url, fallback) => (url ? getJSON(url).catch(() => fallback) : Promise.resolve(fallback));
 
 async function loadAll() {
-  const [csv, targets, info, rawCsv, heat, cells, coordsCsv] = await Promise.all([
+  const [csv, targets, info, rawCsv, heat, cells, coordsCsv, accessCsv] = await Promise.all([
     getText(DATA.scores),
     getJSON(DATA.targets),
     optional(DATA.info, {}),
@@ -154,6 +207,7 @@ async function loadAll() {
     optional(DATA.heatmap, null),
     optional(DATA.cells, []),
     DATA.coords ? getText(DATA.coords).catch(() => '') : Promise.resolve(''),
+    DATA.access ? getText(DATA.access).catch(() => '') : Promise.resolve(''),
   ]);
   const { head, rows } = parseCSV(csv);
   const rawRows = rawCsv ? parseCSV(rawCsv).rows : [];
@@ -175,6 +229,7 @@ async function loadAll() {
     Object.entries(info).filter(([k, v]) => v?.type === 'missed' && v.lat != null && v.lng != null && !state.sites.some(x => x.SITE === k))
       .forEach(([k, v]) => state.sites.push({ SITE: k, LAT: v.lat, LON: v.lng, lat: v.lat, lng: v.lng, raw: {}, unscored: true, missed: true }));
   }
+  if (accessCsv) attachAccess(parseCSV(accessCsv).rows);
   state.targets = Object.fromEntries(Object.entries(targets).filter(([k]) => !k.startsWith('_')));
   // The night export names some cells differently (e.g. "Al Wahbah area r003c1511" instead of
   // "arid_al_wahbah r001c001"); site_info.json → _aliases maps the new name to the same notes.
@@ -661,7 +716,7 @@ function renderCard() {
       ${hasLightLimit ? `<p class="nodata" title="${esc(meta('SUNNY_RIDGE')?.limitation ?? '')}"><b>Light:</b> ${esc(LIGHT_NOTE)}</p>` : ''}
     </div>`}
 
-    ${ground.length || impact ? `<div class="note-box prac-box">
+    ${ground.length || impact || accessHTML(s) ? `<div class="note-box prac-box">
       <h3>On the ground</h3>
       ${ground.length ? `<div class="prac">${ground.map(c => `
         <span title="${esc(meta(c.key).earthUnit)}">${esc(c.label)}</span>
@@ -669,7 +724,8 @@ function renderCard() {
         <span class="pct">${Math.round(s[c.key] * 100)}%</span>`).join('')}
       </div>` : ''}
       ${impact ? `<p class="impact-line"><span>Impact crater</span> ${impact}</p>` : ''}
-      <p class="nodata">About the place itself, not compared with the Moon (more is better). Not part of the score.</p>
+      ${accessHTML(s)}
+      <p class="nodata">About the place itself, not compared with the Moon${ground.length ? ' (bars: more is better)' : ''}. Not part of the score.${accessOf(s) ? ' Access is a model (roads of 2015, airport in a straight line): a rough guide to how remote the place is, not a trip plan.' : ''}</p>
     </div>` : ''}
 
     ${practical.length ? `<div class="note-box prac-box">

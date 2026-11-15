@@ -179,6 +179,10 @@ Not shown to the judges, but the same text belongs in the project (README / app 
   https://registry.opendata.aws/terrain-tiles/ (licence/attribution: `[check]`)
 - Sentinel-2 cloudless 2016 by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2016), 3D view
   imagery: https://s2maps.eu, CC BY 4.0 (we use the 2016 layer because EOX's 2018–2025 layers are non-commercial)
+- Travel time to cities (card "Access" line, display only): Weiss, D.J. et al. (2018), Nature 553, 333–336,
+  doi:10.1038/nature25181; data from the Malaria Atlas Project (CC BY; `docs/ACCESS.md`)
+- Nearest airport (card "Access" line): OurAirports `airports.csv`, https://ourairports.com/data/ (public domain
+  according to third-party pages; `[TEAM: open ourairports.com/data once and confirm]`, see `docs/ACCESS.md`)
 - Site notes: sources linked per site in `app/sample/site_info.json`.
 
 **Software**
