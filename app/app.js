@@ -235,6 +235,8 @@ async function loadAll() {
   // Known craters our method searched but missed (type "missed", with lat/lng in site_info.json), e.g.
   // Tenoumer: shown on purpose, as an honest example of a limitation of the pipeline settings.
   if (!DATA.isFake) {
+    // Night export: missed craters are rows of scores.csv with ROLE "missed" (and MISSED_REASON), without scores.
+    state.sites.filter(x => x.ROLE === 'missed').forEach(x => { x.missed = true; x.unscored = true; });
     Object.entries(info).filter(([k, v]) => v?.type === 'missed' && v.lat != null && v.lng != null && !state.sites.some(x => x.SITE === k))
       .forEach(([k, v]) => state.sites.push({ SITE: k, LAT: v.lat, LON: v.lng, lat: v.lat, lng: v.lng, raw: {}, unscored: true, missed: true }));
   }
@@ -311,7 +313,7 @@ function scoreSite(site) {
   return { sim: total, details, coverage: counted.length, possible: similarityCriteria().length };
 }
 
-const typeOf = site => state.info[site.SITE]?.type ?? 'candidate';
+const typeOf = site => (site.missed ? 'missed' : state.info[site.SITE]?.type ?? 'candidate');   // missed: night export ROLE or site_info
 const nameOf = site => state.info[site.SITE ?? site]?.name ?? site.SITE ?? site;
 // Tuning regions (CLAUDE.md, "do not count for validation"): used to check and set up the method, so a
 // high rank there is partly built in. Screening regions (Al Wahbah, Roter Kamm, ...) are the fair results.
@@ -649,11 +651,16 @@ function renderList() {
       <p class="regions-title">Searched, no crater found</p>
       <p class="regions-hint">No bowl at least 50 m deep and 1 km wide in these regions. Click one to see it on the globe.</p>
       ${empty.map(r => `<button type="button" class="region-btn" data-region="${esc(r.run)}" title="${r.cells} grid squares searched">${esc(r.label)}</button>`).join('')}
-      ${missedSites.length ? `<p class="regions-title missed-title">A known crater our method missed</p>
-      <p class="regions-hint">Its rim is too low on one side for our depth rule. Click it to see why.</p>
-      ${missedSites.map(s => `<button type="button" class="region-btn missed-btn site-btn-ref${s.SITE === state.selected ? ' is-current' : ''}" data-site="${esc(s.SITE)}">${esc(nameOf(s))}</button>`).join('')}` : ''}
     </li>`);
     list.querySelectorAll('.region-btn[data-region]').forEach(b => b.addEventListener('click', () => showRegion(b.dataset.region)));
+  }
+  // A known crater our method missed (Tenoumer): its own block, shown even when every searched region found something.
+  if (missedSites.length && !state.active.size && state.typeFilter !== 'known') {
+    list.insertAdjacentHTML('beforeend', `<li class="regions">
+      <p class="regions-title missed-title">${missedSites.length > 1 ? `Known places our method missed (${missedSites.length})` : 'A known crater our method missed'}</p>
+      <p class="regions-hint">Real analog sites our search covered but did not find. Click ${missedSites.length > 1 ? 'one' : 'it'} to see why.</p>
+      ${missedSites.map(s => `<button type="button" class="region-btn missed-btn site-btn-ref${s.SITE === state.selected ? ' is-current' : ''}" data-site="${esc(s.SITE)}">${esc(nameOf(s))}</button>`).join('')}
+    </li>`);
     list.querySelectorAll('.missed-btn').forEach(b => b.addEventListener('click', () => select(b.dataset.site, true)));
   }
   list.querySelectorAll('.site-btn').forEach(b => b.addEventListener('click', () => select(b.dataset.site, true)));
@@ -810,7 +817,8 @@ function renderCard() {
     <div class="card-col card-col-a">
     ${missed ? `<div class="radar-box missed-box">
       <h3>Missed by our method</h3>
-      <p>Our search covered this crater but found no bowl here. We show it on purpose: a known crater that our method misses is an honest example of its limits, and tells us what to fix next.</p>
+      <p>Our search covered this place but found no bowl here. We show it on purpose: a known site that our method misses is an honest example of its limits, and tells us what to fix next.</p>
+      ${s.MISSED_REASON && info.breaks ? `<p><b>Pipeline note:</b> ${esc(s.MISSED_REASON)} <span class="ref-ours">our data</span></p>` : ''}
     </div>` : info.validation ? `<div class="radar-box missed-box">
       <h3>Validation test: ${esc(info.validation.result)}</h3>
       <p>${research(info.validation.text)}</p>
@@ -873,7 +881,7 @@ function renderCard() {
 
     <div class="note-box">
       <h3>${missed ? 'Why our method missed it' : 'Where the analogy breaks down'}</h3>
-      ${info.breaks ? `<p>${research(info.breaks)}</p>` : auto ? `<ul class="outlook">${auto.breaks.map(t => `<li>${esc(t)} <span class="ref-ours">our data</span></li>`).join('')}<li>${esc(auto.general)}</li></ul>` : '<p><span class="todo">[to research]</span></p>'}
+      ${info.breaks ? `<p>${research(info.breaks)}</p>` : missed && s.MISSED_REASON ? `<p>${esc(s.MISSED_REASON[0].toUpperCase() + s.MISSED_REASON.slice(1))}. <span class="ref-ours">our data</span></p>` : auto ? `<ul class="outlook">${auto.breaks.map(t => `<li>${esc(t)} <span class="ref-ours">our data</span></li>`).join('')}<li>${esc(auto.general)}</li></ul>` : '<p><span class="todo">[to research]</span></p>'}
     </div>
 
     ${info.outlook ? `${isNew || missed ? '' : `<div class="note-box">
@@ -888,7 +896,7 @@ function renderCard() {
       <h3>Opportunities &amp; challenges</h3>
       ${outlookHTML({ outlook: auto.outlook, sources: [] })}
       <p class="nodata">Nobody on our team has researched this place yet: these lines come only from our pipeline’s measurements.</p>
-    </div>` : `<div class="note-box">
+    </div>` : missed && !info.helps ? '' : `<div class="note-box">
       <h3>${missed ? 'What we change next' : isNew ? 'What we could test here' : 'How it has helped exploration'}</h3>
       <p>${info.helps ? research(info.helps) : `<span class="todo">${isNew ? '[to write once ranked: what we could test here]' : '[to research]'}</span>`}</p>
       ${sourcesHTML(info.sources)}
