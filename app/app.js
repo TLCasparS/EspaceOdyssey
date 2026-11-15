@@ -311,6 +311,29 @@ const sourcesHTML = list => {
   return `<p class="sources-title">Sources</p><ul class="sources">${ok.map(x =>
     `<li><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label || x.url)}</a></li>`).join('')}</ul>`;
 };
+// Numbered source list, so lines in "Opportunities & challenges" can point to [1], [2]...
+const numberedSourcesHTML = list => {
+  const items = (list ?? []).map((x, i) => ({ ...x, n: i + 1 })).filter(x => /^https?:\/\//.test(x?.url ?? ''));
+  if (!items.length) return '';
+  return `<p class="sources-title">Sources</p><ol class="sources">${items.map(x =>
+    `<li value="${x.n}"><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label || x.url)}</a></li>`).join('')}</ol>`;
+};
+// One line of the outlook box: text + its source numbers ("ours" = our own pipeline measurement).
+const outlookLine = (item, sources) => {
+  const text = String(item.text ?? '').replace(/^Our data:\s*/, '');
+  const refs = [...(item.src ?? [])].sort((a, b) => (a === 'ours') - (b === 'ours') || a - b).map(r => {
+    if (r === 'ours') return '<span class="ref-ours" title="Measured by our pipeline (config-v1), not from a publication">our data</span>';
+    const s = sources?.[r - 1];
+    return s && /^https?:\/\//.test(s.url ?? '') ? `<a class="ref" href="${esc(s.url)}" target="_blank" rel="noopener" title="${esc(s.label)}">[${r}]</a>` : '';
+  }).join('');
+  return `<li>${esc(text.charAt(0).toUpperCase() + text.slice(1))} ${refs}</li>`;
+};
+const outlookHTML = info => {
+  const o = info.outlook;
+  if (!o) return '';
+  const list = (cls, title, items) => items?.length ? `<p class="outlook-title ${cls}">${title}</p><ul class="outlook ${cls}">${items.map(it => outlookLine(it, info.sources)).join('')}</ul>` : '';
+  return list('opp', 'Opportunities', o.opportunities) + list('chal', 'Challenges', o.challenges);
+};
 const baseLabel = () => BASES.find(b => b.id === state.base)?.label ?? state.base;
 
 /* ---------- Filter bar ---------- */
@@ -676,11 +699,19 @@ function renderCard() {
       <p>${info.breaks ? research(info.breaks) : '<span class="todo">[to research]</span>'}</p>
     </div>
 
-    <div class="note-box">
+    ${info.outlook ? `${isNew || missed ? '' : `<div class="note-box">
+      <h3>How it has helped exploration</h3>
+      <p>${research(info.helps ?? '[to research]')}</p>
+    </div>`}
+    <div class="note-box outlook-box">
+      <h3>Opportunities &amp; challenges</h3>
+      ${outlookHTML(info)}
+      ${numberedSourcesHTML(info.sources)}
+    </div>` : `<div class="note-box">
       <h3>${missed ? 'What we change next' : isNew ? 'What we could test here' : 'How it has helped exploration'}</h3>
       <p>${info.helps ? research(info.helps) : `<span class="todo">${isNew ? '[to write once ranked: what we could test here]' : '[to research]'}</span>`}</p>
       ${sourcesHTML(info.sources)}
-    </div>
+    </div>`}
     </div>
     </div>`;
 }
