@@ -41,7 +41,8 @@ Optional (15 Nov 2026; without these flags nothing changes):
   the row of a region run wins over a night (world-grid) run. Dropped rows are listed in the README.
 - --glim PATH: GLiM rock class (Hartmann & Moosdorf 2012, PANGAEA 0.5 deg grid; src/pipeline/material.py) as
   DISPLAY columns in raw_values.csv: ROCK_CLASS, ROCK_CLASS_NAME, BASALT_SHARE_5KM, GLIM_COVERED_SHARE,
-  BASALT_REGION (parameters: config/display.yaml -> material). Never in a score. Sea / GLiM "nd" = no data.
+  BASALT_REGION (team decision 15 Nov 2026: BASALT_REGION = 1 if the class AT the point is vb, else 0; a point in a
+  cell GLiM counts as sea, or GLiM "nd", = no data, nothing borrowed from neighbours). Never in a score.
 """
 from __future__ import annotations
 
@@ -173,7 +174,7 @@ GLIM_GRID = "glim_wgs84_0point5deg.txt.asc"
 
 def load_glim(path: Path, mcfg: dict) -> dict:
     """GLiM grid source + display parameters (config/display.yaml -> material). path = .asc file or a folder."""
-    from pipeline.material import CLASSES, GridSource
+    from pipeline.material import CLASSES, DISPLAY_CAVEAT, GridSource
     p = Path(path)
     if p.is_dir():
         hits = sorted(p.rglob(GLIM_GRID))
@@ -182,12 +183,13 @@ def load_glim(path: Path, mcfg: dict) -> dict:
         p = hits[0]
     meta = {"source": "Hartmann & Moosdorf (2012) GLiM v1.0 gridded to 0.5 deg, PANGAEA doi:10.1594/PANGAEA.788537 "
                       "(CC-BY 3.0); cite doi:10.1029/2012GC004370",
-            "radius_km": float(mcfg.get("radius_km", 5)), "basalt_min_share": float(mcfg.get("basalt_min_share", 0.5)),
-            "min_covered_share": float(mcfg.get("min_covered_share", 0.5)),
+            "radius_km": float(mcfg.get("radius_km", 5)), "caveat": DISPLAY_CAVEAT,
             "classes": {k: v for k, v in CLASSES.items() if k != "nd"},
-            "note": ("Display only, never in a score. One dominant class per 0.5 deg cell (~55 km): a region flag, not a "
-                     "5 km measurement. Sea / GLiM nd = no data; BASALT_SHARE_5KM and BASALT_REGION empty below "
-                     "min_covered_share. Point = Polar low point, Mare base pad. docs/MATERIAL.md.")}
+            "note": ("Display only, never in a score. Caveat: " + DISPLAY_CAVEAT + " (one dominant class per 0.5 deg "
+                     "cell, ~55 km). BASALT_REGION = 1 if the class at the point is vb, 0 for any other class. A point "
+                     "in a cell GLiM counts as sea (coasts, islands) or GLiM nd = no data: no class, no flag, no "
+                     "shares borrowed from neighbouring cells. Point = Polar low point, Mare base pad. "
+                     "docs/MATERIAL.md (team decisions 15 Nov 2026).")}
     return {"src": GridSource(p), "meta": meta}
 
 
@@ -203,9 +205,9 @@ def rock_values(lat, lon, glim: dict) -> dict:
     code = res["rock_class"] or ""
     out.update(ROCK_CLASS=code, ROCK_CLASS_NAME=CLASSES.get(code, "") if code else "",
                GLIM_COVERED_SHARE=res["covered_share"])
-    if res["covered_share"] >= m["min_covered_share"] and res["share_vb"] is not None:
+    if code:                                               # no class at the point = no data (team decision)
         out["BASALT_SHARE_5KM"] = res["share_vb"]
-        out["BASALT_REGION"] = 1.0 if res["share_vb"] >= m["basalt_min_share"] else 0.0
+        out["BASALT_REGION"] = 1.0 if code == "vb" else 0.0
     return out
 
 
@@ -716,13 +718,12 @@ cell in `ranking.csv`); another target might prefer a different bowl in the same
 `raw_values.csv` columns {', '.join(f'`{c}`' for c in ROCK_COLS)}, at the Polar low point / Mare base pad (`LAT`/`LON`).
 - `ROCK_CLASS` = first-level GLiM code of the grid cell under the point (`vb` = basic volcanic = basalt; names in
   `ROCK_CLASS_NAME` and `targets.json` -> `_material.classes`); empty = no data (sea or GLiM "nd").
-- `BASALT_SHARE_5KM` = share of `vb` within {mc['radius_km']:g} km, relative to the part of the disc that has GLiM data;
-  `GLIM_COVERED_SHARE` = that part (0-1). `BASALT_REGION` = 1 if `BASALT_SHARE_5KM` >= {mc['basalt_min_share']:g}, else 0.
-  Both are **empty (no data)** when less than {mc['min_covered_share']:.0%} of the disc has GLiM data: coastal grid
-  cells can be sea, so coast and island places show no data, never 0.
-- **Caveat:** source = {mc['source']}. One dominant class per 0.5 deg cell (~55 km), so this is a "basalt region
-  yes/no" flag, not a 5 km measurement; small lava fields vanish. GLiM has no anorthosite class (c22 cannot be
-  scored). Details: docs/MATERIAL.md.
+- `BASALT_REGION` = 1 if `ROCK_CLASS` is `vb`, 0 for any other class (team decision 15 Nov 2026).
+  `BASALT_SHARE_5KM` = share of `vb` within {mc['radius_km']:g} km, relative to the part of the disc that has GLiM data;
+  `GLIM_COVERED_SHARE` = that part (0-1). A point in a grid cell GLiM counts as sea (coasts, islands) or GLiM "nd"
+  is **no data**: class, flag and share empty, nothing borrowed from neighbouring cells, never 0.
+- **Caveat: {mc['caveat']}.** Source = {mc['source']}. One dominant class per 0.5 deg cell (~55 km); small lava
+  fields vanish. GLiM has no anorthosite class (c22 cannot be scored). Details: docs/MATERIAL.md.
 
 | base | BASALT_REGION | places |
 |---|---|---|

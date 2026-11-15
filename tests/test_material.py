@@ -109,15 +109,26 @@ def test_grid_source(tmp_path):
     r = classify_point(10.0, 0.0, src, radius_km=5)      # on the vb|sc cell border
     assert r["share_vb"] == pytest.approx(0.5, abs=0.01)
     assert classify_point(9.5, 0.5, src)["rock_class"] == "vb"
-    r = classify_point(9.0, 0.5, src, radius_km=5)       # sea|vb border: sea left out
+    r = classify_point(9.0005, 0.5, src, radius_km=5)    # 50 m inside land at the sea|vb border: sea left out
     assert r["covered_share"] == pytest.approx(0.5, abs=0.01)
     assert r["share_vb"] == pytest.approx(1.0)
+    r = classify_point(8.97, 0.5, src, radius_km=5)      # land place inside a cell GLiM counts as sea
+    assert r["rock_class"] is None                       # no class borrowed from the vb cell next door
+    assert all(r[f"share_{c}"] is None for c in CODES)
+    assert r["covered_share"] > 0
 
 
 def test_glim_nd_class_is_no_data():
     nd = gpd.GeoDataFrame({"xx": ["nd", "vb"]}, geometry=[box(9, -1, 10, 1), box(10, -1, 11, 1)], crs=4326)
-    r = classify_point(10.0, 0.0, FrameSource(nd), radius_km=5)
+    r = classify_point(10.0005, 0.0, FrameSource(nd), radius_km=5)   # 50 m into vb
     assert r["covered_share"] == pytest.approx(0.5, abs=0.01)
     assert r["share_vb"] == pytest.approx(1.0)
     assert "share_nd" not in r
     assert classify_point(9.5, 0.0, FrameSource(nd))["rock_class"] is None
+
+
+def test_point_in_sea_borrows_nothing():
+    r = classify_point(9.5, 1.01, SRC, radius_km=5)      # just north of the coast, disc partly on land
+    assert r["covered_share"] > 0
+    assert r["rock_class"] is None
+    assert r["share_vb"] is None

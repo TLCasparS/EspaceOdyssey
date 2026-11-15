@@ -1,4 +1,7 @@
-"""What-if for the PROPOSED Mare criterion c23 basalt (mare-v1.1, post-run addition). Proposal only:
+"""RECORD ONLY. Team decision 15 Nov 2026: c23 stays DISPLAY ONLY, no mare-v1.1 (docs/MATERIAL.md).
+Kept to reproduce the tables in docs/MATERIAL_REPORT.md section 4.
+
+What-if for the PROPOSED Mare criterion c23 basalt (mare-v1.1, post-run addition). Proposal only:
 changes no config, no score, no export. Prints a Markdown table and writes data/material/mare_c23_whatif_<variant>_w<weight>_t<tol>.csv.
 
     c23 raw   = share of GLiM "vb" (basic volcanic rocks) within 5 km of the base spot (rock_classes.csv);

@@ -747,8 +747,7 @@
   "_material": {
     "source": "Hartmann & Moosdorf (2012) GLiM v1.0 gridded to 0.5 deg, PANGAEA doi:10.1594/PANGAEA.788537 (CC-BY 3.0); cite doi:10.1029/2012GC004370",
     "radius_km": 5.0,
-    "basalt_min_share": 0.5,
-    "min_covered_share": 0.5,
+    "caveat": "0.5° grid, regional, not site-level",
     "classes": {
       "su": "unconsolidated sediments",
       "ss": "siliciclastic sedimentary rocks",
@@ -766,6 +765,6 @@
       "ig": "ice and glaciers",
       "wb": "water bodies"
     },
-    "note": "Display only, never in a score. One dominant class per 0.5 deg cell (~55 km): a region flag, not a 5 km measurement. Sea / GLiM nd = no data; BASALT_SHARE_5KM and BASALT_REGION empty below min_covered_share. Point = Polar low point, Mare base pad. docs/MATERIAL.md."
+    "note": "Display only, never in a score. Caveat: 0.5° grid, regional, not site-level (one dominant class per 0.5 deg cell, ~55 km). BASALT_REGION = 1 if the class at the point is vb, 0 for any other class. A point in a cell GLiM counts as sea (coasts, islands) or GLiM nd = no data: no class, no flag, no shares borrowed from neighbouring cells. Point = Polar low point, Mare base pad. docs/MATERIAL.md (team decisions 15 Nov 2026)."
   }
 }
