@@ -1,44 +1,54 @@
-# Moon Twins on Earth: 3-minute pitch script
+# Moon Twins on Earth: 3-minute pitch script (with live demo)
 
-Two speakers. **Speaker A = Caspar** (slides 1–4), **Speaker B = Sofi** (slides 5–7).
-Spoken words: **344** in total (~125 words per minute → about **2:45**). Target: 2:50 at most.
+Team **EspaceOdyssey**: Caspar Schlageter, Sofi Sosa, Mateo Pozo.
+Two speakers: **Speaker A = Caspar** (slides 1–4), **Speaker B = Sofi** (live demo + slides 5–7).
+Spoken words: **304** (click cues in [brackets] not counted). At ~125 words per minute that is about
+**2:26** of speech; the demo clicks and pauses fill the rest. Target: **2:50 at most**.
 The same text is in the speaker notes of `Moon_Twins_on_Earth.pptx`.
 
 | Slide | Speaker | Words | Target |
 |---|---|---|---|
-| 1 Title | A (Caspar) | 29 | 0:14 |
-| 2 The question | A (Caspar) | 48 | 0:23 |
-| 3 Method | A (Caspar) | 65 | 0:31 |
-| 4 The search | A (Caspar) | 52 | 0:25 |
-| 5 Results | B (Sofi) | 46 | 0:22 |
-| 6 What we learned | B (Sofi) | 60 | 0:29 |
-| 7 Limits + try it | B (Sofi) | 44 | 0:21 |
-| **Total** | | **344** | **2:45** |
+| 1 Title | A (Caspar) | 29 | 0:12 |
+| 2 The question | A (Caspar) | 29 | 0:16 |
+| 3 Method | A (Caspar) | 54 | 0:25 |
+| 4 The search | A (Caspar) | 45 | 0:22 |
+| 5 LIVE DEMO | B (Sofi) | 64 | 0:50 |
+| 6 What we learned | B (Sofi) | 51 | 0:25 |
+| 7 Limits + explore | B (Sofi) | 32 | 0:14 |
+| **Total** | | **304** | **2:44** |
+
+## Before the pitch (demo setup)
+- Open https://tlcaspars.github.io/EspaceOdyssey/app/ in a browser tab **before** you start, scroll past the
+  Earthrise screen to the globe, and check the globe has loaded (it needs WebGL and the internet).
+- Keep the slides in one window and the browser in another; switch with Alt+Tab.
+- **If the demo fails:** stay on slide 5 and say the same words over the screenshot. It shows the same view.
 
 ---
 
-### Slide 1: Title · Speaker A (Caspar) · 0:14
-Hi, we are Team EspaceOdyssey. This is Earthrise, photographed by Apollo 8 from lunar orbit. Today we turn that view around: we look for the Moon's twins on Earth.
+### Slide 1: Title · Speaker A (Caspar) · 0:12
+Hi, we are Caspar, Sofi and Mateo, team EspaceOdyssey. This is Earthrise, seen from Apollo 8. We turn the view around and look for the Moon's twins on Earth.
 
-### Slide 2: The question · Speaker A (Caspar) · 0:23
-Before astronauts build a base on the Moon, they rehearse on Earth. But today's analog sites were picked by eye, and nobody measured how Moon-like they really are. So we asked: where on Earth can we rehearse a Moon base? And we searched systematically, with open data only.
+### Slide 2: The question · Speaker A (Caspar) · 0:16
+Astronauts rehearse Moon missions on Earth. But today's analog sites were picked by eye, and nobody measured how Moon-like they are. So we searched systematically, with open data only.
 
-### Slide 3: Method · Speaker A (Caspar) · 0:31
-On the Moon we measured Shackleton crater at the south pole and two craters in Artemis III landing regions, from NASA's LOLA elevation and PGDA light data. For mare plains we used SLDEM2015. On Earth we used the Copernicus elevation model and ESA WorldCover. Same code on both worlds, on the same 60-metre grid. Every criterion gets a score: one means identical to the Moon.
+### Slide 3: Method · Speaker A (Caspar) · 0:25
+On the Moon: Shackleton crater at the south pole and two craters in Artemis III regions, from NASA's LOLA and PGDA data, plus mare plains from SLDEM2015. On Earth: the Copernicus elevation model and ESA WorldCover. Same code, same 60-metre grid. Every criterion scores from zero to one: one means identical to the Moon.
 
-### Slide 4: The search · Speaker A (Caspar) · 0:25
-In one night we searched about 265,000 cells of 15 kilometres, the size of an Artemis III landing region. 1,825 crater-like places were scored. Our bowl finder was so good it also found 111 open-pit mines, like Chuquicamata and Escondida. We filter them out. That leaves 1,261 ranked places. Sofi, the results.
+### Slide 4: The search · Speaker A (Caspar) · 0:22
+In one night we searched about 265,000 cells, each the size of an Artemis III landing region. 1,825 crater-like places were scored. The finder was so good it found 111 open-pit mines, like Chuquicamata. We filtered them out: 1,261 places remain. Sofi will show you.
 
-> **HANDOVER → Sofi** (Caspar says "Sofi, the results." and steps back; Sofi clicks to slide 5.)
+> **HANDOVER → Sofi.** Caspar says "Sofi will show you." Sofi clicks to slide 5 and switches to the browser.
 
-### Slide 5: Results · Speaker B (Sofi) · 0:22
-Here is the map. Number one is a bowl in the Tian Shan mountains in China: 60 percent similar, and its closest lunar twin is Shackleton itself. Its walls are as steep as Shackleton's. Meteor Crater, a known training site we used for tuning, ranks tenth.
+### Slide 5: LIVE DEMO · Speaker B (Sofi) · 0:50
+This is our app, live. Every dot on the globe is a ranked crater. [Click #1 in the list] Number one: a bowl in the Tian Shan mountains in China. 60 percent similar, and its closest lunar twin is Shackleton itself. Its walls are as steep as Shackleton's. [Scroll the card to 'What it lacks'] The card also says honestly where the analogy breaks. [Click Meteor Crater, #10] Meteor Crater, a known training site we used for tuning, ranks tenth. [Back to the slides]
 
-### Slide 6: What we learned · Speaker B (Sofi) · 0:29
-Three lessons. One: places shaped like Shackleton are not lit like Shackleton. No place scores high on both. Two: Earth has no grazing Sun. Shackleton's floor is always in shadow; a typical Earth crater floor only 16.5 percent of the time. Three: for mare plains, flat ground is easy to find, but basalt and the Moon's small craters are rare.
+### Slide 6: What we learned · Speaker B (Sofi) · 0:25
+Three lessons. Shape twins are not light twins: no place scores high on both. Earth has no grazing Sun: Shackleton's floor is always in shadow, a typical Earth crater floor only 16.5 percent of the time. And for mare plains, flat ground is common, but basalt and small craters are rare.
 
-### Slide 7: Limits + try it · Speaker B (Sofi) · 0:21
-We also show what we miss. Haughton is too eroded. At Askja, the lake makes the caldera look too shallow. Lanzarote is mostly sea and villages. Every score is open in our app. Scan the code and find your own Moon twin. Thank you!
+### Slide 7: Limits + explore it yourself · Speaker B (Sofi) · 0:14
+We also show what we miss: Haughton is eroded, Askja's lake hides its depth, Lanzarote is mostly sea and villages. Scan the code and explore it on your own phone. Thank you!
+
+Leave slide 7 (the QR code) on screen during the questions.
 
 ---
 
@@ -71,6 +81,10 @@ We also show what we miss. Haughton is too eroded. At Askja, the lake makes the 
 | Haughton eroded; Askja 48 m < 50 m | `docs/VALIDATION_config-v1.md`, `outputs/scores.csv` `MISSED_REASON` |
 | Lanzarote: 0 of 16 cells pass the filter (sea, 2 km buffer around villages and resorts) | `docs/MARE_V11.md` |
 | 1.9° at Shackleton, ≥ 23.4° on Earth | `docs/JURY_FAQ.md`, `docs/FACT_CHECK.md` |
-| Earthrise: NASA / Apollo 8, AS08-14-2383 | file from branch `app-hero` (`app/assets/earthrise-apollo8-as08-14-2383.jpg`) |
 
-`[CHECK]` items: none on the slides. Team names are still the placeholder `[TEAM NAMES]` on slide 1.
+## Images
+- Earthrise: NASA / Apollo 8 (AS08-14-2383), file from the app (`app/assets/`).
+- Globes on slide 3: rendered by `pitch/render_globes.py` from the app's textures, NASA Blue Marble Next Generation
+  and NASA SVS CGI Moon Kit (LRO). Gold dot = Tian Shan (#1), teal dot = Shackleton.
+- Funnel, scatter and demo backup: screenshots of the app (new layout, 15 Nov 2026), headless Chrome, 1920×1080.
+- QR code (slide 7) → https://tlcaspars.github.io/EspaceOdyssey/app/
