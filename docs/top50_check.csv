@@ -1,0 +1,61 @@
+rank,lat,lon,score,diameter_m,spill_depth_m,depth_to_width,low_elev_m,ice_floor_share,verdict,confidence,seen,name,name_source,run,cell
+1,46.99036,74.98383,0.6947,1699,355,0.209,91,0,open-pit mine,high,"pit with pit lake, benches, waste dumps; town and second pit next to it",near Balkhash (Kounrad?),"UNVERIFIED: published Kounrad point 46.998 N, 75.134 E is 11 km away (mineralresourcemap.com/detail/10231415)",night_polar,b098_r004c1291
+2,-49.08421,-73.81255,0.6754,3539,187,0.053,327,0.301,glacier / ice basin,high,"ice, snow, glacial valley or glacier-fed lake",,,night_polar,b010_r000c516
+3,81.46429,-84.44299,0.6358,1029,66,0.064,157,0,glacier / ice basin,high,"ice, snow, glacial valley or glacier-fed lake",,,night_polar,b130_r002c105
+4,-48.81323,-74.03805,0.635,2781,118,0.042,199,0.292,glacier / ice basin,high,glacial lake with icebergs at a glacier front,,,night_polar,b010_r002c517
+5,42.57203,82.3905,0.6028,2874,92,0.032,2984,0.06,mountain lake basin,medium,lake in a glaciated mountain valley (moraine-dammed?),,,night_polar,b094_r004c1432
+6,-28.8111,-70.98931,0.5871,1121,219,0.195,841,0,open-pit mine,high,"benches, waste dumps / leach pads, haul roads visible",,,night_polar,b028_r005c708
+7,-28.29646,-70.80577,0.5866,1279,293,0.229,125,0,open-pit mine,high,"benches, waste dumps / leach pads, haul roads visible",,,night_polar,b029_r001c713
+8,33.10045,-109.37095,0.579,1018,204,0.2,1198,0,open-pit mine,high,"large pit complex, leach pads",probably Morenci,"within NASA ASTER image of Morenci (centre 33.1 N, 109.5 W, 21 x 17 km; science.nasa.gov/photojournal/morenci-mine-az)",night_polar,b085_r006c438
+9,-17.04343,-70.70776,0.5624,2119,437,0.206,2972,0,open-pit mine,high,pit with benches,Cuajone,"0.3 km from 17.043 S, 70.711 W (Wikipedia via Kiwix)",night_polar,b039_r004c775
+10,-51.92909,-73.3237,0.5624,1051,205,0.195,250,0,glacier / ice basin,high,"ice, snow, glacial valley or glacier-fed lake",,,night_polar,b007_r003c488
+11,34.58451,-113.20639,0.5623,2433,453,0.186,613,0,open-pit mine,high,huge benched pit,,,night_polar,b087_r001c407
+12,4.26975,37.70584,0.5513,1311,184,0.14,774,0,real bowl (volcanic crater),medium,round crater on a plain (N Kenya volcanic field),,,night_polar,b059_r001c1611
+13,40.24875,-116.71625,0.5503,1695,349,0.206,1150,0,open-pit mine,high,"benches, waste dumps / leach pads, haul roads visible",,,night_polar,b092_r002c358
+14,-49.75798,-74.64729,0.5418,1036,249,0.24,48,0,glacier / ice basin,high,"ice, snow, glacial valley or glacier-fed lake",,,night_polar,b009_r003c505
+15,37.87297,71.46668,0.5415,1482,221,0.149,2943,0,no bowl visible,medium,dissected mountains / folded ridges / valley; closed depression probably a DEM artifact or valley closure,,,night_polar,b090_r001c1473
+16,-24.21691,-69.05084,0.5401,1428,255,0.179,2908,0,open-pit mine,high,"benched pit, waste dumps",probably Escondida,"within NASA ASTER image of Escondida (centre 24.3 S, 69.1 W, 30 x 37 km; science.nasa.gov/photojournal/escondida-mine-chile)",night_polar,b032_r007c750
+17,-44.36941,168.77375,0.5362,1040,144,0.139,1170,0,glacier / ice basin,high,"ice, snow, glacial valley or glacier-fed lake",,,night_polar,b014_r003c1851
+18,18.40855,32.59257,0.5262,1044,269,0.258,388,0,real bowl (volcanic crater),medium,dark round crater (Bayuda-type volcanic field?),,,night_polar,b072_r001c1497
+19,39.50009,39.14865,0.5057,1053,133,0.126,2858,0,no bowl visible,medium,dissected mountains / folded ridges / valley; closed depression probably a DEM artifact or valley closure,,,night_polar,b091_r005c1254
+20,-22.28723,-68.90037,0.5026,2734,648,0.237,2095,0,open-pit mine,high,huge elongated pit,Chuquicamata,"2 km from 22.3055 S, 68.9022 W, inside the 4.3 x 3 km pit (en.wikipedia.org/wiki/Chuquicamata)",night_polar,b034_r006c763
+21,13.36733,41.69556,0.5009,1139,179,0.157,1353,0,real bowl (volcanic crater),medium,crater on a volcanic cone with lava flows (Afar),,,night_polar,b067_r004c1601
+22,4.20725,38.39558,0.4997,1589,328,0.206,1120,0,real bowl (volcanic crater),medium,round crater on a plain (N Kenya volcanic field),,,night_polar,b059_r001c1616
+23,40.78365,-116.2129,0.4982,1950,402,0.206,1228,0,open-pit mine,high,"benches, waste dumps / leach pads, haul roads visible",,,night_polar,b092_r006c358
+24,37.51138,91.41632,0.4926,1121,92,0.082,3663,0,no bowl visible,medium,dissected mountains / folded ridges / valley; closed depression probably a DEM artifact or valley closure,,,night_polar,b089_r006c1598
+25,10.06156,40.83232,0.4908,2782,393,0.141,1088,0,real bowl (volcanic crater),medium,"large round crater, ~2.8 km (Ethiopia)",,,night_polar,b064_r004c1613
+26,38.70609,-117.08418,0.4877,1914,338,0.177,1507,0,open-pit mine,high,"benches, waste dumps / leach pads, haul roads visible",,,night_polar,b090_r007c364
+27,-27.5154,-70.28876,0.485,2506,626,0.25,79,0,open-pit mine,high,benched pit,,,night_polar,b029_r007c722
+28,21.02585,16.61421,0.4803,1430,349,0.244,2155,0,real bowl (volcanic crater),medium,deep dark crater with steep walls (Tibesti),,,night_polar,b074_r005c1361
+29,39.47356,74.7809,0.4798,2538,199,0.079,2697,0,no bowl visible,medium,dissected mountains / folded ridges / valley; closed depression probably a DEM artifact or valley closure,,,night_polar,b091_r005c1458
+30,32.69337,-110.68007,0.4772,1435,279,0.195,643,0,open-pit mine,high,"benches, waste dumps / leach pads, haul roads visible",,,night_polar,b085_r003c432
+31,-21.91765,-68.83041,0.4757,1488,200,0.134,3701,0,open-pit mine,high,"benches, waste dumps / leach pads, haul roads visible",,,night_polar,b035_r000c765
+32,2.19304,37.72672,0.4739,1192,161,0.135,614,0,real bowl (volcanic crater),medium,round crater on a plain (N Kenya volcanic field),,,night_polar,b057_r002c1614
+33,32.95959,-109.6747,0.47,1226,287,0.234,917,0,open-pit mine,high,"benches, waste dumps / leach pads, haul roads visible",,,night_polar,b085_r005c437
+34,-12.43626,-75.53765,0.4668,1020,82,0.08,4407,0,no bowl visible,medium,dissected mountains / folded ridges / valley; closed depression probably a DEM artifact or valley closure,,,night_polar,b043_r006c757
+35,-23.43034,-70.05532,0.4646,1680,283,0.169,630,0,open-pit mine,high,"benches, waste dumps / leach pads, haul roads visible",,,night_polar,b033_r005c748
+36,41.4972,64.58028,0.4642,2689,496,0.184,25,0,open-pit mine,high,huge benched pit,,,night_polar,b093_r004c1358
+37,27.98151,66.95306,0.4585,1990,139,0.07,949,0,no bowl visible,medium,dissected mountains / folded ridges / valley; closed depression probably a DEM artifact or valley closure,,,night_polar,b081_r000c1618
+38,-49.35536,69.20248,0.4582,2011,58,0.029,129,0.165,glacier / ice basin,high,"ice, snow, glacial valley or glacier-fed lake",,,night_polar,b009_r006c1204
+39,27.47937,66.92793,0.4574,2610,86,0.033,1030,0,no bowl visible,medium,dissected mountains / folded ridges / valley; closed depression probably a DEM artifact or valley closure,,,night_polar,b080_r004c1626
+40,41.23239,-117.16847,0.4571,2082,312,0.15,1141,0,open-pit mine,high,"benches, waste dumps / leach pads, haul roads visible",,,night_polar,b093_r002c350
+41,58.46882,-136.82618,0.455,2867,104,0.036,172,0,glacier / ice basin,high,"ice, snow, glacial valley or glacier-fed lake",,,night_polar,b109_r001c167
+42,2.54745,38.16401,0.4491,1718,265,0.154,508,0,real bowl (volcanic crater),medium,round crater on a plain (N Kenya volcanic field),,,night_polar,b057_r005c1617
+43,30.55888,102.24793,0.4468,1044,225,0.216,3375,0,no bowl visible,medium,dissected mountains / folded ridges / valley; closed depression probably a DEM artifact or valley closure,,,night_polar,b083_r003c1803
+44,40.98299,-116.38918,0.4438,2111,359,0.17,1228,0,open-pit mine,high,"benches, waste dumps / leach pads, haul roads visible",,,night_polar,b093_r000c356
+45,35.02703,-111.02215,0.4424,1127,148,0.132,1563,0,real bowl (impact crater),high,Meteor Crater,Meteor Crater,"known site in the repo (config, Earth Impact Database)",night_polar,b087_r004c419
+46,-4.0566,137.1131,0.4394,1701,521,0.306,3144,0,open-pit mine,high,benched pit in mountains,Grasberg,"0.5 km from 4.0528 S, 137.1158 E (en.wikipedia.org/wiki/Grasberg_mine)",night_polar,b051_r004c2347
+47,58.66975,-153.87554,0.4372,1232,76,0.062,170,0,glacier / ice basin,high,"ice, snow, glacial valley or glacier-fed lake",,,night_polar,b109_r002c100
+48,-47.12962,-73.91694,0.437,1188,126,0.106,634,0.019,glacier / ice basin,high,"ice, snow, glacial valley or glacier-fed lake",,,night_polar,b011_r006c535
+49,29.16132,96.09536,0.4317,1602,274,0.171,3217,0,unclear (clouds),low,cloud over mountains (SE Tibet); likely as the other high-Asia places,,,night_polar,b082_r001c1788
+50,-23.49878,-67.69708,0.4287,8680,125,0.014,4326,0,real bowl (volcanic crater),medium,8.7 km crater/caldera with a coloured lake (Altiplano),,,night_polar,b033_r005c764
+51,27.7955,92.6291,,1351,655,0.485,,,DEM artifact,high,"snowy ridges, no depression; depth/width 0.48 is physically implausible",,,night_polar,
+83,27.806,92.513,,3197,1553,0.486,,,DEM artifact,high,"river valleys and ridges, no depression; depth/width 0.49 implausible",,,night_polar,
+62,34.2692,103.204,,2325,336,0.145,,,no bowl visible,medium,mountain valley,,,night_polar,
+82,30.3029,94.4453,,1171,172,0.147,,,no bowl visible,medium,steep gorge,,,night_polar,
+92,31.6145,79.1018,,1268,177,0.14,,,no bowl visible,medium,ravine/valley,,,night_polar,
+94,35.72,76.3739,,1044,71,0.068,,,glacier / ice basin,high,Karakoram glacier margin,,,night_polar,
+95,34.6659,75.7407,,1081,142,0.131,,,no bowl visible,medium,dissected mountains,,,night_polar,
+100,32.4648,103.8762,,1822,104,0.057,,,no bowl visible,medium,mountain valley,,,night_polar,
+108,39.8527,100.9874,,1036,75,0.072,,,dune hollow,medium,"megadune desert (Badain Jaran area?): interdune depression, not a crater",,,night_polar,
+123,39.8261,102.2361,,1628,110,0.068,,,dune hollow,medium,megadune desert with interdune lakes nearby,,,night_polar,
