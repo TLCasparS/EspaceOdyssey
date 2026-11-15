@@ -5,7 +5,11 @@ For each point:
     share_<code>      area share of each class within `radius_km` of the point, relative to the
                       COVERED part of the disc (sea / no polygon is left out, not counted as 0)
     covered_share     part of the disc that has any GLiM polygon (0..1)
-If nothing within the disc is covered, all shares are None ("no data, never 0").
+If GLiM has no class at the point itself, rock_class and all shares are None ("no data, never 0"):
+coastal 0.5 deg cells that GLiM counts as sea never get a rock class from a neighbouring cell.
+
+Display (decision 15 Nov 2026): c23 is DISPLAY ONLY, never scored. src/export_app.py --glim writes ROCK_CLASS and
+BASALT_REGION (1 = class at the point is vb, 0 = other class, empty = no data) with the caveat DISPLAY_CAVEAT.
 
 Sources (same algorithm for all, only the loader differs):
     GridSource        PANGAEA 0.5 deg raster (doi:10.1594/PANGAEA.788537, CC-BY 3.0): each grid cell is
@@ -49,6 +53,7 @@ CLASSES = {
 }
 CODES = [c for c in CLASSES if c != "nd"]   # "nd" = GLiM no data: treated like sea, never a share
 KM_PER_DEG = 111.32
+DISPLAY_CAVEAT = "0.5° grid, regional, not site-level"
 
 
 def first_level(value) -> str | None:
@@ -208,7 +213,11 @@ def classify_point(lon: float, lat: float, source, radius_km: float = 5.0) -> di
             best_at_point = (code, a)
     covered = sum(areas.values())
     out["covered_share"] = round(min(1.0, covered / disc_area), 4)
-    out["rock_class"] = best_at_point[0] if best_at_point else None
+    if best_at_point is None:
+        # GLiM has no class AT the point (sea, e.g. a coastal grid cell counted as sea, or "nd"): the place
+        # itself is unknown, so no rock class and no shares borrowed from neighbouring cells (decision 15 Nov 2026)
+        return out
+    out["rock_class"] = best_at_point[0]
     if covered > 0:
         for c in CODES:
             out[f"share_{c}"] = round(areas[c] / covered, 4)

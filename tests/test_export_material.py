@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 import export_app  # noqa: E402
 
-MCFG = {"radius_km": 5, "basalt_min_share": 0.5, "min_covered_share": 0.5}
+MCFG = {"radius_km": 5}
 
 
 @pytest.fixture
@@ -32,10 +32,15 @@ def test_rock_values_basalt_other_and_sea(grid):
     assert vb["BASALT_SHARE_5KM"] == 1.0 and vb["BASALT_REGION"] == 1.0 and vb["GLIM_COVERED_SHARE"] == 1.0
     sc = export_app.rock_values(0.5, 10.5, g)
     assert sc["ROCK_CLASS"] == "sc" and sc["BASALT_SHARE_5KM"] == 0.0 and sc["BASALT_REGION"] == 0.0
-    # coast: point on the sea cell, 2 km from the vb cell -> under half the disc covered -> no data, never 0
+    # coast: point in the sea cell, 2 km from the vb cell -> no data, nothing borrowed from the vb cell, never 0
     coast = export_app.rock_values(0.5, 8.982, g)
-    assert coast["ROCK_CLASS"] == "" and 0 < coast["GLIM_COVERED_SHARE"] < 0.5
+    assert coast["ROCK_CLASS"] == "" and coast["GLIM_COVERED_SHARE"] > 0
     assert coast["BASALT_SHARE_5KM"] is None and coast["BASALT_REGION"] is None
+    # team rule: the flag is the class AT the point, not the share around it
+    corner = export_app.rock_values(0.998, 9.002, g)         # vb cell corner, sea west + north: little coverage
+    assert corner["ROCK_CLASS"] == "vb" and corner["GLIM_COVERED_SHARE"] < 0.5 and corner["BASALT_REGION"] == 1.0
+    edge = export_app.rock_values(0.5, 10.002, g)            # 200 m into sc next to vb: share_vb just under 0.5
+    assert edge["ROCK_CLASS"] == "sc" and edge["BASALT_REGION"] == 0.0 and 0.3 < edge["BASALT_SHARE_5KM"] < 0.5
     sea = export_app.rock_values(0.5, 8.3, g)                  # open sea: nothing covered
     assert sea["ROCK_CLASS"] == "" and sea["BASALT_REGION"] is None and sea["GLIM_COVERED_SHARE"] == 0.0
     assert export_app.rock_values(None, None, g)["BASALT_REGION"] is None
@@ -80,4 +85,5 @@ def test_export_glim_columns_are_display_only(tmp_path, grid):
     assert "ROCK_CLASS" not in plain_raw
     t = json.loads((tmp_path / "glim_out" / "targets.json").read_text(encoding="utf-8"))
     assert "PANGAEA.788537" in t["_material"]["source"] and t["_material"]["classes"]["vb"] == "basic volcanic rocks"
+    assert t["_material"]["caveat"] == "0.5° grid, regional, not site-level"
     assert "| polar | no data | 1 |" in (tmp_path / "glim_out" / "README.md").read_text(encoding="utf-8")

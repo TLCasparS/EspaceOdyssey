@@ -16,6 +16,7 @@ What the AI did:
 - `app/app.js`: only `ROCK_CLASS` / `ROCK_CLASS_NAME` added to the text columns (else parsed as NaN).
 - Docs: `docs/MULTI_TARGET.md` (rule + real-data counts), `docs/NIGHT_RUN.md` (command), `CLAUDE.md` decision row.
 
-Not done by the AI: choosing or verifying lunar targets (team, `docs/NEW_TARGETS_REPORT.md`), the basalt threshold
-and coverage values (taken from `docs/MATERIAL_REPORT.md`), any change to config-v1 / mare-v1 scoring.
+Not done by the AI: choosing or verifying lunar targets (team, `docs/NEW_TARGETS_REPORT.md`), the GLiM display rules
+(team decisions in `docs/MATERIAL.md`: flag = class at the point, sea cells = no data; the export was aligned with
+them when `material-glim` was rebased), any change to config-v1 / mare-v1 scoring.
 No numbers were invented; all counts come from the export run.

@@ -68,21 +68,20 @@ cell in `ranking.csv`); another target might prefer a different bowl in the same
 `raw_values.csv` columns `ROCK_CLASS`, `ROCK_CLASS_NAME`, `BASALT_SHARE_5KM`, `GLIM_COVERED_SHARE`, `BASALT_REGION`, at the Polar low point / Mare base pad (`LAT`/`LON`).
 - `ROCK_CLASS` = first-level GLiM code of the grid cell under the point (`vb` = basic volcanic = basalt; names in
   `ROCK_CLASS_NAME` and `targets.json` -> `_material.classes`); empty = no data (sea or GLiM "nd").
-- `BASALT_SHARE_5KM` = share of `vb` within 5 km, relative to the part of the disc that has GLiM data;
-  `GLIM_COVERED_SHARE` = that part (0-1). `BASALT_REGION` = 1 if `BASALT_SHARE_5KM` >= 0.5, else 0.
-  Both are **empty (no data)** when less than 50% of the disc has GLiM data: coastal grid
-  cells can be sea, so coast and island places show no data, never 0.
-- **Caveat:** source = Hartmann & Moosdorf (2012) GLiM v1.0 gridded to 0.5 deg, PANGAEA doi:10.1594/PANGAEA.788537 (CC-BY 3.0); cite doi:10.1029/2012GC004370. One dominant class per 0.5 deg cell (~55 km), so this is a "basalt region
-  yes/no" flag, not a 5 km measurement; small lava fields vanish. GLiM has no anorthosite class (c22 cannot be
-  scored). Details: docs/MATERIAL.md.
+- `BASALT_REGION` = 1 if `ROCK_CLASS` is `vb`, 0 for any other class (team decision 15 Nov 2026).
+  `BASALT_SHARE_5KM` = share of `vb` within 5 km, relative to the part of the disc that has GLiM data;
+  `GLIM_COVERED_SHARE` = that part (0-1). A point in a grid cell GLiM counts as sea (coasts, islands) or GLiM "nd"
+  is **no data**: class, flag and share empty, nothing borrowed from neighbouring cells, never 0.
+- **Caveat: 0.5° grid, regional, not site-level.** Source = Hartmann & Moosdorf (2012) GLiM v1.0 gridded to 0.5 deg, PANGAEA doi:10.1594/PANGAEA.788537 (CC-BY 3.0); cite doi:10.1029/2012GC004370. One dominant class per 0.5 deg cell (~55 km); small lava
+  fields vanish. GLiM has no anorthosite class (c22 cannot be scored). Details: docs/MATERIAL.md.
 
 | base | BASALT_REGION | places |
 |---|---|---|
 | mare | 0 | 476 |
 | mare | 1 | 9 |
 | mare | no data | 15 |
-| polar | 0 | 1645 |
-| polar | 1 | 167 |
+| polar | 0 | 1646 |
+| polar | 1 | 166 |
 | polar | no data | 16 |
 
 ## config-v1.1: post-run filters (Polar only; config-v1 scoring unchanged)

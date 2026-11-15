@@ -12,8 +12,7 @@ impact_match_min_km: 1.0    #      max(0.6 x structure diameter, 1 km) of the st
 
 # GLiM rock class (c22 / c23 display, 15 Nov 2026; export_app.py --glim). Display only: never in a score.
 # Source: Hartmann & Moosdorf (2012) GLiM, 0.5 deg grid, PANGAEA doi:10.1594/PANGAEA.788537 (CC-BY 3.0);
-# limits in docs/MATERIAL.md (one dominant class per ~55 km cell; coastal cells can be sea = no data).
+# limits in docs/MATERIAL.md. Team decision: BASALT_REGION = class at the point is vb; a point in a cell GLiM
+# counts as sea = no data (nothing borrowed from neighbouring cells).
 material:
-  radius_km: 5              # class shares within this distance of the point (Polar low point, Mare base spot)
-  basalt_min_share: 0.5     # BASALT_REGION = 1 if the basic-volcanic (vb) share of the covered disc is >= this
-  min_covered_share: 0.5    # below this GLiM coverage of the disc (sea, GLiM "nd"): basalt share / flag = no data
+  radius_km: 5              # BASALT_SHARE_5KM: vb share within this distance of the point (Polar low point, Mare base spot)
