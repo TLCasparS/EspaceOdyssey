@@ -138,6 +138,7 @@ Weight 1.0: **12 of the new top 20 are no-data cells** (Canadian Arctic islands,
 | Criterion 22 (anorthosite) | GLiM has no anorthosite class |
 | Any change to scores, `config/pipeline.yaml`, lunar targets, `outputs/`, `src/export_app.py`, the criteria doc | outside this task / frozen (mare-v1, config-v1) |
 | Anything in `..\EspaceOdyssey` | not touched except reading `out\night_polar` and `out\night_mare` |
+| `git push` of `material-glim` | first try hung at the GitHub sign-in (timed out); the retry without prompts failed with "could not read Username for 'https://github.com'". **Commits are local only**: run `git push -u origin material-glim` in this worktree |
 
 pip installs into `..\EspaceOdyssey\.venv`: `geopandas 1.2.0`, `pyogrio 0.13.0`, `shapely 2.2.0` (+ their dependencies). Note: this is the other session's venv; the packages were approved, but tell that session they are new.
 
