@@ -2,7 +2,7 @@
 change after the git tag mare-v1 (night run and Mare validation run on it). If this fails, do NOT update the
 snapshot silently: tell the team; a change means mare-v2 and a new validation.
 
-mare-v1.1 (15 Nov 2026) ADDS c30_small_craters to lunar_targets.json["mare"]["criteria"] and a separate
+Display additions (15 Nov 2026, no mare-v1.1) ADD c30_small_craters to lunar_targets.json["mare"]["criteria"] and a separate
 `mare_v11:` config section; both are outside this guard. The four mare-v1 criteria stay fully guarded here."""
 import json
 import sys

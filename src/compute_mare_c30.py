@@ -1,4 +1,4 @@
-"""mare-v1.1: lunar c30 small-crater density over the SAME 20 mare cells as the frozen mare-v1 target.
+"""Mare display addition: lunar c30 small-crater density over the SAME 20 mare cells as the frozen mare-v1 target.
 
 Per cell (config/lunar_targets.json["mare"]["cells"], i.e. the cells compute_mare_target.py used): the SLDEM
 window (src/fetch_sldem_window.py) onto the 60 m grid exactly as compute_mare_target.load_cell_grid does, base
@@ -67,7 +67,7 @@ def entry(vals: list, floor: float, ids: list, extra: dict) -> dict:
             "unit": "closed depressions per km2 (>= 10 m deep, >= 300 m wide, elongation <= 2) within 5 km of the base spot",
             "source": "SLDEM2015 windows (src/fetch_sldem_window.py) on the 60 m grid as compute_mare_target.py; "
                       "pipeline.mare.small_crater_density via src/compute_mare_c30.py",
-            "date": date.today().isoformat(), "verified": False, "check": CHECK, "version": "mare-v1.1", **extra}
+            "date": date.today().isoformat(), "verified": False, "check": CHECK, "version": "display only (weight 0); mare-v1 score unchanged", **extra}
 
 
 def main():

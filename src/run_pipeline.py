@@ -45,7 +45,7 @@ def main():
     ap.add_argument("--base", choices=["polar", "mare"], default="polar",
                     help="base type: polar (frozen config-v1) or mare (src/pipeline/run_mare.py)")
     ap.add_argument("--mare-v11", action="store_true",
-                    help="with --base mare: mare-v1.1 (c30 small craters + common-tolerance BEST_TARGET, docs/MARE_V11.md)")
+                    help="with --base mare: display additions (c30 small craters + common-tolerance BEST_TARGET, docs/MARE_V11.md)")
     a = ap.parse_args()
 
     cfg = load_config(a.config)

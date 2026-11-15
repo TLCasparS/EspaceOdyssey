@@ -1,7 +1,8 @@
-"""mare-v1.1 scoring (15 Nov 2026): mare-v1 + c30 small-crater density + fair Mare twins.
+"""Mare display additions (15 Nov 2026; team decision: no mare-v1.1, mare-v1 score unchanged):
+c30 small-crater density (display only, weight 0) + fair Mare twins (common tolerance, BEST_TARGET only).
 
-mare-v1 (config `mare:`, lunar_targets.json["mare"] c9/c10/c12/c13) stays frozen and is the reference. mare-v1.1
-adds, from config `mare_v11:`:
+mare-v1 (config `mare:`, lunar_targets.json["mare"] c9/c10/c12/c13) stays frozen and is the score. The display
+additions, from config `mare_v11:` ("v11" is a historical name):
   - c30_small_craters (pipeline.mare.small_crater_density): lunar value = median over the same 20 mare cells,
     tolerance = max(IQR, mare_v11.c30_tolerance_floor), weight mare_v11.c30_weight (0 = display only).
   - common_tolerance: every Mare lunar target (20-cell median "mare_20cells" + the 4 maria in
@@ -30,7 +31,7 @@ def c30_lunar(cfg: dict) -> dict | None:
 
 
 def v11_criteria(cfg: dict, c30_weight: float | None = None) -> dict:
-    """mare-v1.1 criteria for pipeline.scoring: the four mare-v1 criteria exactly as load_config built them
+    """Criteria with c30 for pipeline.scoring: the four mare-v1 criteria exactly as load_config built them
     (target, tolerance = max(IQR, floor), weight) + c30. c30_weight overrides the config (what-ifs)."""
     v = cfg["mare_v11"]
     crit = copy.deepcopy(cfg["mare"]["criteria"])

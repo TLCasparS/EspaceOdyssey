@@ -1,4 +1,4 @@
-"""mare-v1.1 re-ranking of the night run's Mare shortlist (B2: the 500 places mare-v1 selected; NOT a new
+"""Mare display additions on the night run's Mare shortlist (B2: the 500 places mare-v1 selected; NOT a new
 global search).
 
 Per B2 record (<work>/raw/B2/*.jsonl): the stored 60 m DEM crop (<work>/crops/B2/..., night_run.save_crop) and the
@@ -6,10 +6,10 @@ stored base spot (base_lon/base_lat -> pixel of the crop) -> pipeline.mare.small
 Missing crop / unreadable crop = no data (None), never 0. Check per place: the base-pad slope recomputed on the
 crop must match the stored c10 (else the pixel is not the base spot) -> otherwise c30 = None + reason.
 
-Then scores, before (mare-v1) and after (mare-v1.1):
+Then scores, before (mare-v1) and after (display additions; identical totals while c30 weight = 0):
   before: SCORE_TOTAL = mare-v1 (4 criteria, 20-cell target); BEST_TARGET with each target's own tolerance
           (the rule of the current export, multi_target.build_targets)
-  after:  SCORE_TOTAL = mare-v1.1 (+ c30, weight mare_v11.c30_weight); BEST_TARGET with the common tolerance
+  after:  SCORE_TOTAL with c30 at weight mare_v11.c30_weight (0 = mare-v1); BEST_TARGET with the common tolerance
 Outputs in out/mare_v11/ (git-ignored): places.csv, c30_earth.csv (cache), summary.json.
 
     python src/mare_v11_rescore.py [--work %LOCALAPPDATA%/espaceodyssey_night] [--workers 8]

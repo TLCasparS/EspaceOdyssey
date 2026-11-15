@@ -1,6 +1,18 @@
-# mare-v1.1: c30 small-crater density + fair Mare twins
+# Mare display additions: c30 small-crater density + fair Mare twins
 
-Branch `mare-v1.1` (15 Nov 2026, Claude Code for Caspar). `mare-v1` stays the frozen reference.
+Branch `mare-v1.1` (15 Nov 2026, Claude Code for Caspar).
+
+**Team decision (15 Nov 2026): there is no mare-v1.1.** The mare-v1 score is unchanged (`SCORE_TOTAL`, `RANK`).
+Display additions: (1) c30 small-crater density, weight 0, display only, never scored; (2) common-tolerance Mare twins
+(changes `BEST_TARGET` / `SCORE_<mare target>` only). Code names with "v11" (`mare_v11:` config section,
+`pipeline/mare_v11.py`, `--mare-v11`, this file's name) are historical: they mean these display additions, not a new
+scoring version. The prediction and run sections below keep their original wording ("mare-v1.1") as written at the time.
+
+**Validation outcome (Lanzarote): 0 of 16 cells kept by the frozen filter.** The threshold-0 run is a diagnostic only.
+
+**Known limitation:** the Copernicus DEM stores the sea as flat 0 m, not as no data. In coastal Mare cells whose 5 km
+zone reaches the sea, c13 roughness (median) can become 0 (seen in 2 Lanzarote diagnostic cells), and c9 / c12 are
+also affected. Not fixed in mare-v1 (frozen); a fix (mask WorldCover water in the Mare zone) would mean mare-v2.
 
 ## Lanzarote prediction (written BEFORE the run, committed separately)
 
@@ -49,7 +61,7 @@ Prediction against result:
    0.025 per km2, far below the lunar minimum of 0.089.
 4. "BEST_TARGET a higher-relief target": **right**. Crisium (c9 286 m) in 4 of 5 cells.
 
-⚠ Gap found (not fixed): c13 = 0.00 in two coastal cells. Their 5 km zone reaches the sea, which the Copernicus DEM
+⚠ Known limitation (see top): c13 = 0.00 in two coastal cells. Their 5 km zone reaches the sea, which the Copernicus DEM
 stores as flat 0 m, not as no data, so the median roughness becomes 0. This affects only coastal Mare cells.
 Candidate fix for mare-v2: mask WorldCover water in the Mare zone.
 
@@ -108,14 +120,14 @@ geography, not checked against a dune map). On Earth, c30 mostly measures **inte
 With mare-v1, each Mare target is scored with its own tolerance, max(IQR, floor). The 20-cell target spans four maria,
 so its c9 tolerance is 163 m. A single mare has 42 m (Imbrium) to 116 m (Crisium). A forgiving target gives higher
 scores to everyone, so BEST_TARGET mostly picked the **widest** target, not the **closest** one: 401 of 500 went to
-the 20-cell median. mare-v1.1 (`mare_v11.common_tolerance: true`, `pipeline.mare_v11.v11_targets`) scores every
+the 20-cell median. The display addition (`mare_v11.common_tolerance: true`, `pipeline.mare_v11.v11_targets`) scores every
 Mare target with the 20-cell median's tolerance per criterion. BEST_TARGET then compares closeness to the lunar
 values only. The per-mare IQRs come from only 5 cells each, so they are rough anyway.
 SCORE_TOTAL does not change: it is always scored against the 20-cell target with its own tolerance.
 
-## 3. Proposal: c30 weight and tolerance (team start values, to be decided)
+## 3. c30 weight and tolerance (decided 15 Nov 2026: display only)
 
-**Proposal: c30 display only (`mare_v11.c30_weight: 0`)**, tolerance = max(IQR 0.121, floor 0.0127). The floor is
+**Decision: c30 display only (`mare_v11.c30_weight: 0`)**, tolerance = max(IQR 0.121, floor 0.0127). The floor is
 1 pit per 5 km zone, the counting resolution. Why weight 0:
 - 78 % of the Earth shortlist has c30 = 0 and scores exp(−(0.236/0.121)²) ≈ 0.02 on it. Counting c30 would push
   almost every total down by ~0.2 and mostly separate places by sand-sea hollows.
@@ -124,7 +136,7 @@ SCORE_TOTAL does not change: it is always scored against the 20-cell target with
 - If the team still wants c30 counted, first find a way to tell craters from dune hollows (e.g. exclude WorldCover
   sand / dune areas, or require a raised rim).
 
-**Mare top 20, before (mare-v1) and after (mare-v1.1 with the proposal, c30 weight 0).** The ranks are identical for
+**Mare top 20, before (mare-v1) and after (with the display additions, c30 weight 0).** The ranks are identical for
 all 500 places, because with weight 0 c30 never enters the score. The table also shows the what-if at weight 1.0.
 The recomputed mare-v1 scores match the stored night-run scores (max difference 0.0001, rounding).
 
@@ -157,7 +169,7 @@ Nafud (29.24, 39.35; 296), Grand Erg Oriental (31.16, 8.07; 370), Kumtag (40.11,
 
 **BEST_TARGET counts (500 B2 places):**
 
-| target | before (mare-v1, own tolerances) | after (mare-v1.1, common tolerance, c30 w=0) | what-if c30 w=1.0 |
+| target | before (mare-v1, own tolerances) | after (common tolerance, c30 w=0) | what-if c30 w=1.0 |
 |---|---|---|---|
 | 20-cell median | 401 | 280 | 184 |
 | Imbrium | 37 | 110 | 108 |

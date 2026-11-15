@@ -107,7 +107,7 @@ C30 = "c30_small_craters"
 
 
 def small_crater_density(z: np.ndarray, base_rc: tuple[int, int], res_m: float, p: dict) -> float | None:
-    """mare-v1.1 criterion c30 (Earth AND Moon, same code): closed depressions per km2 whose low point lies
+    """Display criterion c30, weight 0 (Earth AND Moon, same code): closed depressions per km2 whose low point lies
     within p["radius_km"] of the base spot (base_rc = row, col on the 60 m grid z).
 
     A depression counts if it is >= p["min_depth_m"] deep (filled depth), >= p["min_width_m"] wide (equivalent

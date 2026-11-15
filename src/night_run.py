@@ -82,7 +82,7 @@ def _snapshot_tag(cfg: dict, base: str) -> str:
                    "lunar": {"seed": t.get("seed"), "n_cells": len(t.get("cells") or []),
                              "criteria": {k: {f: v.get(f) for f in ("value", "tolerance", "iqr", "n_cells", "verified")}
                                           for k, v in t["criteria"].items()
-                                          if k in cfg["mare"]["criteria"]}}}   # mare-v1.1 c30 is additive
+                                          if k in cfg["mare"]["criteria"]}}}   # display-only c30 is additive
             snap, tag = ROOT / "tests" / "mare_v1_snapshot.json", "mare-v1"
         frozen = json.loads(snap.read_text(encoding="utf-8"))
         return tag if json.loads(json.dumps(now, sort_keys=True)) == frozen else f"MODIFIED (not {tag})"

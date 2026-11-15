@@ -7,7 +7,8 @@ method 'none': the run still writes all raw values (that is what Track B needs),
     python src/run_pipeline.py --base mare --bbox ... --name <run>
 Outputs in out/<name>/: ranking.csv (all kept cells, scored ones first), cells.geojson, radar.json, run_info.json.
 
-mare-v1.1 (15 Nov 2026, docs/MARE_V11.md): `--base mare --mare-v11` also computes c30 small-crater density
+Display additions (15 Nov 2026, docs/MARE_V11.md; no mare-v1.1, score unchanged while c30 weight = 0):
+`--base mare --mare-v11` also computes c30 small-crater density
 (pipeline.mare.small_crater_density) and scores with pipeline.mare_v11.v11_criteria (mare-v1 + c30 at
 mare_v11.c30_weight); ranking.csv gets c30, score_v1 (the mare-v1 score) and BEST_TARGET / BEST_SCORE over the
 Mare targets with the common tolerance. Without --mare-v11 the run is exactly mare-v1.
@@ -43,7 +44,7 @@ def mare_buffer_m(cfg) -> float:
 
 
 def cell_mare(cell, dem, dem_tf, usable, lc_tf, cfg, return_grid=False, crit=None):
-    """crit: criteria to score with (default mare-v1 cfg["mare"]["criteria"]); with C30 in crit (mare-v1.1)
+    """crit: criteria to score with (default mare-v1 cfg["mare"]["criteria"]); with C30 in crit (display additions)
     c30 is computed too."""
     crit = crit or cfg["mare"]["criteria"]
     lon_c, lat_c = (cell["west"] + cell["east"]) / 2, (cell["south"] + cell["north"]) / 2
@@ -112,7 +113,7 @@ def run_mare(bbox, name, cfg, dem_res=30, pop_path=None, out_root="out", log=pri
 
 def write_mare_outputs(out_dir, bbox, dem_res, cfg, out_rows, n_cells, crit=None):
     """ranking.csv, cells.geojson, radar.json, run_info.json for Mare rows (also used by night_run --score).
-    crit: mare-v1.1 criteria (with C30) -> extra columns and version "mare-v1.1"; default mare-v1."""
+    crit: criteria with C30 (display additions) -> extra columns; default mare-v1."""
     v11 = crit is not None
     crit = crit or cfg["mare"]["criteria"]
     cols = COLS + V11_COLS if v11 else COLS
@@ -149,7 +150,7 @@ def write_mare_outputs(out_dir, bbox, dem_res, cfg, out_rows, n_cells, crit=None
     with open(os.path.join(out_dir, "radar.json"), "w") as f:
         json.dump(radar, f, indent=1)
     with open(os.path.join(out_dir, "run_info.json"), "w") as f:
-        json.dump({"base_type": "mare", "version": "mare-v1.1" if v11 else "mare-v1", "bbox": list(bbox), "dem": f"Copernicus GLO-{dem_res} (AWS)",
+        json.dump({"base_type": "mare", "version": "mare-v1 + display additions (c30, common-tolerance twins)" if v11 else "mare-v1", "bbox": list(bbox), "dem": f"Copernicus GLO-{dem_res} (AWS)",
                    "note": scoring_note(crit), "n_cells": n_cells, "n_kept": len(kept),
                    "n_scored": sum(r.get("score") is not None for r in kept),
                    "config": {"grid": cfg["grid"], "filter": cfg["filter"], "mare": cfg["mare"],

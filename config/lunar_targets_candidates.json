@@ -1541,7 +1541,7 @@
           "value": 0.30552,
           "iqr": 0.12729,
           "tolerance": 0.12729,
-          "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127)",
+          "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127); display only, not used in a score",
           "n_cells": 5,
           "cells": [
             "tranquillitatis_01",
@@ -1563,7 +1563,7 @@
           "date": "2026-11-15",
           "verified": false,
           "check": "computed by Claude Code, to be checked by Mateo",
-          "version": "mare-v1.1",
+          "version": "display only (weight 0); mare-v1 score unchanged",
           "note": "only 5 cells: the IQR is a rough spread estimate; under mare_v11.common_tolerance the 20-cell tolerance is used"
         }
       },
@@ -1714,7 +1714,7 @@
           "value": 0.21641,
           "iqr": 0.08911,
           "tolerance": 0.08911,
-          "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127)",
+          "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127); display only, not used in a score",
           "n_cells": 5,
           "cells": [
             "serenitatis_01",
@@ -1736,7 +1736,7 @@
           "date": "2026-11-15",
           "verified": false,
           "check": "computed by Claude Code, to be checked by Mateo",
-          "version": "mare-v1.1",
+          "version": "display only (weight 0); mare-v1 score unchanged",
           "note": "only 5 cells: the IQR is a rough spread estimate; under mare_v11.common_tolerance the 20-cell tolerance is used"
         }
       },
@@ -1887,7 +1887,7 @@
           "value": 0.22914,
           "iqr": 0.08911,
           "tolerance": 0.08911,
-          "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127)",
+          "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127); display only, not used in a score",
           "n_cells": 5,
           "cells": [
             "imbrium_01",
@@ -1909,7 +1909,7 @@
           "date": "2026-11-15",
           "verified": false,
           "check": "computed by Claude Code, to be checked by Mateo",
-          "version": "mare-v1.1",
+          "version": "display only (weight 0); mare-v1 score unchanged",
           "note": "only 5 cells: the IQR is a rough spread estimate; under mare_v11.common_tolerance the 20-cell tolerance is used"
         }
       },
@@ -2060,7 +2060,7 @@
           "value": 0.1273,
           "iqr": 0.06365,
           "tolerance": 0.06365,
-          "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127)",
+          "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127); display only, not used in a score",
           "n_cells": 5,
           "cells": [
             "crisium_01",
@@ -2082,7 +2082,7 @@
           "date": "2026-11-15",
           "verified": false,
           "check": "computed by Claude Code, to be checked by Mateo",
-          "version": "mare-v1.1",
+          "version": "display only (weight 0); mare-v1 score unchanged",
           "note": "only 5 cells: the IQR is a rough spread estimate; under mare_v11.common_tolerance the 20-cell tolerance is used"
         }
       },

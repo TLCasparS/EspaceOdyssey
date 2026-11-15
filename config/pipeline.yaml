@@ -139,9 +139,10 @@ mare:
     c12_drivable:  {weight: 1.0, direction: target}   # share < 15 deg within 5 km
     c13_roughness: {weight: 1.0, direction: target}   # m, median 3x3 std within 5 km
 
-# --- mare-v1.1 (15 Nov 2026, src/pipeline/mare_v11.py) ------------------------------------------------
+# --- Mare display additions (15 Nov 2026, src/pipeline/mare_v11.py, docs/MARE_V11.md) ---------------------
+# Team decision: NO mare-v1.1; the mare-v1 score is unchanged. "v11" in the names is historical.
 # On top of the frozen mare-v1 section above, which stays unchanged (tests/test_mare_freeze.py). Used only by
-# mare-v1.1 scoring (run_pipeline.py --base mare --mare-v11, src/mare_v11_rescore.py). It re-ranks the 500-place
+# the display additions (run_pipeline.py --base mare --mare-v11, src/mare_v11_rescore.py). c30 covers the 500-place
 # B2 shortlist that mare-v1 chose; it is NOT a new global search.
 mare_v11:
   c30:                        # small-crater density, pipeline.mare.small_crater_density (Earth and Moon)
@@ -150,7 +151,7 @@ mare_v11:
     max_elongation: 2.0       # longest axis / equivalent diameter, as the Polar bowl filter
     radius_km: 5              # low point within 5 km of the base spot (as c9 / c12 / c13)
     margin_km: 1.5            # window = radius + margin around the base spot (same geometry Earth and Moon)
-  # PROPOSAL (Claude Code, 15 Nov 2026; team start values, to be decided): c30 display only. Earth and Moon
+  # DECIDED 15 Nov 2026: c30 display only, weight 0, never scored. Earth and Moon
   # overlap only at the edges (392 of 500 B2 places have no qualifying pit; 9 reach the lunar Q1), and the high
   # Earth values sit in sand seas (interdune hollows, not craters). What-if weight 1.0: docs/MARE_V11.md.
   c30_weight: 0.0

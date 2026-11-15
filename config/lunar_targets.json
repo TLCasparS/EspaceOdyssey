@@ -708,7 +708,7 @@
         "value": 0.23551,
         "iqr": 0.12094,
         "tolerance": 0.12094,
-        "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127)",
+        "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127); display only, not used in a score",
         "n_cells": 20,
         "cells": [
           "tranquillitatis_01",
@@ -760,7 +760,7 @@
         "date": "2026-11-15",
         "verified": false,
         "check": "computed by Claude Code, to be checked by Mateo",
-        "version": "mare-v1.1",
+        "version": "display only (weight 0); mare-v1 score unchanged",
         "repro_diff": {
           "tranquillitatis_01": {
             "c9_relief": -0.077,

@@ -1,4 +1,4 @@
-"""mare-v1.1: c30 small-crater density (pipeline.mare.small_crater_density) and fair Mare twins
+"""Mare display additions: c30 small-crater density (pipeline.mare.small_crater_density) and fair Mare twins
 (pipeline.mare_v11) on synthetic plains."""
 import copy
 import math
