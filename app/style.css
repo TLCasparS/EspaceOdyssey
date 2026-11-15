@@ -448,3 +448,29 @@ a { color: var(--earth); }
 .sc-key { flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #F0C85D; color: #1A1005; font-size: 12px; font-weight: 700; }
 @media (max-width: 1000px) { .findings-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 600px) { .findings { padding: 0 12px; } .find-title { font-size: 20px; } .fn-num { font-size: 24px; } .find-panel { padding: 14px; } }
+
+/* ---------- Opening screen: Earthrise (hero.js fades it on scroll) ---------- */
+.hero { position: relative; height: 100vh; height: 100svh; min-height: 520px; overflow: hidden; background: #000; isolation: isolate; }
+.hero-bg { position: absolute; inset: 0; z-index: -2; will-change: opacity, transform;
+  /* Apollo 8 Earthrise, NASA AS08-14-2383, 3000 x 3000 px. Earth sits a bit right of centre, the horizon low. */
+  background: #000 url("assets/earthrise-apollo8-as08-14-2383.jpg") 57% 62% / cover no-repeat; }
+/* Darker top for the title, and a soft fade into the app's background colour at the bottom. */
+.hero-shade { position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 38%, rgba(0,0,0,0) 85%, var(--bg) 100%); }
+.hero-text { position: absolute; left: 50%; top: 7vh; width: min(92vw, 1100px); transform-origin: center top; translate: -50% 0;
+  text-align: center; will-change: opacity, transform; }
+.hero-eyebrow { margin: 0 0 10px; font-size: clamp(14px, 1.4vw, 18px); letter-spacing: .08em; color: #CFE0EA; }
+.hero-title { margin: 0; font-family: var(--title); font-weight: 700; color: #fff; line-height: .95;
+  font-size: clamp(52px, 9vw, 150px); text-shadow: 0 4px 30px rgba(0,0,0,.5); }
+.hero-sub { margin: 14px 0 0; font-size: clamp(18px, 2.1vw, 28px); color: #E6EEF3; }
+.hero-go { position: absolute; left: 50%; bottom: 9vh; translate: -50% 0; will-change: opacity; white-space: nowrap; padding: 12px 22px; border-radius: 999px; font-size: 18px; font-weight: 600;
+  color: var(--on-signal); background: var(--signal); text-decoration: none; }
+.hero-go:hover, .hero-go:focus-visible { background: var(--signal-soft); outline: 2px solid #fff; outline-offset: 3px; }
+.hero-go span { display: inline-block; animation: hero-bob 1.8s ease-in-out infinite; }
+@keyframes hero-bob { 50% { transform: translateY(4px); } }
+.hero-credit { position: absolute; left: 16px; bottom: 12px; margin: 0; font-size: 12px; color: rgba(230,238,243,.75); }
+@media (prefers-reduced-motion: reduce) { .hero-go span { animation: none; } }
+@media (max-width: 600px) {
+  .hero-text { top: 12vh; }
+  .hero-credit { right: 96px; }
+}

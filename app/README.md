@@ -1,4 +1,4 @@
-# App: Earth Twins of the Moon
+# App: Moon Twins on Earth
 
 A static web page (HTML + JavaScript, no build step). Layout: the ranked list of Earth twins on the left,
 the Earth globe with a suitability heatmap in the middle, the Moon globe to pick the lunar base on the

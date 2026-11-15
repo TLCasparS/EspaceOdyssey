@@ -1,4 +1,4 @@
-/* Earth Twins of the Moon: static web app (no build step).
+/* Moon Twins on Earth: static web app (no build step).
  * Reads the pipeline's files in ../outputs/ (written by src/export_app.py) and draws:
  * filter bar, ranked site list, 3D globe with heatmap, analog card, 3D terrain close-up.
  * Add ?sample to the URL to see the old fake sample data instead (for design work).
