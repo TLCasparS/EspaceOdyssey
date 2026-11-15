@@ -43,6 +43,9 @@ Optional (15 Nov 2026; without these flags nothing changes):
   DISPLAY columns in raw_values.csv: ROCK_CLASS, ROCK_CLASS_NAME, BASALT_SHARE_5KM, GLIM_COVERED_SHARE,
   BASALT_REGION (team decision 15 Nov 2026: BASALT_REGION = 1 if the class AT the point is vb, else 0; a point in a
   cell GLiM counts as sea, or GLiM "nd", = no data, nothing borrowed from neighbours). Never in a score.
+- --macrostrat PATH: data/macrostrat/rock_site.csv (src/compute_macrostrat.py; Macrostrat, CC BY 4.0) as DISPLAY
+  columns at the END of raw_values.csv: ROCK_SITE, ROCK_SITE_LITH, ROCK_SITE_SOURCE, ROCK_SITE_SCALE, BASALT_SITE
+  (joined on RUN + CELL; empty = no data). targets.json -> _rock_site. Never in a score; no other column changes.
 """
 from __future__ import annotations
 
@@ -313,6 +316,8 @@ def main():
     ap.add_argument("--anchors", type=Path, help="CSV SITE,LAT,LON,MAX_KM: keep site_info keys for these places")
     ap.add_argument("--glim", type=Path,
                     help="GLiM 0.5 deg ASCII grid (.asc) or a folder containing it: rock class display columns")
+    ap.add_argument("--macrostrat", type=Path,
+                    help="data/macrostrat/rock_site.csv: Macrostrat rock-at-site display columns in raw_values.csv")
     ap.add_argument("--dedupe-km", type=float, default=0.0,
                     help="same bowl in two runs (low points within this distance): export once, region run wins")
     a = ap.parse_args()
@@ -335,6 +340,10 @@ def main():
         from place_names import PlaceNames
         names = PlaceNames(a.place_names)
     glim = load_glim(a.glim, disp.get("material", {})) if a.glim else None
+    macro = None
+    if a.macrostrat:
+        from pipeline import macrostrat as ms
+        macro = ms.load_rock_site(a.macrostrat)
     info_names = {}
     if a.sites_info and a.sites_info.exists():
         info_names = {k: (v.get("name") if isinstance(v, dict) else None) or k
@@ -498,7 +507,7 @@ def main():
     pf_raw = ["EXCLUDED", "EXCLUDED_DETAIL", "MINE_DIST_KM"] if post else []
     raw_cols = ["SITE", "LAT", "LON", *crit_cols, *EXTRA_RAW.values(), *DISPLAY_RAW.values(),
                 "IMPACT_NAME", "IMPACT_DIAMETER_KM", "IMPACT_DIST_KM", "IMPACT_SOURCE", "RUN", "CELL", "BASE_TYPE",
-                *pf_raw, *(ROCK_COLS if glim else [])]
+                *pf_raw, *(ROCK_COLS if glim else []), *(ms.COLUMNS if macro is not None else [])]
     with open(a.out / "raw_values.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(raw_cols)
@@ -514,7 +523,8 @@ def main():
                         *([x["EXCLUDED"], "; ".join(pf["details"]).replace(",", ";") if pf else "",
                            _fmt(pf["mine_dist_km"], 3) if pf else ""] if post else []),
                         *([x["_rock"][c] if c in ("ROCK_CLASS", "ROCK_CLASS_NAME") else _fmt(x["_rock"][c])
-                           for c in ROCK_COLS] if glim else [])])
+                           for c in ROCK_COLS] if glim else []),
+                        *(ms.export_values(macro, x["RUN"], x["CELL"]) if macro is not None else [])])
 
     targets = {"_note": ("Lunar reference per base type. The 0-1 values in scores.csv ARE the similarity to the "
                          "Moon (1 = equal); no 0-1 target values. Moon values are raw, in earth_unit. score_method: "
@@ -569,6 +579,8 @@ def main():
                         "not for real results." if mt_preview else ""))}
     if glim:
         targets["_material"] = glim["meta"]
+    if macro is not None:
+        targets["_rock_site"] = ms.export_meta(macro)
     (a.out / "targets.json").write_text(json.dumps(targets, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     heat = [{"lat": x["_centre"][0], "lng": x["_centre"][1], "weight": round(x["SCORE_TOTAL"], 4),
@@ -728,6 +740,8 @@ cell in `ranking.csv`); another target might prefer a different bowl in the same
 | base | BASALT_REGION | places |
 |---|---|---|
 """ + "".join(f"| {b} | {v} | {n} |\n" for (b, v), n in sorted(n_rock.items()))
+    if macro is not None:
+        readme += ms.export_readme(macro)
     if post:
         pc = post.cfg
         pol = [x for x in rows if x["BASE_TYPE"] in post.base_types and x["RUN"]]

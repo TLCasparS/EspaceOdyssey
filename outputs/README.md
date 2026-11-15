@@ -84,6 +84,23 @@ cell in `ranking.csv`); another target might prefer a different bowl in the same
 | polar | 1 | 166 |
 | polar | no data | 16 |
 
+## Rock at the site (Macrostrat, display only; never in a score)
+`raw_values.csv` columns `ROCK_SITE`, `ROCK_SITE_LITH`, `ROCK_SITE_SOURCE`, `ROCK_SITE_SCALE`, `BASALT_SITE`, at the Mare base pad. Source: **Macrostrat (macrostrat.org), CC BY 4.0**.
+- `ROCK_SITE` = name of the geological map unit under the point, `ROCK_SITE_LITH` = its lithology text,
+  `ROCK_SITE_SOURCE` = the source map, `ROCK_SITE_SCALE` = `large` / `medium` / `small` (the first Macrostrat scale
+  with a unit at the point). Note: geological map unit at the site; resolution depends on the source map (ROCK_SITE_SCALE).
+- `BASALT_SITE` = 1 basalt / mafic volcanic, 0 clearly another rock, **empty = unknown or no map unit** (never 0 for
+  missing). Rule and limits: docs/MACROSTRAT_REPORT.md. The GLiM columns above stay as the regional (0.5°) view.
+
+| ROCK_SITE_SCALE | BASALT_SITE | places |
+|---|---|---|
+| large | 0 | 4 |
+| medium | 0 | 23 |
+| medium | unknown | 29 |
+| small | 0 | 218 |
+| small | unknown | 18 |
+| no answer | unknown | 208 |
+
 ## config-v1.1: post-run filters (Polar only; config-v1 scoring unchanged)
 Rules in `config/post_filters.yaml`, code `src/post_filters.py`. An excluded place keeps `SCORE_TOTAL` and its raw
 values, gets **`EXCLUDED`** = reason(s) (`raw_values.csv` → `EXCLUDED_DETAIL`), has **no `RANK`** and **no heatmap point**;

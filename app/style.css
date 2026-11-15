@@ -273,6 +273,7 @@ a { color: var(--earth); }
 /* "On the ground" box: impact-crater fact under the bars */
 .impact-line { margin: 10px 0 0; font-size: 13.5px; color: var(--text); }
 .impact-line > span:first-child { display: inline-block; min-width: 110px; color: var(--muted); }
+.tag-basalt { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--accent); color: #1A1405; font-size: 11px; font-weight: 600; letter-spacing: .02em; white-space: nowrap; }
 .impact-line a { color: var(--signal-soft); }
 .region-btn .muted { color: var(--muted); font-weight: 400; }
 

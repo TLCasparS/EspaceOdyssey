@@ -1,0 +1,501 @@
+run,cell,lon,lat,ROCK_SITE,ROCK_SITE_LITH,ROCK_SITE_SOURCE,ROCK_SITE_SCALE,BASALT_SITE,N_UNITS,SOURCE_ID
+mare,b077_r003c1261,6.15605,24.06448,,with ediacaran metamorphism (tuareg shield),Africa,small,0,1,190
+mare,b094_r003c1513,96.4795,42.44285,,,,,,,
+mare,b079_r000c1422,32.85181,25.75945,,sedimentary,Africa,small,0,1,190
+mare,b094_r003c1554,103.97241,42.43539,,,,,,,
+mare,b086_r006c1129,3.9763,34.18606,Neogene undifferentiated,,Europe 1:5M,small,,2,147
+mare,b124_r003c155,-98.67431,75.01226,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate reefs",Arctic,small,0,2,2
+mare,b082_r003c1384,34.27989,29.47912,Jordan,"Major:{chalk}, Minor{marl,limestone,phonolite}",Europe 1:5M,small,0,2,147
+mare,b094_r002c1525,98.17262,42.33664,,,,,,,
+mare,b083_r007c1581,68.77623,31.15638,,,,,,,
+mare,b035_r007c1349,14.74398,-21.0055,,metamorphic,Africa,small,0,1,190
+mare,b080_r005c1586,61.13595,27.62154,,"Early-Middle Eocene flysch composed of sandstone, shale with minor limestone, conglomerate and lava flow",Iran,medium,,1,191
+mare,b083_r002c1491,52.98422,30.43827,,Low level piedment fan and valley terrace deposits,Iran,medium,,1,191
+mare,b093_r000c1550,96.83411,41.05452,,,,,,,
+mare,b083_r001c1375,34.62342,30.22542,Advat Group,"Major:{chalk}, Minor{limestone,chert}",Europe 1:5M,small,0,2,147
+mare,b093_r004c1593,106.94679,41.57486,,,,,,,
+mare,b096_r003c1527,109.38436,44.65661,,,,,,,
+mare,b094_r001c1496,92.32626,42.16528,,,,,,,
+mare,b084_r005c1362,36.30035,31.93923,,sedimentary,Africa,small,0,2,190
+mare,b094_r002c1577,107.68468,42.34035,,,,,,,
+mare,b076_r001c1337,15.31526,22.67152,,sedimentary,Africa,small,0,1,190
+mare,b092_r006c1541,94.04057,40.7671,,,,,,,
+mare,b085_r005c1094,-4.09547,32.93778,,sedimentary,Africa,small,0,2,190
+mare,b093_r000c1557,98.10087,40.9738,,,,,,,
+mare,b093_r001c1594,105.28087,41.08274,,,,,,,
+mare,b065_r000c1665,48.39163,10.57773,,sedimentary,Africa,small,0,1,190
+mare,b082_r003c1574,63.63445,29.53097,Cretaceous Tuff,Tuff,Afghanistan,medium,,1,28
+mare,b094_r002c1336,63.74407,42.35471,,,,,,,
+mare,b036_r007c1347,13.11254,-19.96351,,sedimentary and volcaniclastic,Africa,small,0,1,190
+mare,b071_r004c1365,13.11922,17.63163,,sedimentary,Africa,small,0,1,190
+mare,b079_r007c1619,64.42574,26.80683,,,,,,,
+mare,b084_r004c1562,67.71121,31.71484,Oligocene sandstone and siltstone,sandstone and siltstone,Afghanistan,medium,0,1,28
+mare,b123_r000c183,-92.64557,73.52796,Silurian sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b071_r005c1629,50.61587,17.78401,,,,,,,
+mare,b093_r005c1591,107.13329,41.68843,,,,,,,
+mare,b087_r001c1144,7.4385,34.63703,,sedimentary,Africa,small,0,2,190
+mare,b094_r005c1499,95.19993,42.75985,,,,,,,
+mare,b030_r004c1295,15.55628,-26.88941,,sedimentary,Africa,small,0,1,190
+mare,b117_r005c269,-84.13883,67.76513,Neoarchean granitoids,"Granitoid rocks (undifferentiated) generally foliated to gneissic and can include diorite, monzodiorite, tonalite, granodiorite, and monzogranite.","Rae Craton and Queen Maud Block, NU",medium,0,1,248
+mare,b118_r000c268,-82.92861,68.06198,Neoarchean granitoids,"Granitoid rocks (undifferentiated) generally foliated to gneissic and can include diorite, monzodiorite, tonalite, granodiorite, and monzogranite.","Rae Craton and Queen Maud Block, NU",medium,0,1,248
+mare,b093_r007c1540,99.1512,42.01103,,,,,,,
+mare,b124_r005c168,-90.33176,75.3029,Silurian sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b088_r004c1600,87.03502,36.15343,,,,,,,
+mare,b094_r007c1500,96.51649,42.96726,,,,,,,
+mare,b120_r000c242,-83.2525,70.24263,Igneous: intrusive; Intrusive: undivided,"paragneiss, migmatite, diatexite, mafic gneiss; diorite and gabbro; minor quartzite; granodiorite to quartz monzonite; felsic-intermediate volcanic rocks",Arctic,small,0,2,2
+mare,b077_r006c1368,22.61086,24.42748,,continental sedimentary,Africa,small,0,1,190
+mare,b077_r004c1452,34.49617,24.15283,,plutonic,Africa,small,0,1,190
+mare,b094_r000c1487,90.10072,42.06009,,,,,,,
+mare,b095_r003c1486,96.43607,43.56923,,,,,,,
+mare,b125_r006c140,-98.39923,76.50235,Sedimentary; Clastic: shallow marine,"sandstone, siltstone, shale; marine fossils",Arctic,small,0,2,2
+mare,b065_r000c1663,48.03551,10.54303,,sedimentary,Africa,small,0,1,190
+mare,b096_r005c1460,97.9948,44.94474,,,,,,,
+mare,b096_r004c1489,102.75438,44.78496,,,,,,,
+mare,b071_r000c1633,50.38184,17.05289,,,,,,,
+mare,b118_r001c262,-84.64605,68.29677,Snow Island Suite,Synvolcanic biotite-hornblende tonalite (locally dated at 2.72 Ga).,"Rae Craton and Queen Maud Block, NU",medium,,1,248
+mare,b112_r002c372,-73.3445,61.90318,Igneous: intrusive; Intrusive: undivided,"granite, granodiorite; syenogranite; tonalite gneiss, quartz diorite; gabbro, anorthositic gabbro,  peridotite; pyroxenite",Arctic,small,0,2,2
+mare,b024_r006c1256,21.99019,-33.01917,Fort Brown Formation of Ecca Group of Karoo Supergroup,"Rhythmite, mudrock, minor sandstone",South Africa,medium,,1,41
+mare,b084_r001c1370,36.19614,31.41137,,sedimentary,Africa,small,0,2,190
+mare,b034_r003c1333,14.70798,-22.64096,,sedimentary and volcaniclastic,Africa,small,0,1,190
+mare,b088_r002c1590,84.39054,35.78067,,,,,,,
+mare,b093_r006c1537,97.87547,41.84203,,,,,,,
+mare,b071_r001c1335,8.36892,17.29441,,with ediacaran metamorphism (tuareg shield),Africa,small,0,1,190
+mare,b082_r005c1379,34.14882,29.68533,,sedimentary,Africa,small,0,2,190
+mare,b086_r005c1121,2.51019,34.09722,Late Jurassic undifferentiated,,Europe 1:5M,small,,2,147
+mare,b124_r005c158,-95.96132,75.2623,Sedimentary; Slope and deep water,"shale, chert, iron-formation, greywacke, turbidite, argillaceous limestone, matrix-supported conglomerate",Arctic,small,0,2,2
+mare,b076_r005c1413,27.33087,23.23394,,continental sedimentary,Africa,small,0,1,190
+mare,b097_r000c1488,105.31036,45.3495,,,,,,,
+mare,b025_r001c1259,21.57348,-32.65245,Adelaide Subgroup of Beaufort Group of Karoo Supergroup,"Mudrock, subordinate sandstone",South Africa,medium,,1,41
+mare,b081_r000c1563,58.5628,27.99464,,Fluvial conglomerate,Iran,medium,,1,191
+mare,b087_r007c1619,87.82516,35.49948,,,,,,,
+mare,b083_r000c1379,34.95606,30.09013,,sedimentary,Africa,small,0,2,190
+mare,b095_r007c1479,97.72472,44.17959,,,,,,,
+mare,b080_r004c1366,27.41863,27.38191,,sedimentary,Africa,small,0,1,190
+mare,b093_r006c1494,90.11112,41.75441,,,,,,,
+mare,b096_r003c1526,109.20139,44.63056,,,,,,,
+mare,b085_r006c1635,83.12931,33.07814,,,,,,,
+mare,b080_r003c1439,38.33009,27.2272,,sedimentary,Africa,small,0,1,190
+mare,b086_r006c1128,3.96036,34.15287,Neogene undifferentiated,,Europe 1:5M,small,,2,147
+mare,b093_r007c1600,110.02291,41.96062,,,,,,,
+mare,b071_r000c1337,8.58219,17.07056,,plutonic calc-alkaline (tuareg shield),Africa,small,0,1,190
+mare,b095_r000c1543,105.20917,43.19096,,,,,,,
+mare,b093_r005c1532,96.37369,41.73967,,,,,,,
+mare,b087_r001c1148,8.13168,34.65201,,sedimentary,Africa,small,0,2,190
+mare,b092_r001c1547,92.45754,40.03887,,,,,,,
+mare,b085_r004c1653,85.23346,32.82222,,,,,,,
+mare,b087_r004c1630,88.26111,34.96562,,,,,,,
+mare,b117_r002c279,-82.47424,67.30566,Neoarchean granitoids,"Granitoid rocks (undifferentiated) generally foliated to gneissic and can include diorite, monzodiorite, tonalite, granodiorite, and monzogranite.","Rae Craton and Queen Maud Block, NU",medium,0,1,248
+mare,b117_r006c268,-83.98152,67.86244,Neoarchean granitoids,"Granitoid rocks (undifferentiated) generally foliated to gneissic and can include diorite, monzodiorite, tonalite, granodiorite, and monzogranite.","Rae Craton and Queen Maud Block, NU",medium,0,1,248
+mare,b091_r006c1565,94.01325,39.69234,,,,,,,
+mare,b090_r000c1557,85.38046,37.7102,,,,,,,
+mare,b094_r004c1502,95.10188,42.57646,,,,,,,
+mare,b071_r003c1366,13.11922,17.54597,,sedimentary,Africa,small,0,1,190
+mare,b087_r001c1631,87.13482,34.64283,,,,,,,
+mare,b088_r004c411,-111.37558,36.06167,Holocene surficial deposits,"Major:{silt,clay}, Minor:{gravel,sand}",State Geologic Map Compilation,medium,0,2,133
+mare,b071_r001c1334,8.30405,17.25405,,with ediacaran metamorphism (tuareg shield),Africa,small,0,1,190
+mare,b082_r000c1378,32.42489,29.12533,Carboniferous undifferentiated,,Europe 1:5M,small,,2,147
+mare,b120_r000c235,-85.85794,70.33971,Mesoarchean-Neoarchean metamorphic and undivided crystalline: undivided gneissic rocks,metamorphic and undivided crystalline: undivided gneissic rocks,GMNA,small,0,2,7
+mare,b125_r003c116,-114.27619,76.18148,Jurassic sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b088_r000c1629,89.96297,35.55525,,,,,,,
+mare,b098_r000c1420,97.75196,46.40584,,,,,,,
+mare,b117_r002c317,-69.04186,67.24623,Supracrustal; Sedimentary and/or volcanic: undivided,"metamorphosed siliciclastic rocks: pelitic gneiss/schist, marble,  metabasalt, gabbro, quartzite; peridotite; psammite, pelite, marble, dolomite, calc-silicate, arkose, wacke, iron-formation; pyroclastic rocks",Arctic,small,0,2,2
+mare,b090_r003c1666,105.60112,38.13617,,,,,,,
+mare,b032_r001c1314,15.51902,-25.07603,,sedimentary,Africa,small,0,1,190
+mare,b080_r002c1369,27.42353,27.2235,,sedimentary,Africa,small,0,1,190
+mare,b082_r007c1386,35.71239,29.99498,,sedimentary,Africa,small,0,2,190
+mare,b124_r005c166,-91.29762,75.33838,Silurian sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b077_r000c1260,5.46405,23.69168,,with ediacaran metamorphism (tuareg shield),Africa,small,0,1,190
+mare,b097_r005c1445,100.39457,45.99738,,,,,,,
+mare,b120_r004c255,-75.00589,70.8601,Igneous: intrusive; Intrusive: undivided,"diorite, monzodiorite, tonalite, granodiorite, monzogranite, syenogranite, quartz-monzonite, tonalite; gabbro, ultramafics: serpentinized peridotite ; charnockite and orthogneiss",Arctic,small,0,2,2
+mare,b095_r003c1483,95.87564,43.57855,,,,,,,
+mare,b093_r007c1602,110.3639,41.91818,,,,,,,
+mare,b085_r005c1095,-4.06217,32.96246,,sedimentary,Africa,small,0,2,190
+mare,b094_r004c1329,63.47305,42.62558,,,,,,,
+mare,b073_r005c1375,17.15523,19.91093,,sedimentary,Africa,small,0,1,190
+mare,b088_r001c1606,86.65369,35.64175,,,,,,,
+mare,b123_r000c184,-92.42545,73.61896,Silurian sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b124_r006c159,-94.66196,75.51291,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate reefs",Arctic,small,0,2,2
+mare,b094_r007c1469,90.87313,43.0321,,,,,,,
+mare,b097_r003c1369,84.35897,45.7911,,,,,,,
+mare,b120_r006c248,-76.39358,71.07098,Mesoarchean-Neoarchean metamorphic and undivided crystalline: undivided gneissic rocks,metamorphic and undivided crystalline: undivided gneissic rocks,GMNA,small,0,2,7
+mare,b031_r005c1306,15.27495,-25.65628,,sedimentary,Africa,small,0,1,190
+mare,b092_r000c1550,92.37614,39.96452,,,,,,,
+mare,b086_r007c1128,4.19869,34.3819,,sedimentary,Africa,small,0,2,190
+mare,b093_r000c1583,102.75091,40.99196,,,,,,,
+mare,b072_r004c1327,8.90797,18.71444,,with ediacaran metamorphism (tuareg shield),Africa,small,0,1,190
+mare,b076_r004c1276,6.96769,23.12524,,with ediacaran metamorphism (tuareg shield),Africa,small,0,1,190
+mare,b115_r003c271,-92.48433,65.32721,"Amer, Chantrey, Penrhyn, and Ketyet River Groups","contains unsubdivided pelitic, marble, metawacke gneisses, and schists locally with metabasalt and gabbro, and thin quartzite.","Rae Craton and Queen Maud Block, NU",medium,,1,248
+mare,b073_r004c1377,17.28067,19.82307,,sedimentary,Africa,small,0,1,190
+mare,b124_r004c163,-93.78476,75.23577,Silurian-Devonian sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b122_r000c161,-107.72931,72.48056,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate reefs",Arctic,small,0,2,2
+mare,b091_r006c1566,94.0228,39.68583,,,,,,,
+mare,b094_r000c1512,94.66157,42.10035,,,,,,,
+mare,b118_r001c265,-83.41911,68.32222,Snow Island Suite,Synvolcanic biotite-hornblende tonalite (locally dated at 2.72 Ga).,"Rae Craton and Queen Maud Block, NU",medium,,1,248
+mare,b097_r003c1488,107.47305,45.75474,,,,,,,
+mare,b121_r006c157,-110.69991,72.15446,Mesoproterozoic-Neoproterozoic sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b092_r001c1550,92.9787,40.10868,,,,,,,
+mare,b092_r007c1586,102.72242,40.85897,,,,,,,
+mare,b100_r001c1345,94.82754,48.7129,,,,,,,
+mare,b092_r001c401,-109.3041,40.0558,mixed alluvium and colluvium,"Unconsolidated mud, silt, sand, and gravel in intermittent stream drainages and in areas of low topographic relief.","Vernal, UT",large,0,1,56
+mare,b094_r003c1518,97.44106,42.46401,,,,,,,
+mare,b072_r001c1581,44.56885,18.33715,,sedimentary,Africa,small,0,1,190
+mare,b080_r005c1110,-11.24452,27.5499,Late Devonian undifferentiated,,Europe 1:5M,small,,2,147
+mare,b122_r003c152,-110.19495,72.87683,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate reefs",Arctic,small,0,2,2
+mare,b092_r002c1608,103.64916,40.12658,,,,,,,
+mare,b082_r003c1378,33.41273,29.4478,Jordan,"Major:{chalk}, Minor{marl,limestone,phonolite}",Europe 1:5M,small,0,2,147
+mare,b088_r004c1606,87.88218,36.1303,,,,,,,
+mare,b093_r001c1361,63.55125,41.1017,,,,,,,
+mare,b096_r001c1445,92.63854,44.39966,,,,,,,
+mare,b096_r001c1528,108.27518,44.34779,,,,,,,
+mare,b098_r003c1367,89.26003,46.79304,,,,,,,
+mare,b074_r005c1367,17.50362,21.11971,,volcanic,Africa,small,,1,190
+mare,b080_r003c1397,31.85076,27.27884,,sedimentary,Africa,small,0,1,190
+mare,b082_r002c1419,39.46382,29.30785,,sedimentary,Africa,small,0,2,190
+mare,b085_r001c1555,68.40333,32.51469,Eocene clay and shale,clay and shale,Afghanistan,medium,0,1,28
+mare,b032_r003c1313,14.94373,-24.82672,,sedimentary,Africa,small,0,1,190
+mare,b088_r007c410,-111.10624,36.4915,Glen Canyon Group,"Major:{sandstone}, Minor:{siltstone,sandstone mudstone}",State Geologic Map Compilation,medium,0,2,133
+mare,b094_r005c1506,96.50669,42.75878,,,,,,,
+mare,b096_r005c1417,89.86908,44.90515,,,,,,,
+mare,b122_r005c161,-104.83028,73.20488,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate reefs",Arctic,small,0,2,2
+mare,b124_r005c153,-98.42138,75.33036,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate reefs",Arctic,small,0,2,2
+mare,b125_r004c154,-92.05888,76.29757,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate reefs",Arctic,small,0,2,2
+mare,b094_r001c1533,98.97025,42.15912,,,,,,,
+mare,b035_r007c1350,14.8557,-20.94055,,metamorphic,Africa,small,0,1,190
+mare,b092_r002c1604,102.91402,40.22511,,,,,,,
+mare,b081_r006c1597,65.62297,28.84377,,,,,,,
+mare,b084_r001c1371,36.45171,31.35159,,sedimentary,Africa,small,0,2,190
+mare,b092_r000c1549,92.27262,39.95442,,,,,,,
+mare,b079_r000c1623,63.00937,25.82606,,,,,,,
+mare,b123_r000c158,-104.61501,73.53958,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate reefs",Arctic,small,0,2,2
+mare,b112_r000c373,-74.17588,61.58514,Paleoproterozoic volcanic: undivided volcanic rocks,volcanic: undivided volcanic rocks,GMNA,small,,2,7
+mare,b087_r003c1629,87.76079,34.83762,,,,,,,
+mare,b092_r000c1563,94.65907,39.90264,,,,,,,
+mare,b094_r001c1497,92.38718,42.15626,,,,,,,
+mare,b125_r003c146,-97.71016,76.19501,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate reefs",Arctic,small,0,2,2
+mare,b087_r005c1612,85.70866,35.19894,,,,,,,
+mare,b074_r002c1503,36.50001,20.66603,,sedimentary and volcaniclastic,Africa,small,0,1,190
+mare,b085_r006c1674,89.38083,33.17635,,,,,,,
+mare,b082_r003c1553,60.35761,29.48524,,"Early-Middle Eocene flysch composed of sandstone, shale with minor limestone, conglomerate and lava flow",Iran,medium,,1,191
+mare,b082_r004c1569,63.15283,29.60478,Late Pleistocene-Holocene Eolian deposits,Eolian deposits,Afghanistan,medium,0,1,28
+mare,b089_r002c386,-114.93444,36.89682,Alluvial deposits,sand,Geologic Map of Nevada,medium,0,2,466
+mare,b084_r000c1102,-6.33396,31.16903,,sedimentary,Africa,small,0,2,190
+mare,b111_r002c384,-73.84005,60.76326,Igneous: intrusive; Intrusive: undivided,"granite, granodiorite; syenogranite; tonalite gneiss, quartz diorite; gabbro, anorthositic gabbro,  peridotite; pyroxenite",Arctic,small,0,2,2
+mare,b097_r006c1434,99.04994,46.14133,,,,,,,
+mare,b088_r001c416,-110.96444,35.72549,Glen Canyon Group,"Major:{sandstone}, Minor:{siltstone,sandstone mudstone}",State Geologic Map Compilation,medium,0,2,133
+mare,b080_r001c1398,31.60967,27.05171,,sedimentary,Africa,small,0,1,190
+mare,b127_r005c122,-96.4329,78.54008,Sedimentary; Clastic: deltaic and nearshore,"sandstone, siltstone, shale, coal; plant fossils",Arctic,small,0,2,2
+mare,b117_r006c270,-83.44325,67.82065,"Amer, Chantrey, Penrhyn, and Ketyet River Groups","phyllite, muscovite schist, and feldspathic sandstone;","Rae Craton and Queen Maud Block, NU",medium,,1,248
+mare,b094_r005c1481,91.94299,42.73996,,,,,,,
+mare,b093_r007c1601,110.15125,41.93124,,,,,,,
+mare,b096_r005c1421,90.60362,44.87213,,,,,,,
+mare,b085_r006c1480,58.21828,33.1502,,Oligocene andesitic lava flows,Iran,medium,,1,191
+mare,b094_r001c1550,102.16067,42.19061,,,,,,,
+mare,b085_r006c1106,-1.9149,33.16749,Late Cretaceous undifferentiated,,Europe 1:5M,small,,2,147
+mare,b087_r004c1614,85.59569,34.99474,,,,,,,
+mare,b032_r000c1313,15.65342,-25.19337,,sedimentary,Africa,small,0,1,190
+mare,b097_r001c1437,96.18343,45.4333,,,,,,,
+mare,b127_r004c112,-104.19214,78.48886,Paterson Island Member of Isachsen Formation,"sandstone, siltstone, shale","S. Ellef Ringnes Island, NU",large,0,1,271
+mare,b130_r005c167,-21.5074,81.81335,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate  reefs or metamorphosed equivalent",Arctic,small,0,2,2
+mare,b085_r007c1097,-3.14484,33.23976,,sedimentary,Africa,small,0,2,190
+mare,b121_r003c229,-81.2596,71.76422,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate reefs",Arctic,small,0,2,2
+mare,b081_r001c1409,35.28982,28.15394,,sedimentary,Africa,small,0,1,190
+mare,b117_r005c313,-68.4317,67.70398,Paleoproterozoic sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b088_r001c1608,86.93812,35.66872,,,,,,,
+mare,b093_r000c1547,96.21054,41.01868,,,,,,,
+mare,b099_r006c1356,94.81337,48.35849,,,,,,,
+mare,b130_r006c164,-21.839,81.9716,Silurian sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b081_r005c1415,37.40644,28.60261,,sedimentary,Africa,small,0,2,190
+mare,b095_r004c1490,97.74784,43.74333,,,,,,,
+mare,b118_r000c265,-84.04353,68.0878,Neoarchean granitoids,"Granitoid rocks (undifferentiated) generally foliated to gneissic and can include diorite, monzodiorite, tonalite, granodiorite, and monzogranite.","Rae Craton and Queen Maud Block, NU",medium,0,1,248
+mare,b097_r007c1424,97.76682,46.31949,,,,,,,
+mare,b089_r000c422,-109.04737,36.6402,San Rafael Group,"sandstone, siltstone",Geologic Map of Arizona,medium,0,2,490
+mare,b091_r005c1612,101.55426,39.44765,,,,,,,
+mare,b071_r003c1648,52.91432,17.52971,,,,,,,
+mare,b091_r004c1619,102.19098,39.31658,,,,,,,
+mare,b070_r004c1637,50.15344,16.61728,,,,,,,
+mare,b101_r002c1313,95.08379,49.99105,,,,,,,
+mare,b031_r007c1307,14.98679,-25.33629,,sedimentary,Africa,small,0,1,190
+mare,b083_r004c1527,59.28434,30.74295,,Sand dunes and sand sheets,Iran,medium,,1,191
+mare,b119_r006c159,-117.04348,70.0493,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate reefs",Arctic,small,0,2,2
+mare,b092_r007c1539,94.23019,40.86316,,,,,,,
+mare,b032_r000c1311,15.32047,-25.16454,,sedimentary,Africa,small,0,1,190
+mare,b088_r001c1601,85.79632,35.72134,,,,,,,
+mare,b085_r001c1189,9.8746,32.43094,Late Cretaceous undifferentiated,,Europe 1:5M,small,,2,147
+mare,b081_r005c1319,22.6051,28.68308,,sedimentary,Africa,small,0,1,190
+mare,b082_r004c1571,63.61617,29.60736,Cretaceous Tuff,Tuff,Afghanistan,medium,,1,28
+mare,b089_r007c1615,94.81442,37.61911,,,,,,,
+mare,b125_r000c124,-111.85835,75.66477,Middle Devonian sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b083_r000c1531,58.69062,30.20329,Lut Formation,"Unfolded, poorly consolidated,flat-lying, bedded yellowish mud, silt, sand and minor gravel conglomerate",Iran,medium,,1,191
+mare,b117_r007c268,-83.63418,67.99885,Neoarchean granitoids,"Granitoid rocks (undifferentiated) generally foliated to gneissic and can include diorite, monzodiorite, tonalite, granodiorite, and monzogranite.","Rae Craton and Queen Maud Block, NU",medium,0,1,248
+mare,b076_r005c1332,15.31976,23.26798,,plutonic,Africa,small,0,1,190
+mare,b080_r000c1403,32.09984,26.83407,,sedimentary,Africa,small,0,1,190
+mare,b090_r000c1610,94.48933,37.71837,,,,,,,
+mare,b096_r000c1531,108.0185,44.22144,,,,,,,
+mare,b069_r003c1641,49.37655,15.40031,,,,,,,
+mare,b091_r004c1560,92.01699,39.40001,,,,,,,
+mare,b093_r006c1603,109.81311,41.8471,,,,,,,
+mare,b075_r005c1416,26.10973,22.1876,,sedimentary and volcaniclastic,Africa,small,0,1,190
+mare,b078_r000c1446,34.51517,24.67012,,plutonic,Africa,small,0,1,190
+mare,b027_r000c1274,19.62037,-30.6891,Volksrust Formation of Ecca Group of Karoo Supergroup,Mudrock,South Africa,medium,,1,41
+mare,b093_r001c1595,105.36145,41.08329,,,,,,,
+mare,b080_r005c1354,25.87006,27.53204,,sedimentary,Africa,small,0,1,190
+mare,b076_r000c1338,15.2892,22.52342,,sedimentary,Africa,small,0,1,190
+mare,b089_r007c1614,94.59386,37.64128,,,,,,,
+mare,b083_r001c1376,34.84609,30.21384,,sedimentary,Africa,small,0,2,190
+mare,b085_r003c1652,84.60163,32.65293,,,,,,,
+mare,b081_r003c1572,60.81701,28.36755,,"Early-Middle Eocene flysch composed of sandstone, shale with minor limestone, conglomerate and lava flow",Iran,medium,,1,191
+mare,b096_r001c1529,108.30638,44.45345,,,,,,,
+mare,b094_r001c1485,90.22354,42.16065,,,,,,,
+mare,b097_r004c1451,100.88682,45.91916,,,,,,,
+mare,b080_r004c1355,25.71231,27.45293,,sedimentary,Africa,small,0,1,190
+mare,b088_r005c1609,88.84497,36.25307,,,,,,,
+mare,b040_r002c1370,12.29321,-16.29658,,plutonic and metamorphic,Africa,small,0,1,190
+mare,b087_r005c1598,83.44494,35.17428,,,,,,,
+mare,b095_r005c1481,96.75659,43.87487,,,,,,,
+mare,b122_r000c158,-108.88397,72.49839,Mesoproterozoic-Neoproterozoic sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b117_r001c279,-82.95364,67.18987,Neoarchean granitoids,"Granitoid rocks (undifferentiated) generally foliated to gneissic and can include diorite, monzodiorite, tonalite, granodiorite, and monzogranite.","Rae Craton and Queen Maud Block, NU",medium,0,1,248
+mare,b072_r004c1564,42.68895,18.72337,,plutonic,Africa,small,0,1,190
+mare,b093_r007c1598,109.54328,41.96423,,,,,,,
+mare,b041_r004c1380,12.46203,-14.95271,,metamorphic,Africa,small,0,1,190
+mare,b087_r007c445,-106.39702,35.491,"Floodplain deposits of the Rio Grande, Rio Puerco, and Jemez River","For the Rio Grande and Jemez River, consists of unconsolidated, light-brown, coarse sand and round pebble to granule gravel with subordinate lenses of fine…","Albuquerque Quad, NM",large,0,1,178
+mare,b083_r004c1558,64.23307,30.6316,Middle Pleistocene conglomerate and sandstone,conglomerate and sandstone,Afghanistan,medium,0,1,28
+mare,b089_r007c1555,84.56607,37.64064,,,,,,,
+mare,b120_r003c256,-75.52273,70.69412,Mesoarchean-Neoarchean metamorphic and undivided crystalline: undivided gneissic rocks,metamorphic and undivided crystalline: undivided gneissic rocks,GMNA,small,0,2,7
+mare,b080_r000c1609,63.23376,26.93465,,,,,,,
+mare,b093_r005c1599,108.61061,41.62278,,,,,,,
+mare,b126_r006c135,-94.73415,77.57872,Cretaceous plutonic: mafic rocks,plutonic: mafic rocks,GMNA,small,0,2,7
+mare,b017_r006c624,-69.01875,-40.68241,Paleogene Undifferentiated,Volcanic,Geological Map of South America 2018,small,,1,1087
+mare,b032_r001c1312,15.28725,-25.07992,,sedimentary,Africa,small,0,1,190
+mare,b122_r004c191,-91.79368,73.07621,Silurian sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b077_r002c1404,26.98104,23.88241,,continental sedimentary,Africa,small,0,1,190
+mare,b093_r007c1488,89.67255,41.9982,,,,,,,
+mare,b121_r003c210,-89.36805,71.73683,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate reefs",Arctic,small,0,2,2
+mare,b083_r003c1358,32.54669,30.50898,,sedimentary,Africa,small,0,2,190
+mare,b083_r007c1579,68.56087,31.04862,,,,,,,
+mare,b088_r005c1436,59.9681,36.19907,,Low level piedment fan and valley terrace deposits,Iran,medium,,1,191
+mare,b118_r002c262,-83.87443,68.35211,Snow Island Suite,Synvolcanic biotite-hornblende tonalite (locally dated at 2.72 Ga).,"Rae Craton and Queen Maud Block, NU",medium,,1,248
+mare,b079_r000c1642,65.81982,25.76173,,,,,,,
+mare,b093_r000c1529,93.12625,40.9398,,,,,,,
+mare,b111_r004c384,-72.8341,61.04949,Igneous: intrusive; Intrusive: undivided,"granite, granodiorite; syenogranite; tonalite gneiss, quartz diorite; gabbro, anorthositic gabbro,  peridotite; pyroxenite",Arctic,small,0,2,2
+mare,b089_r007c1617,95.07628,37.63964,,,,,,,
+mare,b032_r000c1310,15.16698,-25.14355,,sedimentary,Africa,small,0,1,190
+mare,b094_r001c1481,89.50348,42.26564,,,,,,,
+mare,b093_r002c1575,102.43816,41.32967,,,,,,,
+mare,b120_r003c211,-93.91506,70.68242,unclassified; Metamorphic: undivided,"granulite paragneiss, migmatite, diatexite, subordinate calc-silicate gneiss and amphibolite",Arctic,small,0,2,2
+mare,b017_r005c621,-69.33114,-40.78849,Permian - Triassic Rhyolitic,Rhyolite,Geological Map of South America 2018,small,0,1,1087
+mare,b080_r003c1618,65.36874,27.28019,,,,,,,
+mare,b085_r005c1106,-2.2395,33.04547,,sedimentary,Africa,small,0,2,190
+mare,b093_r007c1586,107.44407,41.9532,,,,,,,
+mare,b078_r004c1660,67.39886,25.25446,,,,,,,
+mare,b081_r001c1199,3.16483,28.14016,,sedimentary,Africa,small,0,1,190
+mare,b084_r001c1088,-8.22288,31.34876,,sedimentary,Africa,small,0,2,190
+mare,b074_r000c1543,41.91884,20.39827,,sedimentary and volcaniclastic,Africa,small,0,1,190
+mare,b031_r003c1306,15.70442,-25.82886,,sedimentary,Africa,small,0,1,190
+mare,b072_r001c1360,13.06897,18.34868,,sedimentary,Africa,small,0,1,190
+mare,b084_r005c414,-114.24929,31.92494,,sedimentary,Mexico,medium,0,1,63
+mare,b124_r002c170,-91.97922,74.95097,Silurian-Devonian sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b082_r001c1421,39.34914,29.23661,eolian sediments,sand,Europe 1:5M,small,0,2,147
+mare,b031_r004c1306,15.37866,-25.76917,,sedimentary,Africa,small,0,1,190
+mare,b031_r006c1306,14.95976,-25.45945,,sedimentary,Africa,small,0,1,190
+mare,b076_r007c1298,10.73575,23.55283,,sedimentary,Africa,small,0,1,190
+mare,b077_r004c1521,44.6545,24.10937,,sedimentary and volcaniclastic,Africa,small,0,1,190
+mare,b118_r000c263,-84.57695,68.15099,Snow Island Suite,Synvolcanic biotite-hornblende tonalite (locally dated at 2.72 Ga).,"Rae Craton and Queen Maud Block, NU",medium,,1,248
+mare,b122_r004c202,-86.78601,72.96956,Sedimentary; Carbonate,"limestone, dolostone, shale, evaporites, chalk; carbonate reefs",Arctic,small,0,2,2
+mare,b084_r001c1192,8.11112,31.42469,eolian sediments,sand,Europe 1:5M,small,0,2,147
+mare,b085_r000c1216,13.99306,32.25518,Late Cretaceous undifferentiated,,Europe 1:5M,small,,2,147
+mare,b088_r002c1449,60.8763,35.80074,,High level piedmont fan and valley terrace deposits,Iran,medium,,1,191
+mare,b094_r000c1484,89.54234,42.05443,,,,,,,
+mare,b086_r001c1123,1.54073,33.54626,,sedimentary,Africa,small,0,2,190
+mare,b081_r003c1419,37.40626,28.39385,,sedimentary,Africa,small,0,2,190
+mare,b094_r007c1511,98.62289,43.04545,,,,,,,
+mare,b086_r006c1382,45.31546,34.15858,Miocene undifferentiated,,Europe 1:5M,small,,1,147
+mare,b088_r001c1449,60.55165,35.64291,,High level piedmont fan and valley terrace deposits,Iran,medium,,1,191
+mare,b093_r001c1583,103.26495,41.18663,,,,,,,
+mare,b080_r005c1112,-10.9704,27.5379,,sedimentary,Africa,small,0,2,190
+mare,b076_r002c1455,32.70494,22.83026,,continental sedimentary,Africa,small,0,1,190
+mare,b040_r001c1367,12.11498,-16.43066,,sedimentary,Africa,small,0,1,190
+mare,b087_r006c1606,85.25779,35.35709,,,,,,,
+mare,b065_r002c1622,42.59497,10.83724,,volcanic,Africa,small,,1,190
+mare,b077_r000c1261,5.57754,23.63923,,with ediacaran metamorphism (tuareg shield),Africa,small,0,1,190
+mare,b126_r006c134,-95.15263,77.63134,Triassic-Jurassic sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b072_r001c1587,45.40492,18.32543,,,,,,,
+mare,b077_r007c1445,34.21351,24.55946,,continental sedimentary,Africa,small,0,1,190
+mare,b072_r001c1328,8.63161,18.39833,,plutonic calc-alkaline (tuareg shield),Africa,small,0,1,190
+mare,b076_r006c1259,4.88022,23.40728,,plutonic calc-alkaline (tuareg shield),Africa,small,0,1,190
+mare,b076_r007c1268,6.42001,23.5623,,with ediacaran metamorphism (tuareg shield),Africa,small,0,1,190
+mare,b077_r005c1249,4.78176,24.284,,plutonic,Africa,small,0,1,190
+mare,b078_r003c1435,33.57191,25.13898,,continental sedimentary,Africa,small,0,1,190
+mare,b093_r006c1518,94.58277,41.79056,,,,,,,
+mare,b081_r007c1585,64.01906,28.96077,,,,,,,
+mare,b094_r004c1509,96.34843,42.61876,,,,,,,
+mare,b081_r006c1412,37.13714,28.71936,,sedimentary,Africa,small,0,2,190
+mare,b084_r005c1217,13.30767,31.8451,,sedimentary,Africa,small,0,2,190
+mare,b076_r007c1266,6.02601,23.4492,,volcanic,Africa,small,,1,190
+mare,b091_r005c1555,91.64079,39.56761,,,,,,,
+mare,b096_r002c1451,94.35059,44.59006,,,,,,,
+mare,b024_r006c1254,21.69133,-33.05444,Waterford Formation of Ecca Group of Karoo Supergroup,"Sandstone, rhythmite, shale, mudstone - wave ripple marks and slumping common",South Africa,medium,,1,41
+mare,b095_r000c1530,102.74504,43.13124,,,,,,,
+mare,b096_r007c1408,89.4463,45.21634,,,,,,,
+mare,b088_r002c1603,86.50985,35.89225,,,,,,,
+mare,b123_r002c176,-94.59161,73.79779,Silurian sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b093_r003c1511,91.49085,41.41634,,,,,,,
+mare,b087_r000c1126,4.2257,34.4195,,sedimentary,Africa,small,0,2,190
+mare,b096_r005c1484,102.57728,44.9501,,,,,,,
+mare,b096_r007c1422,92.1022,45.19803,,,,,,,
+mare,b094_r004c1507,95.99948,42.56167,,,,,,,
+mare,b079_r001c1607,60.93273,25.94835,,High level piedmont fan and valley terrace deposits,Iran,medium,,1,191
+mare,b087_r006c1329,39.4854,35.2335,Neogene undifferentiated,,Europe 1:5M,small,,1,147
+mare,b094_r001c1482,89.69298,42.22579,,,,,,,
+mare,b093_r007c1595,108.96519,42.01008,,,,,,,
+mare,b094_r000c1537,99.16941,42.12853,,,,,,,
+mare,b081_r006c1319,22.85834,28.76977,,sedimentary,Africa,small,0,1,190
+mare,b087_r004c1625,87.46804,35.00905,,,,,,,
+mare,b096_r003c1437,92.28494,44.59263,,,,,,,
+mare,b082_r005c1371,32.80632,29.75431,,sedimentary,Africa,small,0,2,190
+mare,b069_r000c1646,49.66514,14.89575,,,,,,,
+mare,b091_r007c1551,92.02188,39.796,,,,,,,
+mare,b099_r001c1370,94.043,47.62553,,,,,,,
+mare,b071_r001c1332,7.95084,17.20074,,with ediacaran metamorphism (tuareg shield),Africa,small,0,1,190
+mare,b088_r004c1440,60.26917,36.0974,,Low level piedment fan and valley terrace deposits,Iran,medium,,1,191
+mare,b085_r003c1147,3.84704,32.69692,Late Cretaceous undifferentiated,,Europe 1:5M,small,,2,147
+mare,b091_r007c1613,102.96718,39.78,,,,,,,
+mare,b072_r007c1560,42.6586,19.09678,,plutonic,Africa,small,0,1,190
+mare,b076_r004c1465,34.7173,23.02541,,sedimentary and volcaniclastic,Africa,small,0,1,190
+mare,b069_r003c1445,22.05795,15.3698,,plutonic,Africa,small,0,1,190
+mare,b083_r007c1103,-6.37406,31.13834,,sedimentary,Africa,small,0,2,190
+mare,b096_r007c1424,92.45839,45.20467,,,,,,,
+mare,b077_r005c1447,33.97534,24.24995,,continental sedimentary,Africa,small,0,1,190
+mare,b088_r000c1614,87.53461,35.63099,,,,,,,
+mare,b096_r005c1411,88.74087,44.8895,,,,,,,
+mare,b095_r001c1498,97.49737,43.24931,,,,,,,
+mare,b083_r007c1195,8.0703,31.15569,eolian sediments,sand,Europe 1:5M,small,0,2,147
+mare,b084_r000c1578,68.78921,31.16612,,,,,,,
+mare,b096_r006c1455,97.75903,45.12475,,,,,,,
+mare,b092_r001c1609,103.34732,40.02915,,,,,,,
+mare,b096_r003c1513,106.70243,44.65757,,,,,,,
+mare,b083_r007c1193,7.74196,31.04589,eolian sediments,sand,Europe 1:5M,small,0,2,147
+mare,b099_r002c1366,94.04727,47.74662,,,,,,,
+mare,b076_r001c1311,11.50753,22.64558,,sedimentary,Africa,small,0,1,190
+mare,b039_r002c1359,11.97504,-17.32063,,sedimentary,Africa,small,0,1,190
+mare,b071_r001c1642,51.80688,17.27445,,,,,,,
+mare,b093_r005c1603,109.32225,41.6444,,,,,,,
+mare,b064_r007c1665,48.20516,10.45341,,sedimentary,Africa,small,0,1,190
+mare,b081_r006c1317,22.60955,28.72489,,sedimentary,Africa,small,0,1,190
+mare,b093_r000c1540,94.94007,41.04449,,,,,,,
+mare,b093_r001c1547,96.84706,41.16374,,,,,,,
+mare,b095_r000c1493,95.92382,43.12286,,,,,,,
+mare,b072_r002c1328,8.70093,18.52498,,plutonic,Africa,small,0,1,190
+mare,b081_r006c1417,37.92888,28.80611,,sedimentary,Africa,small,0,2,190
+mare,b076_r004c1308,11.70093,23.05664,,sedimentary,Africa,small,0,1,190
+mare,b076_r000c1458,32.81378,22.49991,,continental sedimentary,Africa,small,0,1,190
+mare,b071_r004c1431,22.46535,17.6992,,sedimentary,Africa,small,0,1,190
+mare,b084_r000c1573,67.88217,31.29364,,,,,,,
+mare,b078_r007c1425,33.15824,25.71374,,sedimentary,Africa,small,0,1,190
+mare,b040_r003c1368,11.88467,-16.12277,,sedimentary,Africa,small,0,1,190
+mare,b093_r000c1586,103.27697,41.05842,,,,,,,
+mare,b075_r006c1339,15.0893,22.25399,,sedimentary,Africa,small,0,1,190
+mare,b087_r000c1128,4.45623,34.47282,,sedimentary,Africa,small,0,2,190
+mare,b090_r002c1670,105.77819,38.0168,,,,,,,
+mare,b088_r005c1603,87.99751,36.2511,,,,,,,
+mare,b092_r006c1536,93.13739,40.66816,,,,,,,
+mare,b083_r007c1194,7.89134,31.05168,eolian sediments,sand,Europe 1:5M,small,0,2,147
+mare,b082_r000c1384,33.34529,29.10903,,sedimentary,Africa,small,0,2,190
+mare,b092_r001c1548,92.61851,40.10714,,,,,,,
+mare,b083_r005c1196,7.76513,30.85465,eolian sediments,sand,Europe 1:5M,small,0,2,147
+mare,b081_r005c1101,-10.92015,28.60561,,sedimentary,Africa,small,0,2,190
+mare,b089_r000c409,-111.25717,36.71459,San Rafael Group,"sandstone, siltstone",Geologic Map of Arizona,medium,0,2,490
+mare,b082_r001c1369,31.31587,29.23883,,sedimentary,Africa,small,0,2,190
+mare,b075_r006c1481,35.7752,22.30899,,plutonic,Africa,small,0,1,190
+mare,b078_r005c1422,32.13086,25.33015,,sedimentary,Africa,small,0,1,190
+mare,b086_r002c1650,87.23178,33.61438,,,,,,,
+mare,b070_r003c1644,51.10816,16.37563,,,,,,,
+mare,b076_r005c1286,8.65967,23.18277,,sedimentary,Africa,small,0,1,190
+mare,b124_r006c165,-90.97645,75.48028,Silurian sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b094_r007c1518,99.94614,43.0832,,,,,,,
+mare,b080_r002c1361,26.23018,27.21556,,sedimentary,Africa,small,0,1,190
+mare,b078_r000c1301,13.00916,24.72124,,sedimentary,Africa,small,0,1,190
+mare,b083_r002c1380,35.72506,30.35475,Jordan,limestone,Europe 1:5M,small,0,2,147
+mare,b084_r001c1190,7.8861,31.29955,eolian sediments,sand,Europe 1:5M,small,0,2,147
+mare,b079_r000c1625,63.22905,25.78686,,,,,,,
+mare,b069_r002c1640,49.13759,15.23714,,,,,,,
+mare,b081_r002c1384,31.76845,28.281,,sedimentary,Africa,small,0,1,190
+mare,b017_r005c620,-69.57485,-40.86583,Neogene Undifferentiated,Volcanic,Geological Map of South America 2018,small,,1,1087
+mare,b077_r000c1258,5.06693,23.68105,,with ediacaran metamorphism (tuareg shield),Africa,small,0,1,190
+mare,b071_r001c1652,53.15184,17.25023,,,,,,,
+mare,b094_r002c1474,88.79225,42.30795,,,,,,,
+mare,b031_r002c1300,14.93703,-25.96307,,sedimentary,Africa,small,0,1,190
+mare,b079_r001c1598,59.57273,25.87971,,"Rhytmically bedded sandstone and shale, with minor siltstone and mudstone (e.g.",Iran,medium,,1,191
+mare,b083_r006c1195,7.82512,30.93876,eolian sediments,sand,Europe 1:5M,small,0,2,147
+mare,b074_r004c1383,19.56987,20.90219,,continental sedimentary,Africa,small,0,1,190
+mare,b094_r000c1591,108.86984,42.11096,,,,,,,
+mare,b081_r001c1388,32.05203,28.04224,,sedimentary,Africa,small,0,1,190
+mare,b111_r002c385,-73.42857,60.81081,Igneous: intrusive; Intrusive: undivided,"granite, granodiorite; syenogranite; tonalite gneiss, quartz diorite; gabbro, anorthositic gabbro,  peridotite; pyroxenite",Arctic,small,0,2,2
+mare,b082_r007c1377,34.2875,30.01439,,sedimentary,Africa,small,0,2,190
+mare,b092_r002c1588,100.15625,40.15013,,,,,,,
+mare,b095_r003c1505,99.97045,43.59574,,,,,,,
+mare,b074_r002c1494,35.24552,20.59466,,plutonic,Africa,small,0,1,190
+mare,b091_r001c403,-110.05243,38.97993,Stream alluvium,"Sand, silt, clay, granules, pebbles, and sparse cobbles adjacent to more active stream courses;","Moab, UT",large,0,1,30
+mare,b075_r007c1368,19.52647,22.46945,,sedimentary,Africa,small,0,1,190
+mare,b084_r002c1565,67.43717,31.47218,Oligocene sandstone and siltstone,sandstone and siltstone,Afghanistan,medium,0,1,28
+mare,b083_r006c1196,8.07164,30.99667,eolian sediments,sand,Europe 1:5M,small,0,2,147
+mare,b088_r003c1584,83.78726,36.04107,,,,,,,
+mare,b037_r000c1347,12.95706,-19.83542,,sedimentary and volcaniclastic,Africa,small,0,1,190
+mare,b115_r004c269,-92.83303,65.44656,Neoarchean granitoids,"Granitoid rocks (undifferentiated) generally foliated to gneissic and can include diorite, monzodiorite, tonalite, granodiorite, and monzogranite.","Rae Craton and Queen Maud Block, NU",medium,0,1,248
+mare,b081_r005c1419,37.95532,28.67108,,sedimentary,Africa,small,0,2,190
+mare,b083_r005c1197,7.86409,30.87345,eolian sediments,sand,Europe 1:5M,small,0,2,147
+mare,b094_r007c1470,91.05021,42.99337,,,,,,,
+mare,b078_r005c1427,32.92167,25.43163,,sedimentary,Africa,small,0,1,190
+mare,b080_r004c1443,39.21212,27.39495,,sedimentary,Africa,small,0,1,190
+mare,b076_r004c1616,56.83592,23.14185,,,,,,,
+mare,b111_r002c383,-74.16194,60.86048,Igneous: intrusive; Intrusive: undivided,"granite, granodiorite; syenogranite; tonalite gneiss, quartz diorite; gabbro, anorthositic gabbro,  peridotite; pyroxenite",Arctic,small,0,2,2
+mare,b092_r006c1562,97.74577,40.7661,,,,,,,
+mare,b080_r006c1558,57.11788,27.76398,,"Mudstone, locally gypsiferous and sandstone",Iran,medium,,1,191
+mare,b075_r006c1271,5.17442,22.21579,,with ediacaran metamorphism (tuareg shield),Africa,small,0,1,190
+mare,b076_r000c1542,45.04955,22.48954,,sedimentary and volcaniclastic,Africa,small,0,1,190
+mare,b079_r001c1224,3.52831,25.99176,,sedimentary,Africa,small,0,1,190
+mare,b078_r005c1428,33.07162,25.36705,,sedimentary,Africa,small,0,1,190
+mare,b079_r007c1407,32.39008,26.81804,,sedimentary,Africa,small,0,1,190
+mare,b069_r001c1461,23.9693,15.09878,,metamorphic,Africa,small,0,1,190
+mare,b092_r002c1603,102.87785,40.17006,,,,,,,
+mare,b094_r001c1521,96.75179,42.25192,,,,,,,
+mare,b122_r007c179,-95.16648,73.47707,Paleoproterozoic plutonic: undivided granitic rocks,plutonic: undivided granitic rocks,GMNA,small,0,2,7
+mare,b084_r005c421,-113.10773,31.93547,,sedimentary,Mexico,medium,0,1,63
+mare,b092_r004c1577,99.33663,40.40139,,,,,,,
+mare,b073_r000c1369,15.4757,19.2645,,sedimentary,Africa,small,0,1,190
+mare,b070_r006c1540,36.88395,16.83219,,sedimentary and volcaniclastic,Africa,small,0,1,190
+mare,b088_r004c422,-109.60955,36.11756,Holocene surficial deposits,"Major:{silt,clay}, Minor:{gravel,sand}",State Geologic Map Compilation,medium,0,2,133
+mare,b071_r003c1647,52.84304,17.52462,,,,,,,
+mare,b086_r001c1661,88.60432,33.49739,,,,,,,
+mare,b087_r002c1638,88.79546,34.82324,,,,,,,
+mare,b076_r001c1467,34.376,22.74875,,sedimentary and volcaniclastic,Africa,small,0,1,190
+mare,b094_r004c1525,99.36932,42.62381,,,,,,,
+mare,b072_r004c1565,42.82546,18.77681,,plutonic,Africa,small,0,1,190
+mare,b036_r000c1342,13.63968,-20.88079,,volcanic,Africa,small,,1,190
+mare,b093_r004c1603,108.57218,41.47306,,,,,,,
+mare,b074_r005c1382,19.68253,21.0948,,continental sedimentary,Africa,small,0,1,190
+mare,b093_r006c1528,96.23397,41.87151,,,,,,,
+mare,b094_r005c1558,106.10636,42.79858,,,,,,,
+mare,b081_r000c1580,61.08008,27.99921,,"Early-Middle Eocene flysch composed of sandstone, shale with minor limestone, conglomerate and lava flow",Iran,medium,,1,191
+mare,b087_r001c1611,83.861,34.68731,,,,,,,
+mare,b101_r002c1314,95.21239,49.93298,,,,,,,
+mare,b093_r003c1498,89.17463,41.39079,,,,,,,
+mare,b070_r007c1436,22.44127,17.04135,,sedimentary,Africa,small,0,1,190
+mare,b075_r005c1355,17.26076,22.16784,,plutonic,Africa,small,0,1,190
+mare,b093_r002c1578,102.94186,41.20674,,,,,,,
+mare,b094_r004c1477,90.54497,42.65437,,,,,,,
+mare,b092_r000c1610,102.89384,39.84931,,,,,,,
+mare,b072_r003c1569,43.14278,18.60967,,plutonic,Africa,small,0,1,190
+mare,b088_r003c1606,87.53955,35.98998,,,,,,,
+mare,b034_r002c774,-66.77988,-22.70073,Neogene Rhyolitic,Rhyolite,Geological Map of South America 2018,small,0,1,1087
+mare,b077_r001c1460,34.98586,23.73721,,sedimentary and volcaniclastic,Africa,small,0,1,190
+mare,b069_r003c1638,48.89749,15.42223,,,,,,,
+mare,b079_r000c1637,65.15306,25.86483,,,,,,,
+mare,b088_r002c1593,84.92761,35.88395,,,,,,,
+mare,b041_r002c752,-74.90776,-15.19314,Quaternary Siliciclastic,Siliciclastic,Geological Map of South America 2018,small,0,1,1087
+mare,b074_r003c1503,36.69033,20.75209,,plutonic,Africa,small,0,1,190
+mare,b123_r000c185,-91.63291,73.52016,Silurian sedimentary,sedimentary,GMNA,small,0,2,7
+mare,b075_r007c1276,6.1179,22.41862,,with ediacaran metamorphism (tuareg shield),Africa,small,0,1,190
+mare,b080_r004c1553,55.8828,27.46133,Bakhtyari Formation,"Alternation of consolidated, massive, feature forming conglomerate and low-weatherd cross-bedded sandstone",Iran,medium,,1,191
+mare,b075_r002c1326,12.40533,21.6834,,sedimentary,Africa,small,0,1,190
+mare,b084_r002c1561,66.77366,31.47205,Holocene conglomerate and sandstone,conglomerate and sandstone,Afghanistan,medium,0,1,28
+mare,b081_r006c1404,35.874,28.74776,,sedimentary,Africa,small,0,2,190
