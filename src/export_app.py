@@ -39,6 +39,9 @@ Optional (15 Nov 2026; without these flags nothing changes):
   so the app's site_info.json cards (keyed by older "<run> <cell>" names) still find their place.
 - --dedupe-km D: the same bowl found by two runs (low points within D km, same base type) is exported once;
   the row of a region run wins over a night (world-grid) run. Dropped rows are listed in the README.
+- --glim PATH: GLiM rock class (Hartmann & Moosdorf 2012, PANGAEA 0.5 deg grid; src/pipeline/material.py) as
+  DISPLAY columns in raw_values.csv: ROCK_CLASS, ROCK_CLASS_NAME, BASALT_SHARE_5KM, GLIM_COVERED_SHARE,
+  BASALT_REGION (parameters: config/display.yaml -> material). Never in a score. Sea / GLiM "nd" = no data.
 """
 from __future__ import annotations
 
@@ -164,6 +167,57 @@ EXTRA_COLS = ["RUN", "CELL", "BASE_TYPE", "SCORE_TOTAL", "RANK", "NAME", "COUNTR
               "TERRAIN_SCORE", "LIGHT_SCORE", "MISSED_REASON"]
 
 
+ROCK_COLS = ["ROCK_CLASS", "ROCK_CLASS_NAME", "BASALT_SHARE_5KM", "GLIM_COVERED_SHARE", "BASALT_REGION"]
+GLIM_GRID = "glim_wgs84_0point5deg.txt.asc"
+
+
+def load_glim(path: Path, mcfg: dict) -> dict:
+    """GLiM grid source + display parameters (config/display.yaml -> material). path = .asc file or a folder."""
+    from pipeline.material import CLASSES, GridSource
+    p = Path(path)
+    if p.is_dir():
+        hits = sorted(p.rglob(GLIM_GRID))
+        if not hits:
+            raise SystemExit(f"--glim: no {GLIM_GRID} under {p}")
+        p = hits[0]
+    meta = {"source": "Hartmann & Moosdorf (2012) GLiM v1.0 gridded to 0.5 deg, PANGAEA doi:10.1594/PANGAEA.788537 "
+                      "(CC-BY 3.0); cite doi:10.1029/2012GC004370",
+            "radius_km": float(mcfg.get("radius_km", 5)), "basalt_min_share": float(mcfg.get("basalt_min_share", 0.5)),
+            "min_covered_share": float(mcfg.get("min_covered_share", 0.5)),
+            "classes": {k: v for k, v in CLASSES.items() if k != "nd"},
+            "note": ("Display only, never in a score. One dominant class per 0.5 deg cell (~55 km): a region flag, not a "
+                     "5 km measurement. Sea / GLiM nd = no data; BASALT_SHARE_5KM and BASALT_REGION empty below "
+                     "min_covered_share. Point = Polar low point, Mare base pad. docs/MATERIAL.md.")}
+    return {"src": GridSource(p), "meta": meta}
+
+
+def rock_values(lat, lon, glim: dict) -> dict:
+    """ROCK_COLS for one point; None / "" = no data (never 0)."""
+    from pipeline.material import CLASSES, classify_point
+    out = {"ROCK_CLASS": "", "ROCK_CLASS_NAME": "", "BASALT_SHARE_5KM": None, "GLIM_COVERED_SHARE": None,
+           "BASALT_REGION": None}
+    if lat is None or lon is None:
+        return out
+    m = glim["meta"]
+    res = classify_point(float(lon), float(lat), glim["src"], m["radius_km"])
+    code = res["rock_class"] or ""
+    out.update(ROCK_CLASS=code, ROCK_CLASS_NAME=CLASSES.get(code, "") if code else "",
+               GLIM_COVERED_SHARE=res["covered_share"])
+    if res["covered_share"] >= m["min_covered_share"] and res["share_vb"] is not None:
+        out["BASALT_SHARE_5KM"] = res["share_vb"]
+        out["BASALT_REGION"] = 1.0 if res["share_vb"] >= m["basalt_min_share"] else 0.0
+    return out
+
+
+def _count_best(rows) -> dict:
+    n = {}
+    for x in rows:
+        if x.get("BEST_TARGET"):
+            k = (x["BASE_TYPE"], x["BEST_TARGET"])
+            n[k] = n.get(k, 0) + 1
+    return n
+
+
 def group_score(r: dict, axes: dict, ids) -> float | None:
     """Weighted mean of the target-scored axes with weight > 0 among ids (TERRAIN_SCORE / LIGHT_SCORE)."""
     num = den = 0.0
@@ -255,6 +309,8 @@ def main():
     ap.add_argument("--place-names", type=Path,
                     help="folder with Natural Earth + GeoNames data for offline NAME / COUNTRY (src/place_names.py)")
     ap.add_argument("--anchors", type=Path, help="CSV SITE,LAT,LON,MAX_KM: keep site_info keys for these places")
+    ap.add_argument("--glim", type=Path,
+                    help="GLiM 0.5 deg ASCII grid (.asc) or a folder containing it: rock class display columns")
     ap.add_argument("--dedupe-km", type=float, default=0.0,
                     help="same bowl in two runs (low points within this distance): export once, region run wins")
     a = ap.parse_args()
@@ -276,6 +332,7 @@ def main():
     if a.place_names:
         from place_names import PlaceNames
         names = PlaceNames(a.place_names)
+    glim = load_glim(a.glim, disp.get("material", {})) if a.glim else None
     info_names = {}
     if a.sites_info and a.sites_info.exists():
         info_names = {k: (v.get("name") if isinstance(v, dict) else None) or k
@@ -362,6 +419,7 @@ def main():
             pf = post.evaluate(base, lat, lon, r) if post else None
             row["_pf"] = pf
             row["EXCLUDED"] = " + ".join(pf["reasons"]) if pf and pf["reasons"] else ""
+            row["_rock"] = rock_values(lat, lon, glim) if glim else None
             if multi:
                 row.update(mt.score_row(r, base, lunar_targets))
             rows.append(row)
@@ -395,6 +453,7 @@ def main():
                    NAME=m["name"], COUNTRY=m["country"], ROLE="missed", TERRAIN_SCORE=None, LIGHT_SCORE=None,
                    MISSED_REASON=m["reason"], _r={}, _impact=None, _centre=(m["lat"], m["lon"]),
                    EXCLUDED="", _pf=None, _anchor=None)
+        row["_rock"] = rock_values(m["lat"], m["lon"], glim) if glim else None
         rows.append(row)
 
     rows.sort(key=lambda x: (x["ROLE"] == "missed", x["BASE_TYPE"], x["RANK"] is None,
@@ -437,7 +496,7 @@ def main():
     pf_raw = ["EXCLUDED", "EXCLUDED_DETAIL", "MINE_DIST_KM"] if post else []
     raw_cols = ["SITE", "LAT", "LON", *crit_cols, *EXTRA_RAW.values(), *DISPLAY_RAW.values(),
                 "IMPACT_NAME", "IMPACT_DIAMETER_KM", "IMPACT_DIST_KM", "IMPACT_SOURCE", "RUN", "CELL", "BASE_TYPE",
-                *pf_raw]
+                *pf_raw, *(ROCK_COLS if glim else [])]
     with open(a.out / "raw_values.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(raw_cols)
@@ -451,7 +510,9 @@ def main():
                         _fmt(hit["dist_km"], 2) if hit else "", hit["source"] if hit else "",
                         x["RUN"], x["CELL"], x["BASE_TYPE"],
                         *([x["EXCLUDED"], "; ".join(pf["details"]).replace(",", ";") if pf else "",
-                           _fmt(pf["mine_dist_km"], 3) if pf else ""] if post else [])])
+                           _fmt(pf["mine_dist_km"], 3) if pf else ""] if post else []),
+                        *([x["_rock"][c] if c in ("ROCK_CLASS", "ROCK_CLASS_NAME") else _fmt(x["_rock"][c])
+                           for c in ROCK_COLS] if glim else [])])
 
     targets = {"_note": ("Lunar reference per base type. The 0-1 values in scores.csv ARE the similarity to the "
                          "Moon (1 = equal); no 0-1 target values. Moon values are raw, in earth_unit. score_method: "
@@ -498,9 +559,14 @@ def main():
             "note": ("scores.csv SCORE_<TARGET> = score vs Moon against that lunar target (same rule, weights and "
                      "tolerances as SCORE_TOTAL; a target's own tolerance wins, Mare: max(own, floor)); BEST_TARGET = "
                      "target with the highest score among the row's base type, BEST_SCORE = that score. "
-                     "targets[base].lunar_targets lists each target (builtin = today's target, = SCORE_TOTAL)."
+                     "targets[base].lunar_targets lists each target (builtin = today's target, = SCORE_TOTAL). "
+                     "A SCORE_<TARGET> is only given when every counting criterion has both a lunar and an Earth "
+                     "value; otherwise it is empty (no data) and cannot be BEST_TARGET: missing values never score "
+                     "better than real ones. RANK stays the rank of SCORE_TOTAL."
                      + (" PREVIEW: unverified targets or criteria are included (--include-unverified); "
                         "not for real results." if mt_preview else ""))}
+    if glim:
+        targets["_material"] = glim["meta"]
     (a.out / "targets.json").write_text(json.dumps(targets, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     heat = [{"lat": x["_centre"][0], "lng": x["_centre"][1], "weight": round(x["SCORE_TOTAL"], 4),
@@ -573,15 +639,16 @@ def main():
 
     n_by = {b: sum(1 for x in rows if x["BASE_TYPE"] == b and x["ROLE"] != "missed") for b in ref}
     cmdline = ""
-    if post or names or anchors_in or duplicates:          # new-style export: write the exact command
+    if post or names or anchors_in or duplicates or glim:  # new-style export: write the exact command
         def rel(v):
             try:
                 return Path(v).resolve().relative_to(ROOT).as_posix()
             except ValueError:
-                return "<data dir>" if a.place_names and Path(v) == a.place_names else Path(v).as_posix()
+                return "<data dir>" if any(d and Path(v) == d for d in (a.place_names, a.glim)) else Path(v).as_posix()
         cmdline = "python src/export_app.py " + " ".join(rel(p) for p in a.runs) + "".join(
             f" --{k.replace('_', '-')} {rel(v)}" for k, v in (("post_filters", a.post_filters),
-                                                            ("place_names", a.place_names), ("anchors", a.anchors)) if v) \
+                                                            ("place_names", a.place_names), ("anchors", a.anchors),
+                                                            ("glim", a.glim)) if v) \
             + (f" --dedupe-km {a.dedupe_km:g}" if a.dedupe_km else "") + f" --cells-near-km {a.cells_near_km:g}"
     readme = f"""# outputs/ for the app
 
@@ -627,8 +694,39 @@ Base types: {', '.join(f"{b} ({n_by[b]} rows)" for b in ref)}; plus {len(missed)
 Columns after `MISSED_REASON`: {', '.join(f'`{c}`' for c in mt_cols)}. `SCORE_<TARGET>` = score vs Moon against that
 target (same rule, weights and tolerances as `SCORE_TOTAL`; today's target equals `SCORE_TOTAL`); `BEST_TARGET` /
 `BEST_SCORE` = best-matching target of the row's base type. Targets: `targets[BASE_TYPE].lunar_targets`
-(see docs/MULTI_TARGET.md).
-""")
+(see docs/MULTI_TARGET.md). Targets used: {', '.join(t['name'] for t in lunar_targets)}.
+**Missing values never score better than real ones:** a `SCORE_<TARGET>` is only given when every counting
+criterion has both a lunar and an Earth value; otherwise it is empty and that target cannot be `BEST_TARGET`.
+`RANK` stays the rank of `SCORE_TOTAL`. The place per cell is the bowl chosen against today's target (one place per
+cell in `ranking.csv`); another target might prefer a different bowl in the same cell.
+
+| base | BEST_TARGET | places (excluded included) |
+|---|---|---|
+""" + "".join(f"| {b} | {bt} | {n} |\n" for (b, bt), n in sorted(_count_best(rows).items())))
+    if glim:
+        mc = glim["meta"]
+        n_rock = {}
+        for x in rows:
+            if x.get("_rock") is not None:
+                v = x["_rock"]["BASALT_REGION"]
+                k = (x["BASE_TYPE"], "no data" if v is None else str(int(v)))
+                n_rock[k] = n_rock.get(k, 0) + 1
+        readme += f"""
+## Rock class (GLiM, display only; never in a score)
+`raw_values.csv` columns {', '.join(f'`{c}`' for c in ROCK_COLS)}, at the Polar low point / Mare base pad (`LAT`/`LON`).
+- `ROCK_CLASS` = first-level GLiM code of the grid cell under the point (`vb` = basic volcanic = basalt; names in
+  `ROCK_CLASS_NAME` and `targets.json` -> `_material.classes`); empty = no data (sea or GLiM "nd").
+- `BASALT_SHARE_5KM` = share of `vb` within {mc['radius_km']:g} km, relative to the part of the disc that has GLiM data;
+  `GLIM_COVERED_SHARE` = that part (0-1). `BASALT_REGION` = 1 if `BASALT_SHARE_5KM` >= {mc['basalt_min_share']:g}, else 0.
+  Both are **empty (no data)** when less than {mc['min_covered_share']:.0%} of the disc has GLiM data: coastal grid
+  cells can be sea, so coast and island places show no data, never 0.
+- **Caveat:** source = {mc['source']}. One dominant class per 0.5 deg cell (~55 km), so this is a "basalt region
+  yes/no" flag, not a 5 km measurement; small lava fields vanish. GLiM has no anorthosite class (c22 cannot be
+  scored). Details: docs/MATERIAL.md.
+
+| base | BASALT_REGION | places |
+|---|---|---|
+""" + "".join(f"| {b} | {v} | {n} |\n" for (b, v), n in sorted(n_rock.items()))
     if post:
         pc = post.cfg
         pol = [x for x in rows if x["BASE_TYPE"] in post.base_types and x["RUN"]]

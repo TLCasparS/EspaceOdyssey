@@ -16,7 +16,11 @@ Targets
 Weights per base type are the run's / config's (same as today). Tolerance: the target's own if it has one
 (Mare: max(own, mare.tolerance_floor), the same rule config.load_config applies to the built-in Mare target),
 else the base type's tolerance from config (Polar). A Mare criterion without its own tolerance is not scored.
-A criterion the target has no usable value for is left out and the weights renormalise (no data, never 0).
+Missing values never score better than real ones (15 Nov 2026): a score against a target is only given when
+EVERY counting criterion of the base type (weight > 0, scored against today's target) has both a usable lunar value
+and an Earth value. Otherwise that score is None (no data, never 0), so a target with gaps, or a place with gaps,
+can never win BEST_TARGET by being scored on fewer, easier criteria. (SCORE_TOTAL itself keeps the frozen
+config-v1 / mare-v1 rule; with complete data the built-in score equals it.)
 
 CLI (night run, after --score; or any ranking.csv):
     python src/pipeline/multi_target.py out/night_polar/ranking.csv out/night_mare/ranking.csv -o out/multi_target.csv
@@ -70,6 +74,11 @@ def load_candidates(path: str | Path | None = None) -> list[dict]:
     return list(data.get("targets", []))
 
 
+def required(base_ccfg: dict) -> list[str]:
+    """Counting criteria of a base type: weight > 0 and scored against today's target (method 'target')."""
+    return [c for c, cc in base_ccfg.items() if (cc.get("weight") or 0) > 0 and method(cc) == "target"]
+
+
 def build_targets(base_criteria: dict, candidates: list[dict], include_unverified: bool = False,
                   tolerance_floor: dict | None = None) -> list[dict]:
     """Built-in + candidate targets for the base types in base_criteria.
@@ -78,14 +87,17 @@ def build_targets(base_criteria: dict, candidates: list[dict], include_unverifie
         direction / scale) for today's target, i.e. config["polar"]["criteria"] after load_config or the axes
         of a run's radar.json.
     tolerance_floor: {base: {criterion: floor}} (config mare.tolerance_floor), applied to targets' own tolerances.
-    Returns [{name, column, label, base_type, builtin, verified, preview, criteria: {crit: ccfg}, source}].
+    Returns [{name, column, label, base_type, builtin, verified, preview, criteria: {crit: ccfg}, required,
+    complete, source}]; required = the base type's counting criteria, complete = the target has a usable value
+    for all of them.
     """
     floors = tolerance_floor or {}
     out = []
     for base, crit in base_criteria.items():
         out.append({"name": BUILTIN[base], "column": column(BUILTIN[base]), "label": BUILTIN_LABEL[base],
                     "base_type": base, "builtin": True, "verified": True, "preview": False,
-                    "criteria": copy.deepcopy(crit), "source": "config/lunar_targets.json"})
+                    "criteria": copy.deepcopy(crit), "required": required(crit), "complete": True,
+                    "source": "config/lunar_targets.json"})
     for t in candidates:
         base = t.get("base_type")
         if base not in base_criteria or t.get("skipped"):
@@ -114,7 +126,9 @@ def build_targets(base_criteria: dict, candidates: list[dict], include_unverifie
                     "base_type": base, "builtin": False, "verified": t_ok, "preview": not t_ok or any(
                         (lunar.get(c) or {}).get("verified") is not True and crit[c]["target"] is not None
                         for c in crit),
-                    "criteria": crit, "source": "config/lunar_targets_candidates.json"})
+                    "criteria": crit, "required": required(base_criteria[base]),
+                    "complete": all(method(crit[c]) == "target" for c in required(base_criteria[base])),
+                    "source": "config/lunar_targets_candidates.json"})
     cols = [t["column"] for t in out]
     dup = sorted({c for c in cols if cols.count(c) > 1})
     if dup:
@@ -123,7 +137,13 @@ def build_targets(base_criteria: dict, candidates: list[dict], include_unverifie
 
 
 def score(raw: dict, target: dict) -> float | None:
-    """Score vs Moon of one place's raw values against one target (same rule and rounding as the pipeline)."""
+    """Score vs Moon of one place's raw values against one target (same rule and rounding as the pipeline).
+
+    None (no data) if any counting criterion (target["required"]) lacks a lunar value or an Earth value."""
+    for name in target.get("required", ()):
+        cc = target["criteria"].get(name)
+        if cc is None or method(cc) != "target" or _num(raw.get(name)) is None:
+            return None
     s = {}
     for name, ccfg in target["criteria"].items():
         if method(ccfg) != "target":
@@ -190,6 +210,7 @@ def targets_summary(targets: list[dict]) -> list[dict]:
     for t in targets:
         out.append({"name": t["name"], "column": t["column"], "label": t["label"], "base_type": t["base_type"],
                     "builtin": t["builtin"], "verified": t["verified"], "preview": t["preview"], "source": t["source"],
+                    "complete": t.get("complete", True),
                     "criteria": {c: {"value": cc.get("target"), "tolerance": cc.get("tolerance"),
                                      "weight": cc.get("weight")}
                                  for c, cc in t["criteria"].items()

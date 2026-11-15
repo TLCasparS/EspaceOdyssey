@@ -195,7 +195,8 @@ function parseCSV(text) {
 const TEXT_COLUMNS = new Set(['SITE', 'RUN', 'CELL', 'BASE_TYPE', 'IMPACT_NAME', 'IMPACT_SOURCE',
   'run', 'cell', 'AIRPORT_NAME', 'AIRPORT_TYPE', 'AIRPORT_IDENT',
   'ROLE', 'NAME', 'COUNTRY', 'MISSED_REASON',
-  'EXCLUDED', 'EXCLUDED_DETAIL', 'BEST_TARGET']);   // night export text columns (EXCLUDED*: config-v1.1)
+  'EXCLUDED', 'EXCLUDED_DETAIL', 'BEST_TARGET',
+  'ROCK_CLASS', 'ROCK_CLASS_NAME']);   // night export text columns (EXCLUDED*: config-v1.1; ROCK_*: GLiM display)
 
 const getText = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.text(); });
 const getJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.json(); });

@@ -85,8 +85,37 @@ def test_unverified_criterion_of_verified_target_is_left_out():
     t = mt.build_targets({"polar": POLAR}, [cand])[1]
     assert t["criteria"]["c11_walls"]["target"] is None
     raw = {"c7_bowl": 0.05, "c11_walls": 50.0, "c10_flat_base": 1.0}
-    assert mt.score(raw, t) == 1.0                           # c11 does not count (renormalised), not 0
+    # 15 Nov 2026: a target missing a counting criterion gives no score (not a renormalised 1.0, not 0)
+    assert not t["complete"] and mt.score(raw, t) is None
     assert mt.build_targets({"polar": POLAR}, [cand], include_unverified=True)[1]["criteria"]["c11_walls"]["target"] == 9.0
+
+
+def test_missing_values_never_score_better_than_real_ones():
+    """A target with a gap would score 1.0 on the remaining criteria (renormalised); it must not win BEST."""
+    gap = json.loads(json.dumps(FAKE_OK))
+    gap["name"] = "fake_gap"
+    del gap["criteria"]["c11_walls"]
+    t = mt.build_targets({"polar": POLAR}, [FAKE_OK, gap])
+    raw = {"c7_bowl": 0.05, "c11_walls": 20.0, "c10_flat_base": 1.0}       # perfect on c7 / c10, off on c11
+    row = mt.score_row(raw, "polar", t)
+    assert row["SCORE_FAKE_GAP"] is None and row["SCORE_FAKE_OK"] < 1.0
+    assert row["BEST_TARGET"] == "fake_ok"
+    # Earth side: a place without a counting value gets no score against any target (no data, never better)
+    row = mt.score_row({"c7_bowl": 0.05, "c10_flat_base": 1.0}, "polar", t)
+    assert row == {"SCORE_SHACKLETON": None, "SCORE_FAKE_OK": None, "SCORE_FAKE_GAP": None,
+                   "BEST_TARGET": None, "BEST_SCORE": None}
+    # display-only (weight 0) criteria are never required
+    assert mt.score({"c7_bowl": 0.05, "c11_walls": 9.0, "c10_flat_base": 1.0}, t[1]) == 1.0
+
+
+def test_verified_targets_in_repo_are_complete():
+    """The verified candidates in config/ cover every counting criterion of their base type."""
+    from pipeline.config import load_config
+    cfg = load_config()
+    base = {b: cfg[b]["criteria"] for b in mt.BUILTIN if b in cfg}
+    t = mt.build_targets(base, mt.load_candidates(), tolerance_floor={"mare": cfg["mare"].get("tolerance_floor", {})})
+    cands = [x for x in t if not x["builtin"]]
+    assert cands and all(x["complete"] for x in cands), [x["name"] for x in cands if not x["complete"]]
 
 
 def test_missing_value_is_no_data():
