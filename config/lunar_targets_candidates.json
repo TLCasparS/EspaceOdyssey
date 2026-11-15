@@ -1536,6 +1536,35 @@
             1.6737,
             2.0424
           ]
+        },
+        "c30_small_craters": {
+          "value": 0.30552,
+          "iqr": 0.12729,
+          "tolerance": 0.12729,
+          "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127)",
+          "n_cells": 5,
+          "cells": [
+            "tranquillitatis_01",
+            "tranquillitatis_02",
+            "tranquillitatis_03",
+            "tranquillitatis_04",
+            "tranquillitatis_05"
+          ],
+          "cell_values": [
+            0.30552,
+            0.39462,
+            0.39462,
+            0.24187,
+            0.26733
+          ],
+          "repro_note": "base spot recomputed with mare_cell on the SLDEM2015 tile windows; c9/c10/c12/c13 differ slightly from the frozen per-cell values (repro_diff = now - frozen), see compute_mare_c30.py",
+          "unit": "closed depressions per km2 (>= 10 m deep, >= 300 m wide, elongation <= 2) within 5 km of the base spot",
+          "source": "SLDEM2015 windows (src/fetch_sldem_window.py) on the 60 m grid as compute_mare_target.py; pipeline.mare.small_crater_density via src/compute_mare_c30.py",
+          "date": "2026-11-15",
+          "verified": false,
+          "check": "computed by Claude Code, to be checked by Mateo",
+          "version": "mare-v1.1",
+          "note": "only 5 cells: the IQR is a rough spread estimate; under mare_v11.common_tolerance the 20-cell tolerance is used"
         }
       },
       "date": "2026-11-14",
@@ -1680,6 +1709,35 @@
             1.0336,
             1.3702
           ]
+        },
+        "c30_small_craters": {
+          "value": 0.21641,
+          "iqr": 0.08911,
+          "tolerance": 0.08911,
+          "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127)",
+          "n_cells": 5,
+          "cells": [
+            "serenitatis_01",
+            "serenitatis_02",
+            "serenitatis_03",
+            "serenitatis_04",
+            "serenitatis_05"
+          ],
+          "cell_values": [
+            0.21641,
+            0.11457,
+            0.42008,
+            0.24187,
+            0.15276
+          ],
+          "repro_note": "base spot recomputed with mare_cell on the SLDEM2015 tile windows; c9/c10/c12/c13 differ slightly from the frozen per-cell values (repro_diff = now - frozen), see compute_mare_c30.py",
+          "unit": "closed depressions per km2 (>= 10 m deep, >= 300 m wide, elongation <= 2) within 5 km of the base spot",
+          "source": "SLDEM2015 windows (src/fetch_sldem_window.py) on the 60 m grid as compute_mare_target.py; pipeline.mare.small_crater_density via src/compute_mare_c30.py",
+          "date": "2026-11-15",
+          "verified": false,
+          "check": "computed by Claude Code, to be checked by Mateo",
+          "version": "mare-v1.1",
+          "note": "only 5 cells: the IQR is a rough spread estimate; under mare_v11.common_tolerance the 20-cell tolerance is used"
         }
       },
       "date": "2026-11-14",
@@ -1824,6 +1882,35 @@
             1.6139,
             1.7953
           ]
+        },
+        "c30_small_craters": {
+          "value": 0.22914,
+          "iqr": 0.08911,
+          "tolerance": 0.08911,
+          "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127)",
+          "n_cells": 5,
+          "cells": [
+            "imbrium_01",
+            "imbrium_02",
+            "imbrium_03",
+            "imbrium_04",
+            "imbrium_05"
+          ],
+          "cell_values": [
+            0.1273,
+            0.22914,
+            0.26733,
+            0.17822,
+            0.26733
+          ],
+          "repro_note": "base spot recomputed with mare_cell on the SLDEM2015 tile windows; c9/c10/c12/c13 differ slightly from the frozen per-cell values (repro_diff = now - frozen), see compute_mare_c30.py",
+          "unit": "closed depressions per km2 (>= 10 m deep, >= 300 m wide, elongation <= 2) within 5 km of the base spot",
+          "source": "SLDEM2015 windows (src/fetch_sldem_window.py) on the 60 m grid as compute_mare_target.py; pipeline.mare.small_crater_density via src/compute_mare_c30.py",
+          "date": "2026-11-15",
+          "verified": false,
+          "check": "computed by Claude Code, to be checked by Mateo",
+          "version": "mare-v1.1",
+          "note": "only 5 cells: the IQR is a rough spread estimate; under mare_v11.common_tolerance the 20-cell tolerance is used"
         }
       },
       "date": "2026-11-14",
@@ -1968,6 +2055,35 @@
             1.6722,
             2.1284
           ]
+        },
+        "c30_small_craters": {
+          "value": 0.1273,
+          "iqr": 0.06365,
+          "tolerance": 0.06365,
+          "tolerance_rule": "max(IQR, mare_v11.c30_tolerance_floor 0.0127)",
+          "n_cells": 5,
+          "cells": [
+            "crisium_01",
+            "crisium_02",
+            "crisium_03",
+            "crisium_04",
+            "crisium_05"
+          ],
+          "cell_values": [
+            0.08911,
+            0.17822,
+            0.11457,
+            0.26733,
+            0.1273
+          ],
+          "repro_note": "base spot recomputed with mare_cell on the SLDEM2015 tile windows; c9/c10/c12/c13 differ slightly from the frozen per-cell values (repro_diff = now - frozen), see compute_mare_c30.py",
+          "unit": "closed depressions per km2 (>= 10 m deep, >= 300 m wide, elongation <= 2) within 5 km of the base spot",
+          "source": "SLDEM2015 windows (src/fetch_sldem_window.py) on the 60 m grid as compute_mare_target.py; pipeline.mare.small_crater_density via src/compute_mare_c30.py",
+          "date": "2026-11-15",
+          "verified": false,
+          "check": "computed by Claude Code, to be checked by Mateo",
+          "version": "mare-v1.1",
+          "note": "only 5 cells: the IQR is a rough spread estimate; under mare_v11.common_tolerance the 20-cell tolerance is used"
         }
       },
       "date": "2026-11-14",

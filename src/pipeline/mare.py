@@ -103,6 +103,40 @@ def mare_cell(mg, in_cell: np.ndarray, usable: np.ndarray | None, cfg: dict) -> 
     return out
 
 
+C30 = "c30_small_craters"
+
+
+def small_crater_density(z: np.ndarray, base_rc: tuple[int, int], res_m: float, p: dict) -> float | None:
+    """mare-v1.1 criterion c30 (Earth AND Moon, same code): closed depressions per km2 whose low point lies
+    within p["radius_km"] of the base spot (base_rc = row, col on the 60 m grid z).
+
+    A depression counts if it is >= p["min_depth_m"] deep (filled depth), >= p["min_width_m"] wide (equivalent
+    diameter of the filled area) and elongation (longest axis / equivalent diameter) <= p["max_elongation"]:
+    pipeline.polar.find_depressions with these limits instead of the Polar bowl limits.
+    The grid is first cut to a square of radius_km + margin_km around the base spot, so Earth and Moon see the
+    same window geometry whatever the base spot's position in its cell (cut edges and NaN are outlets, as in
+    fill_depressions: a depression cut by the window edge does not close and is not counted).
+    Area = data-covered pixels of the radius_km disc. None (no data, never 0) if less than half of the disc
+    has data. Nested depressions: the priority-flood fill merges a small pit inside a larger closed depression
+    into that one depression (counted once, if it qualifies).
+    """
+    from pipeline.polar import find_depressions
+    r0, c0 = base_rc
+    k = int(np.ceil((p["radius_km"] + p["margin_km"]) * 1000 / res_m))
+    r1, c1 = max(r0 - k, 0), max(c0 - k, 0)
+    sub = np.asarray(z, dtype=np.float64)[r1:r0 + k + 1, c1:c0 + k + 1]
+    rr, cc = np.indices(sub.shape)
+    disc = np.hypot(rr - (r0 - r1), cc - (c0 - c1)) * res_m <= p["radius_km"] * 1000
+    full_px = np.pi * (p["radius_km"] * 1000 / res_m) ** 2
+    data_px = int((disc & np.isfinite(sub)).sum())
+    if data_px < 0.5 * full_px:
+        return None
+    lim = {"min_depression_depth_m": p["min_depth_m"], "min_depression_width_m": p["min_width_m"],
+           "max_elongation": p["max_elongation"]}
+    n = len(find_depressions(sub, disc, res_m, lim))
+    return round(n / (data_px * res_m ** 2 / 1e6), 5)
+
+
 def target_from_cells(values: dict[str, list[float]], floors: dict[str, float], cells: list, seed) -> dict:
     """Lunar Mare target entries (config/lunar_targets.json["mare"]["criteria"]) from the raw values of the
     fixed lunar cell list: value = median, tolerance = max(IQR, floor). None values (no data) are skipped."""
