@@ -316,6 +316,152 @@
         "moon": null,
         "note": "Display only, 'more is better', not a similarity to the Moon."
       }
+    ],
+    "lunar_targets": [
+      {
+        "name": "shackleton",
+        "column": "SCORE_SHACKLETON",
+        "label": "Shackleton rim + floor (config/lunar_targets.json)",
+        "base_type": "polar",
+        "builtin": true,
+        "verified": true,
+        "preview": false,
+        "source": "config/lunar_targets.json",
+        "complete": true,
+        "criteria": {
+          "c1_sunny_ridge": {
+            "value": 1.5617,
+            "tolerance": 0.4,
+            "weight": 1.0
+          },
+          "c2_dark_floor": {
+            "value": 1.0,
+            "tolerance": 0.5,
+            "weight": 1.0
+          },
+          "c3_light_dark": {
+            "value": 0.7849,
+            "tolerance": 0.5,
+            "weight": 1.0
+          },
+          "c7_bowl": {
+            "value": 0.1973,
+            "tolerance": 0.05,
+            "weight": 1.0
+          },
+          "c10_flat_base": {
+            "value": 0.664,
+            "tolerance": 3,
+            "weight": 1.0
+          },
+          "c11_walls": {
+            "value": 27.2221,
+            "tolerance": 5,
+            "weight": 1.0
+          },
+          "c13_roughness": {
+            "value": 24.5428,
+            "tolerance": 10,
+            "weight": 1.0
+          }
+        }
+      },
+      {
+        "name": "polar_sl2",
+        "column": "SCORE_POLAR_SL2",
+        "label": "Polar · small crater on the de Gerlache rim (Artemis III region, 2022 and 2024 lists)",
+        "base_type": "polar",
+        "builtin": false,
+        "verified": true,
+        "preview": false,
+        "source": "config/lunar_targets_candidates.json",
+        "complete": true,
+        "criteria": {
+          "c1_sunny_ridge": {
+            "value": 0.7661,
+            "tolerance": 0.4,
+            "weight": 1.0
+          },
+          "c2_dark_floor": {
+            "value": 1.0,
+            "tolerance": 0.5,
+            "weight": 1.0
+          },
+          "c3_light_dark": {
+            "value": 1.8241,
+            "tolerance": 0.5,
+            "weight": 1.0
+          },
+          "c7_bowl": {
+            "value": 0.0408,
+            "tolerance": 0.05,
+            "weight": 1.0
+          },
+          "c10_flat_base": {
+            "value": 1.2764,
+            "tolerance": 3,
+            "weight": 1.0
+          },
+          "c11_walls": {
+            "value": 7.7999,
+            "tolerance": 5,
+            "weight": 1.0
+          },
+          "c13_roughness": {
+            "value": 6.4467,
+            "tolerance": 10,
+            "weight": 1.0
+          }
+        }
+      },
+      {
+        "name": "polar_haworth",
+        "column": "SCORE_POLAR_HAWORTH",
+        "label": "Polar · small crater in the Haworth region (Artemis III region, 2022 and 2024 lists)",
+        "base_type": "polar",
+        "builtin": false,
+        "verified": true,
+        "preview": false,
+        "source": "config/lunar_targets_candidates.json",
+        "complete": true,
+        "criteria": {
+          "c1_sunny_ridge": {
+            "value": 0.8666,
+            "tolerance": 0.4,
+            "weight": 1.0
+          },
+          "c2_dark_floor": {
+            "value": 1.0,
+            "tolerance": 0.5,
+            "weight": 1.0
+          },
+          "c3_light_dark": {
+            "value": 1.1199,
+            "tolerance": 0.5,
+            "weight": 1.0
+          },
+          "c7_bowl": {
+            "value": 0.0613,
+            "tolerance": 0.05,
+            "weight": 1.0
+          },
+          "c10_flat_base": {
+            "value": 1.1417,
+            "tolerance": 3,
+            "weight": 1.0
+          },
+          "c11_walls": {
+            "value": 10.8338,
+            "tolerance": 5,
+            "weight": 1.0
+          },
+          "c13_roughness": {
+            "value": 9.007,
+            "tolerance": 10,
+            "weight": 1.0
+          }
+        }
+      }
     ]
   },
   "mare": {
@@ -425,6 +571,201 @@
         "fact": "not computed yet (GLiM)",
         "moon": null
       }
+    ],
+    "lunar_targets": [
+      {
+        "name": "mare_20cells",
+        "column": "SCORE_MARE_20CELLS",
+        "label": "Mare median over 20 cells (config/lunar_targets.json)",
+        "base_type": "mare",
+        "builtin": true,
+        "verified": true,
+        "preview": false,
+        "source": "config/lunar_targets.json",
+        "complete": true,
+        "criteria": {
+          "c9_relief": {
+            "value": 154.0281,
+            "tolerance": 163.1498,
+            "weight": 1.0
+          },
+          "c10_flat_base": {
+            "value": 0.2379,
+            "tolerance": 0.5,
+            "weight": 1.0
+          },
+          "c12_drivable": {
+            "value": 0.9932,
+            "tolerance": 0.05,
+            "weight": 1.0
+          },
+          "c13_roughness": {
+            "value": 1.6885,
+            "tolerance": 1.0,
+            "weight": 1.0
+          }
+        }
+      },
+      {
+        "name": "mare_tranquillitatis",
+        "column": "SCORE_MARE_TRANQUILLITATIS",
+        "label": "Mare · Mare Tranquillitatis (5 cells)",
+        "base_type": "mare",
+        "builtin": false,
+        "verified": true,
+        "preview": false,
+        "source": "config/lunar_targets_candidates.json",
+        "complete": true,
+        "criteria": {
+          "c9_relief": {
+            "value": 241.1616,
+            "tolerance": 101.3036,
+            "weight": 1.0
+          },
+          "c10_flat_base": {
+            "value": 0.2668,
+            "tolerance": 0.5,
+            "weight": 1.0
+          },
+          "c12_drivable": {
+            "value": 0.9875,
+            "tolerance": 0.05,
+            "weight": 1.0
+          },
+          "c13_roughness": {
+            "value": 1.9379,
+            "tolerance": 1.0,
+            "weight": 1.0
+          }
+        }
+      },
+      {
+        "name": "mare_serenitatis",
+        "column": "SCORE_MARE_SERENITATIS",
+        "label": "Mare · Mare Serenitatis (5 cells)",
+        "base_type": "mare",
+        "builtin": false,
+        "verified": true,
+        "preview": false,
+        "source": "config/lunar_targets_candidates.json",
+        "complete": true,
+        "criteria": {
+          "c9_relief": {
+            "value": 118.0635,
+            "tolerance": 47.7364,
+            "weight": 1.0
+          },
+          "c10_flat_base": {
+            "value": 0.2293,
+            "tolerance": 0.5,
+            "weight": 1.0
+          },
+          "c12_drivable": {
+            "value": 0.9948,
+            "tolerance": 0.05,
+            "weight": 1.0
+          },
+          "c13_roughness": {
+            "value": 1.2873,
+            "tolerance": 1.0,
+            "weight": 1.0
+          }
+        }
+      },
+      {
+        "name": "mare_imbrium",
+        "column": "SCORE_MARE_IMBRIUM",
+        "label": "Mare · Mare Imbrium (5 cells)",
+        "base_type": "mare",
+        "builtin": false,
+        "verified": true,
+        "preview": false,
+        "source": "config/lunar_targets_candidates.json",
+        "complete": true,
+        "criteria": {
+          "c9_relief": {
+            "value": 121.272,
+            "tolerance": 42.1821,
+            "weight": 1.0
+          },
+          "c10_flat_base": {
+            "value": 0.2314,
+            "tolerance": 0.5,
+            "weight": 1.0
+          },
+          "c12_drivable": {
+            "value": 0.9979,
+            "tolerance": 0.05,
+            "weight": 1.0
+          },
+          "c13_roughness": {
+            "value": 1.6924,
+            "tolerance": 1.0,
+            "weight": 1.0
+          }
+        }
+      },
+      {
+        "name": "mare_crisium",
+        "column": "SCORE_MARE_CRISIUM",
+        "label": "Mare · Mare Crisium (5 cells)",
+        "base_type": "mare",
+        "builtin": false,
+        "verified": true,
+        "preview": false,
+        "source": "config/lunar_targets_candidates.json",
+        "complete": true,
+        "criteria": {
+          "c9_relief": {
+            "value": 285.5308,
+            "tolerance": 116.3284,
+            "weight": 1.0
+          },
+          "c10_flat_base": {
+            "value": 0.2472,
+            "tolerance": 0.5,
+            "weight": 1.0
+          },
+          "c12_drivable": {
+            "value": 0.9901,
+            "tolerance": 0.05,
+            "weight": 1.0
+          },
+          "c13_roughness": {
+            "value": 2.0204,
+            "tolerance": 1.0,
+            "weight": 1.0
+          }
+        }
+      }
     ]
+  },
+  "_multi_target": {
+    "preview": false,
+    "note": "scores.csv SCORE_<TARGET> = score vs Moon against that lunar target (same rule, weights and tolerances as SCORE_TOTAL; a target's own tolerance wins, Mare: max(own, floor)); BEST_TARGET = target with the highest score among the row's base type, BEST_SCORE = that score. targets[base].lunar_targets lists each target (builtin = today's target, = SCORE_TOTAL). A SCORE_<TARGET> is only given when every counting criterion has both a lunar and an Earth value; otherwise it is empty (no data) and cannot be BEST_TARGET: missing values never score better than real ones. RANK stays the rank of SCORE_TOTAL."
+  },
+  "_material": {
+    "source": "Hartmann & Moosdorf (2012) GLiM v1.0 gridded to 0.5 deg, PANGAEA doi:10.1594/PANGAEA.788537 (CC-BY 3.0); cite doi:10.1029/2012GC004370",
+    "radius_km": 5.0,
+    "basalt_min_share": 0.5,
+    "min_covered_share": 0.5,
+    "classes": {
+      "su": "unconsolidated sediments",
+      "ss": "siliciclastic sedimentary rocks",
+      "sm": "mixed sedimentary rocks",
+      "sc": "carbonate sedimentary rocks",
+      "py": "pyroclastics",
+      "ev": "evaporites",
+      "mt": "metamorphics",
+      "pa": "acid plutonic rocks",
+      "pi": "intermediate plutonic rocks",
+      "pb": "basic plutonic rocks",
+      "va": "acid volcanic rocks",
+      "vi": "intermediate volcanic rocks",
+      "vb": "basic volcanic rocks",
+      "ig": "ice and glaciers",
+      "wb": "water bodies"
+    },
+    "note": "Display only, never in a score. One dominant class per 0.5 deg cell (~55 km): a region flag, not a 5 km measurement. Sea / GLiM nd = no data; BASALT_SHARE_5KM and BASALT_REGION empty below min_covered_share. Point = Polar low point, Mare base pad. docs/MATERIAL.md."
   }
 }

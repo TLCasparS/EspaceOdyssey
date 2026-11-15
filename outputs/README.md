@@ -27,7 +27,7 @@ Base types: polar (1825 rows), mare (500 rows); plus 3 missed known sites.
 - **`EXCLUDED`** = config-v1.1 post-run filter reason(s); empty = not excluded (see below).
 - Mare scores: similarity to the frozen mare-v1 lunar target (`targets.json` → mare).
 
-Re-create: `python src/export_app.py out/night_polar out/night_mare out/meteor_crater out/pinacate --post-filters config/post_filters.yaml --place-names <data dir> --anchors config/site_anchors.csv --dedupe-km 1 --cells-near-km 16`
+Re-create: `python src/export_app.py out/night_polar out/night_mare out/meteor_crater out/pinacate --post-filters config/post_filters.yaml --place-names <data dir> --anchors config/site_anchors.csv --glim <data dir> --dedupe-km 1 --cells-near-km 16`
 
 ## Display-only columns (Polar, weight 0, never in SCORE_TOTAL)
 - **DRIVABLE** (more is better): share of pixels flatter than display.drivable_slope_deg within display.drivable_radius_km of the base pad
@@ -42,6 +42,48 @@ No Earth analog possible: the Sun's highest elevation is purely a matter of lati
 
 ## Known limitation: Sun disc vs Sun centre (SUNNY_RIDGE, DARK_FLOOR, LIGHT_NEAR_DARK)
 Known limitation: on the Moon 'lit' is the visible fraction of the solar DISC (PGDA AVGVISIB, extended Sun); on Earth it is the Sun's CENTRE above the horizon (point Sun). Both give 0.5 on flat land at the pole; on terrain they can differ where the Sun stays partly hidden for long stretches (disc fraction > 0 while the centre is already below the horizon).
+
+## Several lunar targets ("closest lunar twin")
+Columns after `MISSED_REASON`: `SCORE_SHACKLETON`, `SCORE_MARE_20CELLS`, `SCORE_POLAR_SL2`, `SCORE_POLAR_HAWORTH`, `SCORE_MARE_TRANQUILLITATIS`, `SCORE_MARE_SERENITATIS`, `SCORE_MARE_IMBRIUM`, `SCORE_MARE_CRISIUM`, `BEST_TARGET`, `BEST_SCORE`. `SCORE_<TARGET>` = score vs Moon against that
+target (same rule, weights and tolerances as `SCORE_TOTAL`; today's target equals `SCORE_TOTAL`); `BEST_TARGET` /
+`BEST_SCORE` = best-matching target of the row's base type. Targets: `targets[BASE_TYPE].lunar_targets`
+(see docs/MULTI_TARGET.md). Targets used: shackleton, mare_20cells, polar_sl2, polar_haworth, mare_tranquillitatis, mare_serenitatis, mare_imbrium, mare_crisium.
+**Missing values never score better than real ones:** a `SCORE_<TARGET>` is only given when every counting
+criterion has both a lunar and an Earth value; otherwise it is empty and that target cannot be `BEST_TARGET`.
+`RANK` stays the rank of `SCORE_TOTAL`. The place per cell is the bowl chosen against today's target (one place per
+cell in `ranking.csv`); another target might prefer a different bowl in the same cell.
+
+| base | BEST_TARGET | places (excluded included) |
+|---|---|---|
+| mare | mare_20cells | 401 |
+| mare | mare_crisium | 13 |
+| mare | mare_imbrium | 37 |
+| mare | mare_serenitatis | 20 |
+| mare | mare_tranquillitatis | 29 |
+| polar | polar_haworth | 805 |
+| polar | polar_sl2 | 957 |
+| polar | shackleton | 63 |
+
+## Rock class (GLiM, display only; never in a score)
+`raw_values.csv` columns `ROCK_CLASS`, `ROCK_CLASS_NAME`, `BASALT_SHARE_5KM`, `GLIM_COVERED_SHARE`, `BASALT_REGION`, at the Polar low point / Mare base pad (`LAT`/`LON`).
+- `ROCK_CLASS` = first-level GLiM code of the grid cell under the point (`vb` = basic volcanic = basalt; names in
+  `ROCK_CLASS_NAME` and `targets.json` -> `_material.classes`); empty = no data (sea or GLiM "nd").
+- `BASALT_SHARE_5KM` = share of `vb` within 5 km, relative to the part of the disc that has GLiM data;
+  `GLIM_COVERED_SHARE` = that part (0-1). `BASALT_REGION` = 1 if `BASALT_SHARE_5KM` >= 0.5, else 0.
+  Both are **empty (no data)** when less than 50% of the disc has GLiM data: coastal grid
+  cells can be sea, so coast and island places show no data, never 0.
+- **Caveat:** source = Hartmann & Moosdorf (2012) GLiM v1.0 gridded to 0.5 deg, PANGAEA doi:10.1594/PANGAEA.788537 (CC-BY 3.0); cite doi:10.1029/2012GC004370. One dominant class per 0.5 deg cell (~55 km), so this is a "basalt region
+  yes/no" flag, not a 5 km measurement; small lava fields vanish. GLiM has no anorthosite class (c22 cannot be
+  scored). Details: docs/MATERIAL.md.
+
+| base | BASALT_REGION | places |
+|---|---|---|
+| mare | 0 | 476 |
+| mare | 1 | 9 |
+| mare | no data | 15 |
+| polar | 0 | 1645 |
+| polar | 1 | 167 |
+| polar | no data | 16 |
 
 ## config-v1.1: post-run filters (Polar only; config-v1 scoring unchanged)
 Rules in `config/post_filters.yaml`, code `src/post_filters.py`. An excluded place keeps `SCORE_TOTAL` and its raw
