@@ -8,13 +8,13 @@ The same text is in the speaker notes of `Moon_Twins_on_Earth.pptx`.
 
 | Slide | Speaker | Words | Target |
 |---|---|---|---|
-| 1 Title | A (Caspar) | 29 | 0:12 |
-| 2 The question | A (Caspar) | 29 | 0:16 |
-| 3 Method | A (Caspar) | 54 | 0:25 |
-| 4 The search | A (Caspar) | 45 | 0:22 |
-| 5 LIVE DEMO | B (Sofi) | 64 | 0:50 |
-| 6 What we learned | B (Sofi) | 51 | 0:25 |
-| 7 Limits + explore | B (Sofi) | 32 | 0:14 |
+| 1 Title | A  | 29 | 0:12 |
+| 2 The question | A  | 29 | 0:16 |
+| 3 Method | A  | 54 | 0:25 |
+| 4 The search | A  | 45 | 0:22 |
+| 5 LIVE DEMO | B  | 64 | 0:50 |
+| 6 What we learned | B  | 51 | 0:25 |
+| 7 Limits + explore | B  | 32 | 0:14 |
 | **Total** | | **304** | **2:44** |
 
 ## Before the pitch (demo setup)
