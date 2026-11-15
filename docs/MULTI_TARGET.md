@@ -130,6 +130,12 @@ runa r001c002,0.3276,0.3276,0.9729,0.9906,0.3364,polar_haworth,0.9906,1
 ```
 
 ## App changes Sofia would need (not made: `app/` is not mine)
+
+**Done 15 Nov 2026 (branch `app-multi-target`):** the Moon panel lists every verified target of the selected base
+with one marker each on the Moon globe (positions from `config/lunar_targets_candidates.json`: Polar = crater low
+point, Mare = centre of the target's sample areas); clicking one shows its values and its three closest Earth places
+by `SCORE_<TARGET>`. The Earth card shows "Closest lunar twin" for **Polar only** (Mare tolerances differ per target,
+so `BEST_TARGET` is not comparable there). Ranking still uses `SCORE_TOTAL`. Points 4 and 5 below are not done.
 1. `app/app.js:138` `TEXT_COLUMNS`: add `BEST_TARGET` (else `Number("polar_site01")` = NaN). `NAME`, `COUNTRY`,
    `ROLE`, `MISSED_REASON` are also text but not in that set today, so the app turns them into NaN. That's an
    existing issue, worth fixing at the same time.

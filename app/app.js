@@ -23,6 +23,8 @@ const DATA = USE_SAMPLE ? {
   info: 'sample/site_info.json',     // Sofia's research notes per site (export_app.py reads it too)
   coords: 'sample/scores.csv',       // only SITE,LAT,LON: puts sites the pipeline hasn't scored yet on the map
   access: '../data/access/access_hours.csv', // Mateo's c26: travel time to a city + nearest airport (display only)
+  // Positions of the extra lunar targets (targets.json → lunar_targets has their values but no positions)
+  candidates: '../config/lunar_targets_candidates.json',
   isFake: false,
 };
 
@@ -77,6 +79,7 @@ const BASES = [
 // shows one marker per entry; a base can be picked once outputs/targets.json has its values. To add the
 // lava-tube base later, add an entry with id 'cave' (candidate: Mare Tranquillitatis pit, 8.336°N, 33.222°E).
 const MOON_BASES = [
+  // lat/lng = Shackleton's low point (config/lunar_targets.json → polar.place.low_point_lat_lon)
   { id: 'polar', title: 'Polar base', name: 'Shackleton crater', place: 'lunar south pole', lat: -89.625, lng: 118.8,
     subtitle: '21 km wide, 4,077 m from rim crest to floor',
     why: 'Its rim is one of the sunniest places on the Moon (best spot lit 78% of the time: solar power), while its floor never sees the Sun (permanent shadow: water ice). Power and ice are about 7.5 km apart.',
@@ -84,6 +87,7 @@ const MOON_BASES = [
   // Mare target: final values from Mateo (config/lunar_targets.json → mare, branch mare-moon, 14 Nov 2026).
   // Shown on the Moon card until Caspar's outputs/targets.json has the mare base; then those values are used.
   { id: 'mare', title: 'Mare surface base', name: 'Apollo 11 site', place: 'Mare Tranquillitatis', lat: 0.674, lng: 23.473,
+    targetName: 'Apollo 11 site (20-cell median)',   // name in the list of lunar targets: the values are the 20-cell median
     subtitle: 'Typical lunar mare plain: median of 20 sample areas across 4 maria',
     why: 'Flat, smooth volcanic plains near the equator: easy to land and drive on, but with a huge day–night temperature swing.',
     target: [
@@ -203,7 +207,7 @@ const getJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); r
 const optional = (url, fallback) => (url ? getJSON(url).catch(() => fallback) : Promise.resolve(fallback));
 
 async function loadAll() {
-  const [csv, targets, info, rawCsv, heat, cells, coordsCsv, accessCsv] = await Promise.all([
+  const [csv, targets, info, rawCsv, heat, cells, coordsCsv, accessCsv, candidates] = await Promise.all([
     getText(DATA.scores),
     getJSON(DATA.targets),
     optional(DATA.info, {}),
@@ -212,6 +216,7 @@ async function loadAll() {
     optional(DATA.cells, []),
     DATA.coords ? getText(DATA.coords).catch(() => '') : Promise.resolve(''),
     DATA.access ? getText(DATA.access).catch(() => '') : Promise.resolve(''),
+    optional(DATA.candidates, null),
   ]);
   const { head, rows } = parseCSV(csv);
   const rawRows = rawCsv ? parseCSV(rawCsv).rows : [];
@@ -235,6 +240,7 @@ async function loadAll() {
   }
   if (accessCsv) attachAccess(parseCSV(accessCsv).rows);
   state.targets = Object.fromEntries(Object.entries(targets).filter(([k]) => !k.startsWith('_')));
+  state.targetPos = targetPositions(candidates);
   // The night export names some cells differently (e.g. "Al Wahbah area r003c1511" instead of
   // "arid_al_wahbah r001c001"); site_info.json → _aliases maps the new name to the same notes.
   for (const [alias, key] of Object.entries(info?._aliases ?? {})) if (info[key] && !info[alias]) info[alias] = info[key];
@@ -492,6 +498,7 @@ function renderFilters() {
 let twinTimer = null;
 function setBase(id, fly) {
   state.moonInfo = id;
+  state.moonTarget = null;   // back to today's target of that base
   const ready = !!state.targets[id];
   if (ready) {
     state.base = id;
@@ -759,6 +766,7 @@ function renderCard() {
   const groupName = state.group === 'all' || state.group === 'practical'
     ? (perGroup ? 'Average per group' : 'All criteria') : GROUPS.find(g => g.id === state.group).label;
   const moonName = (target().label ?? 'Lunar target').split(' (')[0];
+  const twin = unscored || missed ? null : closestTwin(s);
   const missingNote = [
     missing.nodata.length && `No data yet: ${missing.nodata.join(', ')}.`,
     missing.rank.length && `Waiting for a lunar value: ${missing.rank.join(', ')}.`,
@@ -784,6 +792,7 @@ function renderCard() {
         <span class="badge ${missed || s.EXCLUDED ? 'badge-missed' : s.type === 'known' ? 'badge-known' : 'badge-new'}">${s.EXCLUDED ? 'Excluded after scoring' : missed ? 'Missed by our method' : s.type === 'known' ? 'Known analog' : 'New candidate'}</span>
         <h2 style="margin-top:8px">${esc(nameOf(s))}</h2>
         <p class="card-place">${esc(info.place ?? s.COUNTRY ?? '')}${info.place || s.COUNTRY ? ' · ' : ''}${fmtCoord(s.lat, s.lng)}${craterFacts.length ? ' · crater ' + esc(craterFacts.join(', ')) : ''}</p>
+        ${twin ? `<p class="card-twin" title="Score against each verified lunar target, same rule and weights; this target scores highest. The rank uses Shackleton.">Closest lunar twin: <b>${esc(twin.label)}</b> (${pct(twin.score)})</p>` : ''}
       </div>
       <div class="score">
         <strong>${pct(s.EXCLUDED ? s.excludedSim : s.sim)}</strong>
@@ -1092,6 +1101,54 @@ function updateGlobe(fly) {
 
 /* ---------- Moon globe: pick the lunar base the Earth sites are compared with ---------- */
 
+// Several lunar targets per base (docs/MULTI_TARGET.md): targets[base].lunar_targets holds each verified target's
+// values; scores.csv has SCORE_<TARGET>, BEST_TARGET, BEST_SCORE. Positions come from the candidates file:
+// Polar = the crater's low point (the bowl the values describe), Mare = centre of the target's sample areas.
+const lng180 = l => (l > 180 ? l - 360 : l);
+function targetPositions(cand) {
+  const pos = {};
+  for (const t of cand?.targets ?? []) {
+    const p = t.place?.low_point_lat_lon ?? t.region_centre_lat_lon, cells = t.cells_lat_lon;
+    if (Array.isArray(p)) {
+      pos[t.name] = { lat: p[0], lng: lng180(p[1]), where: t.place?.low_point_lat_lon ? 'marker on the crater floor' : 'marker at the region centre', preview: t.preview };
+    } else if (Array.isArray(cells) && cells.length) {
+      const n = cells.length;
+      pos[t.name] = { lat: cells.reduce((a, c) => a + c[0], 0) / n, lng: lng180(cells.reduce((a, c) => a + c[1], 0) / n),
+        where: `marker at the centre of its ${n} sample areas`, n, preview: t.preview };
+    }
+  }
+  return pos;
+}
+// "Polar · small crater on the de Gerlache rim (Artemis III region, …)" → "small crater on the de Gerlache rim"
+const shortTargetLabel = t => String(t.label ?? t.name).replace(/^(Polar|Mare)\s*·\s*/, '').split(' (')[0];
+// Verified targets of a base, today's (built-in) target first. Empty when the export has only one target.
+function lunarTargets(baseId) {
+  const b = moonBase(baseId), list = state.targets[baseId]?.lunar_targets;
+  if (!b || !Array.isArray(list)) return [];
+  return list.filter(t => t.verified === true).map(t => {
+    const pos = t.builtin ? { lat: b.lat, lng: b.lng } : (state.targetPos?.[t.name] ?? {});
+    return { base: baseId, name: t.name, column: t.column, builtin: !!t.builtin, criteria: t.criteria ?? {},
+      label: t.builtin ? (b.targetName ?? b.name) : shortTargetLabel(t), lat: pos.lat ?? null, lng: pos.lng ?? null,
+      where: pos.where ?? null, n: pos.n ?? null, preview: pos.preview ?? null };
+  }).sort((a, z) => z.builtin - a.builtin);
+}
+const moonTargetOf = baseId => {
+  const ts = lunarTargets(baseId);
+  return ts.find(t => t.name === state.moonTarget) ?? ts.find(t => t.builtin) ?? null;
+};
+// Pick one lunar target (marker or button): its values show in the Moon panel. Ranking stays on SCORE_TOTAL.
+function pickTarget(baseId, name) {
+  if (baseId !== state.moonInfo) setBase(baseId, true);
+  state.moonTarget = name;
+  updateMoon(true);   // Mare: turn to that mare; Polar: stay at 78°S, turn to the target's longitude so its name reads upright
+}
+// Earth card, Polar only: the target with the highest score (Mare tolerances differ per target, so not comparable).
+function closestTwin(s) {
+  if (state.base !== 'polar' || (s.BASE_TYPE ?? 'polar') !== 'polar' || s.BEST_TARGET == null || s.BEST_SCORE == null) return null;
+  const t = lunarTargets('polar').find(x => x.name === s.BEST_TARGET);
+  return { label: t?.label ?? s.BEST_TARGET, score: s.BEST_SCORE };
+}
+
 const moonReady = id => !!state.targets[id];
 function initMoon() {
   const el = document.getElementById('moonGlobe');
@@ -1103,16 +1160,18 @@ function initMoon() {
     .showAtmosphere(false)
     .labelLat('lat')
     .labelLng('lng')
-    .labelText(b => b.name)
-    .labelSize(b => (b.id === state.moonInfo ? 4.2 : 3.4))
-    .labelDotRadius(b => (b.id === state.moonInfo ? 1.6 : 1.2))
-    .labelColor(b => (b.id === state.moonInfo ? '#FFFFFF' : moonReady(b.id) ? COLORS.signal : 'rgba(167,186,199,0.75)'))
+    // Several targets of one base: only the picked one has its name written (the others on hover). The polar
+    // targets lie within 3.5° of the pole, so their dots and text are smaller.
+    .labelText(b => (b.target && !b.sel ? '' : b.name))
+    .labelSize(b => (b.crowded ? 2.2 : b.target ? 3 : b.sel ? 4.2 : 3.4))
+    .labelDotRadius(b => (b.crowded ? (b.sel ? 0.9 : 0.7) : b.sel ? 1.6 : 1.2))
+    .labelColor(b => (b.sel ? '#FFFFFF' : moonReady(b.id) ? COLORS.signal : 'rgba(167,186,199,0.75)'))
     .labelAltitude(0.01)
     .labelResolution(3)
     .labelLabel(b => `${esc(b.title)} · ${esc(b.name)}${moonReady(b.id) ? '' : ' (Earth twins coming)'}`)
-    .onLabelClick(b => setBase(b.id, true))
+    .onLabelClick(b => (b.target ? pickTarget(b.id, b.target) : setBase(b.id, true)))
     .ringColor(() => t => `rgba(255,255,255,${1 - t})`)
-    .ringMaxRadius(6)
+    .ringMaxRadius(d => d.r ?? 6)
     .ringPropagationSpeed(3)
     .ringRepeatPeriod(1400);
   const c = m.controls();
@@ -1129,6 +1188,7 @@ function initMoon() {
   });
   document.getElementById('moonInfo').addEventListener('click', e => {
     const t = e.target.closest('[data-twin]'); if (t) return select(t.dataset.twin, true);
+    const lt = e.target.closest('[data-target]'); if (lt) return pickTarget(state.moonInfo, lt.dataset.target);
     const r = e.target.closest('[data-planned]'); if (r) showPlanned(r.dataset.planned);
   });
   updateMoon(true);
@@ -1136,19 +1196,30 @@ function initMoon() {
 let moonResume = null;
 const baseLabelOf = id => BASES.find(b => b.id === id)?.label ?? id;
 
-// Markers, ring and camera. The south pole is seen from below, so its marker stays in view while the Moon turns.
+// Markers, ring and camera. The open base shows one marker per lunar target, the other base one marker.
+// Polar: the camera looks from 78°S (at the picked target's longitude), so the pole sits near the middle and stays
+// in view while the Moon turns.
 function updateMoon(fly) {
   const m = state.moon;
   const b = moonBase(state.moonInfo);
+  const sel = b ? moonTargetOf(b.id) : null;
   renderMoonButtons();
   if (!m) return;
-  m.labelsData(MOON_BASES.map(x => ({ ...x })));
-  m.ringsData(b ? [{ lat: b.lat, lng: b.lng }] : []);
+  const markers = MOON_BASES.flatMap(x => {
+    const ts = x.id === state.moonInfo ? lunarTargets(x.id).filter(t => t.lat != null) : [];
+    if (!ts.length) return [{ ...x, sel: x.id === state.moonInfo }];
+    return ts.map(t => ({ ...x, name: t.label, target: t.name, lat: t.lat, lng: t.lng, sel: t.name === sel?.name, crowded: x.id === 'polar' }));
+  });
+  m.labelsData(markers);
+  const at = markers.find(x => x.sel);
+  m.ringsData(at ? [{ lat: at.lat, lng: at.lng, r: at.crowded ? 3 : 6 }] : []);
   if (b && fly) {
     m.controls().autoRotate = false;
     clearTimeout(moonResume);
     moonResume = setTimeout(() => { m.controls().autoRotate = true; }, 5000);
-    m.pointOfView({ lat: Math.max(-70, Math.min(70, b.lat)), lng: b.lng, altitude: 1.25 }, 1200);
+    const p = at ?? b;
+    m.pointOfView(b.id === 'polar' ? { lat: -78, lng: p.lng, altitude: 1.25 }
+      : { lat: Math.max(-70, Math.min(70, p.lat)), lng: p.lng, altitude: 1.25 }, 1200);
   }
 }
 
@@ -1166,6 +1237,10 @@ function renderMoonInfo() {
   if (!b) { el.innerHTML = '<p class="hint">Click a base on the Moon to find its Earth twins.</p>'; return; }
   const crit = state.crit[b.id];
   const row = (label, value, note, fact) => `<li class="${fact ? 'is-fact' : note ? 'has-note' : ''}"><span>${esc(label)}</span><b>${esc(value)}</b>${note ? `<em>${esc(note)}</em>` : ''}</li>`;
+  const targets = lunarTargets(b.id), sel = moonTargetOf(b.id);
+  const picker = targets.length > 1 ? `<p class="moon-sub">Lunar targets (${targets.length}): Earth places are scored against each</p>
+    <div class="moon-twins moon-targets">${targets.map(t => `<button type="button" class="moon-twin" data-target="${esc(t.name)}" aria-pressed="${t.name === sel?.name}"><span>${esc(t.label)}</span>${t.builtin ? '<i>ranking uses this one</i>' : ''}</button>`).join('')}</div>` : '';
+  if (sel && !sel.builtin) { el.innerHTML = picker + moonTargetHTML(b, sel, crit, row); return; }
   const val = c => fmtVal(crit[c.key].moon, crit[c.key].earthUnit || crit[c.key].unit);
   // Target values: from outputs/targets.json once the pipeline exports this base, else the team's values above.
   const rows = crit ? CRITERIA.filter(c => crit[c.key]?.counts && crit[c.key].moon != null && !crit[c.key].kind).map(c => row(c.label, val(c))).join('')
@@ -1175,7 +1250,7 @@ function renderMoonInfo() {
     ...(crit ? CRITERIA.filter(c => crit[c.key]?.fact && crit[c.key].moon != null).map(c => (shownFacts.add(c.label), row(c.label, val(c), 'no Earth analog possible', true))) : []),
     ...(b.facts ?? []).filter(f => !shownFacts.has(f.label)).map(f => row(f.label, f.value, `${f.note}. No Earth analog possible.`, true)),
   ].join('');
-  el.innerHTML = `
+  el.innerHTML = picker + `
     <p class="moon-title"><b>${esc(b.title)}</b> · ${esc(b.name)} (${esc(b.place)}), ${esc(fmtLatLng(b.lat, b.lng))}</p>
     ${b.subtitle ? `<p class="moon-facts">${esc(b.subtitle)}</p>` : ''}
     <p class="moon-why">${esc(b.why)}</p>
@@ -1187,6 +1262,32 @@ function renderMoonInfo() {
   // Show the figure link only if the figure is in the repo (the mare map arrives with Mateo's branch).
   const link = el.querySelector('.moon-fig');
   if (b.figure) fetch(b.figure, { method: 'HEAD' }).then(r => { if (r.ok && state.moonInfo === b.id) link.hidden = false; }).catch(() => {});
+}
+
+// One extra lunar target (not today's): same values table, from targets.json → lunar_targets[].criteria
+// (keyed by criterion id, mapped to the scores.csv column through targets[base].criteria).
+function moonTargetHTML(b, t, crit, row) {
+  const colOf = Object.fromEntries((state.targets[b.id]?.criteria ?? []).map(c => [c.column, c.criterion]));
+  const rows = crit ? CRITERIA.filter(c => crit[c.key]?.counts && !crit[c.key].kind && t.criteria[colOf[c.key]]?.value != null)
+    .map(c => row(c.label, fmtVal(t.criteria[colOf[c.key]].value, crit[c.key].earthUnit || crit[c.key].unit))).join('') : '';
+  const why = b.id === 'polar'
+    ? 'A small crater inside an Artemis III candidate landing region (NASA lists of 2022 and 2024), found by our bowl detector with the same code as on Earth. It is not the feature the region was picked for (sunlit ridges and peaks).'
+    : `${t.n ?? 'Some'} of the 20 mare sample areas, the ones in this mare (SLDEM2015, same cells as the 20-cell median). With so few areas the spread, and so the tolerance, is a rough estimate.`;
+  const twins = b.id === state.base && t.column ? visibleSites().filter(x => x.sim != null && x[t.column] != null)
+    .sort((x, z) => z[t.column] - x[t.column]).slice(0, 3) : [];
+  const where = t.lat != null ? `, ${fmtLatLng(+t.lat.toFixed(2), +t.lng.toFixed(2))}${t.where ? ` (${t.where})` : ''}` : '';
+  const html = `
+    <p class="moon-title"><b>${esc(b.title)}</b> · ${esc(t.label)}${esc(where)}</p>
+    <p class="moon-why">${esc(why)}</p>
+    ${rows ? `<p class="moon-sub">Target values (what Earth sites are compared with)</p><ul class="moon-vals">${rows}</ul>` : ''}
+    ${twins.length ? `<p class="moon-sub">Closest Earth twins to this target</p><div class="moon-twins">${twins.map((x, i) => `<button type="button" class="moon-twin" data-twin="${esc(x.SITE)}"><span class="rank ${x.type === 'known' ? 'known' : 'new'}">${i + 1}</span><span>${esc(nameOf(x))}</span><b>${pct(x[t.column])}</b></button>`).join('')}</div>
+      <p class="nodata">The ranking and the main score use ${esc(lunarTargets(b.id).find(x => x.builtin)?.label ?? 'today’s target')}.</p>` : ''}
+    ${t.preview ? `<a class="moon-fig" href="../${esc(t.preview)}" target="_blank" rel="noopener" hidden>See the target preview figure</a>` : ''}`;
+  if (t.preview) setTimeout(() => {
+    const link = document.querySelector('#moonInfo .moon-fig');
+    fetch(`../${t.preview}`, { method: 'HEAD' }).then(r => { if (r.ok && link && state.moonTarget === t.name) link.hidden = false; }).catch(() => {});
+  });
+  return html;
 }
 
 /* ---------- 3D terrain: MapLibre GL with free tiles (no account, no key) ---------- */
