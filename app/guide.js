@@ -160,7 +160,9 @@ function guideBodyHTML() {
       </div>`;
   }
   if (guide.tab === 'words') {
-    const crit = [...baseCriteria(), ...groundCriteria()].filter(c => GUIDE_WORDS[c.key]);
+    // A to Z, criteria first, then the other words (team request).
+    const az = (a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' });
+    const crit = [...baseCriteria(), ...groundCriteria()].filter(c => GUIDE_WORDS[c.key]).sort((a, b) => az(a.label, b.label));
     const item = (title, text, extra = '') => `<details class="guide-word"><summary>${esc(title)}</summary><p>${esc(text)}</p>${extra}</details>`;
     return `<p class="guide-note">Criteria for the ${esc(baseLabel().toLowerCase())} base, then a few words from the app.</p>
       ${crit.map(c => {
@@ -168,7 +170,7 @@ function guideBodyHTML() {
         const moon = m?.moon != null && !m.kind ? `<p class="guide-note">Moon (${esc(moonBase(state.base)?.name ?? 'target')}): ${esc(fmtVal(m.moon, m.earthUnit))} · ${m.counts ? 'counts in the score' : 'shown, not scored'}</p>` : '';
         return item(c.label, GUIDE_WORDS[c.key], moon);
       }).join('')}
-      ${GUIDE_TERMS.map(([t, d]) => item(t, d)).join('')}`;
+      ${[...GUIDE_TERMS].sort((a, b) => az(a[0], b[0])).map(([t, d]) => item(t, d)).join('')}`;
   }
   const qa = guide.answer != null ? GUIDE_QUESTIONS[guide.answer] : null;
   return qa ? `<p class="guide-step">${esc(qa.q)}</p>${qa.a()}

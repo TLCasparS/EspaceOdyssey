@@ -731,6 +731,8 @@ function radarSVG(site, axes) {
 
 // "Steep walls 23.9° vs 27.2°" (pipeline, raw values with units) or "0.62 vs 0.80" (sample).
 const chipTitle = d => `${d.hint} · ${pct(d.sim)} match${meta(d.key)?.limitation ? ' · Moon: Sun disc · Earth: Sun centre' : ''}`;
+// Card chips: hovering or focusing one shows its definition (defs.js) and this match line.
+const chipAttrs = d => `data-def="${esc(d.key)}" data-match="${esc(`${pct(d.sim)} match with the Moon${meta(d.key)?.limitation ? ' · Moon: Sun disc · Earth: Sun centre' : ''}`)}" tabindex="0"`;
 // Short version of targets.json "limitation" for the light criteria (text agreed with Caspar).
 const LIGHT_NOTE = 'Light on the Moon is measured as the visible part of the Sun’s disc (NASA PGDA illumination map); on Earth as the Sun’s centre above the horizon. On flat ground at the pole both agree; on crater rims and floors they can differ a little.';
 const vsText = d => {
@@ -854,20 +856,20 @@ function renderCard() {
     <div class="card-col card-col-b">
     ${unscored ? '' : `<div>
       <h3>Closest to the Moon on</h3>
-      <div class="chips">${strengths.length ? strengths.map(d => `<span class="chip good" title="${esc(chipTitle(d))}"><b>${esc(d.label)}</b> ${esc(vsText(d))}</span>`).join('') : '<span class="chip">Nothing above 50 % yet</span>'}</div>
+      <div class="chips">${strengths.length ? strengths.map(d => `<span class="chip good" ${chipAttrs(d)}><b>${esc(d.label)}</b> ${esc(vsText(d))}</span>`).join('') : '<span class="chip">Nothing above 50 % yet</span>'}</div>
     </div>
 
     <div>
       <h3>What it lacks</h3>
-      <div class="chips">${gaps.length ? gaps.map(d => `<span class="chip gap" title="${esc(chipTitle(d))}"><b>${esc(d.label)}</b> ${d.signed == null ? '' : d.signed < 0 ? 'too little ' : 'too much '}(${esc(vsText(d))})</span>`).join('') : '<span class="chip">No big gaps</span>'}</div>
+      <div class="chips">${gaps.length ? gaps.map(d => `<span class="chip gap" ${chipAttrs(d)}><b>${esc(d.label)}</b> ${d.signed == null ? '' : d.signed < 0 ? 'too little ' : 'too much '}(${esc(vsText(d))})</span>`).join('') : '<span class="chip">No big gaps</span>'}</div>
     </div>
 
     ${shownOnly.length ? `<div>
       <h3>Also compared, not in the score</h3>
-      <div class="chips">${shownOnly.map(d => `<span class="chip" title="${esc(chipTitle(d))}"><b>${esc(d.label)}</b> ${esc(vsText(d))}</span>`).join('')}</div>
+      <div class="chips">${shownOnly.map(d => `<span class="chip" ${chipAttrs(d)}><b>${esc(d.label)}</b> ${esc(vsText(d))}</span>`).join('')}</div>
       ${facts.map(f => `<p class="nodata" title="${esc(f.text)}"><b>${esc(f.label)}: no place on Earth can match.</b> ${esc(f.short)}</p>`).join('')}
     </div>` : ''}
-    ${isPipeline() ? '<p class="nodata">Earth value vs Moon value. Hover a chip for its match.</p>' : ''}`}
+    ${isPipeline() ? '<p class="nodata">Earth value vs Moon value. Hover a chip for what it means and how well it matches.</p>' : ''}`}
 
     <div class="note-box">
       <h3>${missed ? 'Why our method missed it' : 'Where the analogy breaks down'}</h3>
@@ -921,6 +923,44 @@ function fakeHeatPoints() {
 }
 
 let resumeTimer = null;
+// Hit-area columns catch the mouse but are never drawn. globe.gl hides a fully transparent shape (and then the
+// mouse can't find it), so they get a tiny alpha, and before each frame their materials are told to write
+// neither colour nor depth: no faint discs, no holes in the heatmap behind them.
+const HIT_COLOR = 'rgba(0,0,0,0.01)';
+function ghostHitAreas(globe) {
+  const scene = globe.scene(), before = scene.onBeforeRender;
+  let layer = null;
+  scene.onBeforeRender = (...args) => {
+    before?.apply(scene, args);
+    if (!layer) scene.traverse(o => { if (!layer && o.__globeObjType === 'point') layer = o.parent; });
+    layer?.children.forEach(o => {
+      const m = o.material;
+      if (m && (m.colorWrite || m.depthWrite)) { m.colorWrite = false; m.depthWrite = false; }
+    });
+  };
+}
+// Hit-area radius: about HIT_PX on screen at the current zoom, but at most half the way to the nearest other
+// marker, so the closest dot always wins; never smaller than the dot itself.
+const HIT_PX = 12;
+function degPerPx(g) {   // at the centre of the view
+  const pv = g.pointOfView(), lat = Math.max(-80, Math.min(80, pv.lat));
+  const a = g.getScreenCoords(lat, pv.lng, 0), b = g.getScreenCoords(lat + 1, pv.lng, 0);
+  const px = a && b ? Math.hypot(b.x - a.x, b.y - a.y) : 0;
+  return px ? 1 / px : null;
+}
+const arcDeg = (a, b) => {
+  const r = Math.PI / 180;
+  const c = Math.sin(a.lat * r) * Math.sin(b.lat * r) + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.cos((a.lng - b.lng) * r);
+  return Math.acos(Math.min(1, Math.max(-1, c))) / r;
+};
+function setHitRadii(g, items, dotDeg, maxDeg) {
+  const want = Math.min(maxDeg, (degPerPx(g) ?? 0.3) * HIT_PX);
+  items.forEach(a => {
+    const near = items.reduce((m, b) => (b === a ? m : Math.min(m, arcDeg(a, b))), Infinity);
+    a.hitR = Math.max(dotDeg(a), Math.min(want, near / 2));
+  });
+  return items;
+}
 function initGlobe() {
   const el = document.getElementById('globe');
   if (!hasWebGL() || typeof Globe !== 'function') { document.getElementById('globeError').hidden = false; return; }
@@ -960,6 +1000,19 @@ function initGlobe() {
     .labelAltitude(() => 0.07 * labelScale)
     .labelResolution(2)
     .onLabelClick(d => select(d.SITE, true))
+    // Invisible hit areas: a wider column under each label, so a dot is easy to hover and click (team comment).
+    .pointLat('lat')
+    .pointLng('lng')
+    // Just under the labels, so a click right on a name still hits the label; ~4× the dot's radius around it.
+    .pointAltitude(() => 0.065 * labelScale)
+    .pointRadius('hitR')
+    .pointColor(() => HIT_COLOR)
+    .pointResolution(10)
+    .pointsMerge(false)
+    .pointsTransitionDuration(0)
+    .pointLabel(d => `${esc(nameOf(d))}${d.sim == null ? '' : ` · ${pct(d.sim)} like the Moon`}`)
+    .onPointClick(d => { el.style.cursor = ''; select(d.SITE, true); })
+    .onPointHover(d => { el.style.cursor = d ? 'pointer' : ''; })
     // Outlines of every region the pipeline searched (from cells.json); dashed Moon-cream: searched next (Mare).
     .pathPoints('points')
     .pathPointLat(p => p[0])
@@ -986,6 +1039,7 @@ function initGlobe() {
   controls.addEventListener('end', () => pauseRotation(4000));
   controls.addEventListener('change', onGlobeZoom);
   g.pointOfView({ lat: 35, lng: 10, altitude: 2.3 });
+  ghostHitAreas(g);
   state.globe = g;
   setEarthPaths();
 
@@ -1089,6 +1143,7 @@ function updateGlobe(fly) {
     || state.twinFlash?.includes(x.SITE));
   declutterLabels(onGlobe);
   g.labelsData(onGlobe.map(x => ({ ...x })));   // new objects so globe.gl redraws sizes and texts
+  g.pointsData(setHitRadii(g, onGlobe.map(x => ({ ...x })), d => (d.SITE === state.selected ? 0.7 : 0.45) * labelScale, 4));   // invisible hit areas
   g.ringsData([...(s ? [{ lat: s.lat, lng: s.lng }] : []),
     ...shown.filter(x => state.twinFlash?.includes(x.SITE) && x.SITE !== state.selected).map(x => ({ lat: x.lat, lng: x.lng, twin: true })),
     ...(state.moonInfo && !state.targets[state.moonInfo] ? PLANNED_REGIONS.map(r => ({ lat: (r.bbox[1] + r.bbox[3]) / 2, lng: (r.bbox[0] + r.bbox[2]) / 2, planned: true })) : [])]);
@@ -1170,6 +1225,18 @@ function initMoon() {
     .labelResolution(3)
     .labelLabel(b => `${esc(b.title)} · ${esc(b.name)}${moonReady(b.id) ? '' : ' (Earth twins coming)'}`)
     .onLabelClick(b => (b.target ? pickTarget(b.id, b.target) : setBase(b.id, true)))
+    // Invisible hit areas, wider than the dots (team comment); same hover text and click as the labels.
+    .pointLat('lat')
+    .pointLng('lng')
+    .pointAltitude(0.012)
+    .pointRadius('hitR')
+    .pointColor(() => HIT_COLOR)
+    .pointResolution(12)
+    .pointsMerge(false)
+    .pointsTransitionDuration(0)
+    .pointLabel(b => `${esc(b.title)} · ${esc(b.name)}${moonReady(b.id) ? '' : ' (Earth twins coming)'}`)
+    .onPointClick(b => (b.target ? pickTarget(b.id, b.target) : setBase(b.id, true)))
+    .onPointHover(b => { el.style.cursor = b ? 'pointer' : ''; })
     .ringColor(() => t => `rgba(255,255,255,${1 - t})`)
     .ringMaxRadius(d => d.r ?? 6)
     .ringPropagationSpeed(3)
@@ -1182,6 +1249,7 @@ function initMoon() {
   const fit = () => m.width(el.clientWidth).height(el.clientHeight);
   new ResizeObserver(fit).observe(el);
   fit();
+  ghostHitAreas(m);
   state.moon = m;
   document.getElementById('moonBases').addEventListener('click', e => {
     const b = e.target.closest('[data-moon]'); if (b) setBase(b.dataset.moon, true);
@@ -1211,6 +1279,7 @@ function updateMoon(fly) {
     return ts.map(t => ({ ...x, name: t.label, target: t.name, lat: t.lat, lng: t.lng, sel: t.name === sel?.name, crowded: x.id === 'polar' }));
   });
   m.labelsData(markers);
+  m.pointsData(setHitRadii(m, markers.map(x => ({ ...x })), b => (b.crowded ? (b.sel ? 0.9 : 0.7) : b.sel ? 1.6 : 1.2), 6));
   const at = markers.find(x => x.sel);
   m.ringsData(at ? [{ lat: at.lat, lng: at.lng, r: at.crowded ? 3 : 6 }] : []);
   if (b && fly) {
