@@ -1124,7 +1124,7 @@ function initGlobe() {
   controls.addEventListener('start', () => pauseRotation(0));
   controls.addEventListener('end', () => pauseRotation(4000));
   controls.addEventListener('change', onGlobeZoom);
-  g.pointOfView({ lat: 35, lng: 10, altitude: 2.3 });
+  g.pointOfView({ lat: 35, lng: 10, altitude: innerWidth > 1180 ? 2.0 : 2.3 });   // wide screens: the Earth is the stage
   ghostHitAreas(g);
   state.globe = g;
   setEarthPaths();

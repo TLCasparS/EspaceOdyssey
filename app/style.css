@@ -478,3 +478,45 @@ a { color: var(--earth); }
 .mare-note { border-color: var(--border); }
 .basalt-only { display: inline-flex; align-items: center; gap: 6px; margin-left: 4px; color: var(--text); white-space: nowrap; cursor: pointer; }
 .site-meta .tag-basalt { margin-left: 0; }
+
+/* ---------- Earth stage (wide screens) ----------
+   The Earth fills the whole width as the main stage; the twins list floats on the left and the Moon on the top
+   right, as see-through panels over it. The card follows below. Narrower screens keep the stacked layout. */
+@media (min-width: 1181px) {
+  .layout { grid-template-columns: 330px minmax(0, 1fr) 340px; grid-template-rows: clamp(640px, calc(100vh - 140px), 940px) auto;
+    grid-template-areas: none; gap: 20px; padding: 0 0 20px; }
+  .globe-wrap { grid-column: 1 / -1; grid-row: 1; border: 0; border-radius: 0;
+    background: radial-gradient(ellipse 60% 70% at 50% 50%, #0B2233 0%, #04101A 60%, #030A12 100%); }
+  .list-panel, .moon-wrap { z-index: 4; background: rgba(12,30,44,.72); border-color: rgba(36,70,94,.7);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+  .list-panel { grid-column: 1; grid-row: 1; position: relative; top: auto; align-self: stretch; margin: 24px 0 24px 24px;
+    max-height: none; min-height: 0; }
+  .moon-wrap { grid-column: 3; grid-row: 1; align-self: start; margin: 24px 24px 0 0; max-height: calc(100% - 48px); min-height: 0; }
+  .moon-globe-box { flex: none; height: 230px; background: transparent; }
+  .moon-info { max-height: none; flex: 1 1 auto; min-height: 0; }
+  .card-panel { grid-column: 1 / -1; grid-row: 2; margin: 0 24px; }
+  /* Tools in the middle at the top; legend and 3D caption clear of the side panels. */
+  .view-tools { top: 24px; left: 50%; transform: translateX(-50%); justify-content: center; width: max-content; max-width: calc(100% - 760px); }
+  /* Legend: one slim bar at the bottom centre (the Guide button sits at the bottom right). */
+  .globe-legend { left: 50%; right: auto; bottom: 20px; transform: translateX(-50%); width: max-content; max-width: calc(100% - 760px);
+    flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 18px; padding: 8px 16px;
+    background: rgba(12,30,44,.72); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+  .globe-legend .legend-bar { flex: none; width: 110px; }
+  .globe-legend .legend-note { flex-basis: 100%; text-align: center; }
+  .terrain-caption { left: 50%; transform: translateX(-50%); bottom: 24px; max-width: calc(100% - 760px); }
+  .globe-wrap .maplibregl-ctrl-top-right { top: 12px; right: 380px; }
+}
+
+/* ---------- Cleaner look ----------
+   Calmer top bars and a flatter twins list (rows instead of boxes). */
+.topbar { background: transparent; border-bottom: 1px solid rgba(36,70,94,.5); }
+.filters { background: transparent; border-bottom: 0; }
+.site-list { gap: 2px; }
+.site-btn { background: transparent; border: 1px solid transparent; padding: 9px 10px; }
+.site-btn:hover { background: rgba(18,41,59,.7); border-color: transparent; }
+.site-btn[aria-current="true"] { background: var(--panel-2); border-color: rgba(108,180,238,.6); }
+.bar { height: 4px; }
+.bar > span { background: var(--signal); }
+/* Legend scale: "few, weak [colour bar] many, strong" on one line */
+.legend-scale { align-items: center; gap: 8px; }
+.legend-scale .legend-bar { flex: 1; min-width: 60px; }
