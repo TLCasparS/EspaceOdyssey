@@ -16,6 +16,7 @@ from pptx.util import Inches, Pt
 
 HERE = Path(__file__).resolve().parent
 IMG = HERE / "img"
+PRODUCT = "Moon Twins on Earth"          # product name: change here only (title, file name, document title)
 APP_URL = "tlcaspars.github.io/EspaceOdyssey/app/"
 
 # app/style.css :root
@@ -159,8 +160,9 @@ def notes(s, who, words):
 s = new_slide(BLACK)
 pic(s, IMG / "earthrise_16x9.jpg", 0, 0, w=13.333)
 label(s, 0.7, 0.6, "Team EspaceOdyssey", color=MUTED)
-text(s, 0.7, 0.95, 5.8, 2.3, [[("Moon Twins", {"font": TITLE_FONT, "bold": True})],
-                              [("on Earth", {"font": TITLE_FONT, "bold": True})]], size=66, gap=0)
+_w = PRODUCT.split()
+text(s, 0.7, 0.95, 5.8, 2.3, [[(" ".join(_w[:2]), {"font": TITLE_FONT, "bold": True})],
+                              [(" ".join(_w[2:]), {"font": TITLE_FONT, "bold": True})]], size=66, gap=0)
 text(s, 0.7, 3.3, 6.2, 0.5, "Where on Earth can we rehearse a lunar base?", size=22, color=MUTED)
 text(s, 0.7, 4.1, 6.2, 1.3, [[("Caspar Schlageter · Sofi Sosa · Mateo Pozo", {"bold": True, "color": ACCENT})],
                              "NASA Space Apps Challenge 2026"], size=18)
@@ -213,7 +215,7 @@ text(s, 5.15, 2.45, 3.0, 1.5, [[("Same code", {"font": TITLE_FONT, "bold": True,
 text(s, 4.95, 4.25, 3.4, 1.2, [[("Score per criterion", {"bold": True})],
                                [("1 = same as the Moon", {"color": MUTED})]], size=17, align=PP_ALIGN.CENTER, gap=0.2)
 caption(s, "Moon: NASA LOLA LDEM_80S_20MPP_ADJ, PGDA illumination map, SLDEM2015. Earth: Copernicus DEM GLO-30, "
-           "ESA WorldCover 2021. Globes: NASA Blue Marble and CGI Moon Kit (LRO). Dots: Tian Shan, Shackleton.")
+           "ESA WorldCover 2021. Globes: NASA Blue Marble and CGI Moon Kit (LRO). Dots: demo place (Tibesti), Shackleton.")
 notes(s, "Speaker A (Caspar) · ~25 s",
       "On the Moon: Shackleton crater at the south pole and two craters in Artemis III regions, from NASA's LOLA "
       "and PGDA data, plus mare plains from SLDEM2015. On Earth: the Copernicus elevation model and ESA "
@@ -225,46 +227,53 @@ s = new_slide()
 title(s, "The search", "~265,000 places searched in one night")
 framed(s, IMG / "funnel.png", 0.72, 1.85, w=6.9, h_img=6.9 * 600 / 841)
 X = 8.35
-for i, (big, small, col) in enumerate((("~265,000", "cells of 15 km searched", TEXT),
-                                       ("1,825", "crater-like places scored", MOON),
+for i, (big, small, col) in enumerate((("1,825", "crater-like places (closed depressions) scored", MOON),
                                        ("1,261", "Polar places ranked", SIGNAL))):
-    text(s, X, 1.75 + i * 1.2, 4.4, 1.15, [[(big, {"font": TITLE_FONT, "size": 48, "bold": True, "color": col})],
-                                           [(small, {"size": 16, "color": MUTED})]], gap=0)
-box(s, X, 5.45, 4.35, 1.4, fill=PANEL2, line=WARN, weight=1.75)
-text(s, X + 0.25, 5.57, 3.9, 1.2, [[("111 open-pit mines", {"font": TITLE_FONT, "bold": True, "color": WARN,
-                                                            "size": 26})],
-                                   "found and filtered out, e.g. Chuquicamata and Escondida (Chile)"], size=15, gap=0.15)
-caption(s, "Funnel: screenshot of our app. Mine filter: Maus et al. 2022 mining polygons. "
-           "Cell size ≈ an Artemis III candidate region (NASA, 2022).")
-notes(s, "Speaker A (Caspar) · ~22 s",
-      "In one night we searched about 265,000 cells, each the size of an Artemis III landing region. 1,825 "
-      "crater-like places were scored. The finder was so good it found 111 open-pit mines, like Chuquicamata. "
-      "We filtered them out: 1,261 places remain. Sofi will show you.")
+    text(s, X, 1.7 + i * 1.5, 4.4, 1.4, [[(big, {"font": TITLE_FONT, "size": 44, "bold": True, "color": col})],
+                                         [(small, {"size": 16, "color": MUTED})]], gap=0)
+box(s, X, 4.45, 4.35, 1.1, fill=PANEL2, line=WARN, weight=1.75)
+text(s, X + 0.25, 4.52, 3.9, 1.0, [[("111 open-pit mines", {"font": TITLE_FONT, "bold": True, "color": WARN,
+                                                           "size": 24})],
+                                  "found and filtered out, e.g. Chuquicamata and Escondida"], size=14.5, gap=0.1)
+box(s, X, 5.7, 4.35, 1.15, fill=PANEL2, line=SIGNAL, weight=1.75)
+text(s, X + 0.25, 5.8, 3.9, 1.0, [[("Known impact craters", {"font": TITLE_FONT, "bold": True, "color": SIGNAL,
+                                                             "size": 24})],
+                                  "flagged, incl. Pingualuit in the world search"], size=14.5, gap=0.1)
+caption(s, "Funnel: screenshot of our app. Mine filter: Maus et al. 2022 mining polygons. Impact flag: list of 88 "
+           "confirmed structures. Cell size ≈ an Artemis III candidate region (NASA, 2022).")
+notes(s, "Speaker A (Caspar) · ~26 s",
+      "In one night we searched about 265,000 cells, each the size of an Artemis III landing region. 1,825 crater-like places, closed depressions, were scored. It even found 111 open-pit mines; we filtered them out, and 1,261 places remain. It also flags known impact craters, including Pingualuit in the world search. Sofi will show you.")
 
 # ---------- 5. Live demo ----------
 s = new_slide()
-title(s, "Live demo", "Let's explore the Moon twins")
+title(s, "Live demo", "One place, one datasheet: Tibesti, Chad")
 W5 = 8.0
-framed(s, IMG / "app_map.png", 0.72, 1.9, w=W5, h_img=W5 * 1080 / 1920)
+H5 = W5 * 1080 / 1920
+pad = 0.12
+box(s, 0.72 - pad, 1.9 - pad, W5 + 2 * pad, H5 + 2 * pad, fill=PANEL, radius=0.03)
+s.shapes.add_movie(str(IMG / "demo.mp4"), Inches(0.72), Inches(1.9), Inches(W5), Inches(H5),
+                   poster_frame_image=str(IMG / "demo_poster.jpg"), mime_type="video/mp4")
 X = 9.25
 steps = [
-    ("1", "Tian Shan, China", "#1 · 60 % similar · closest lunar twin: Shackleton", ACCENT),
-    ("2", "Where it breaks", "the card lists what the place lacks", ACCENT),
-    ("10", "Meteor Crater, USA", "known reference · 46 % similar", MOON),
+    ("1", "Fly into 3D", "the teal ring is the bowl we scored"),
+    ("2", "Radar fingerprint", "every criterion against Shackleton, the outer ring"),
+    ("3", "Closest lunar twin", "Shackleton, 48 %, and what the place lacks: the light"),
 ]
-for i, (n_, head, sub, col) in enumerate(steps):
+for i, (n_, head, sub) in enumerate(steps):
     y = 1.95 + i * 1.5
-    num(s, n_, X, y, d=0.55, fill=col, size=17 if len(n_) > 1 else 19)
+    num(s, n_, X, y, d=0.55, fill=ACCENT, size=19)
     text(s, X + 0.75, y - 0.02, 3.0, 1.4, [[(head, {"font": TITLE_FONT, "bold": True, "size": 24})],
                                           [(sub, {"size": 14.5, "color": MUTED})]], gap=0.1)
-caption(s, f"Live: {APP_URL} · backup: screenshot of the same view", y=6.75)
-notes(s, "Speaker B (Sofi) · LIVE DEMO · ~50 s (browser open on the app, already scrolled past the Earthrise screen)",
-      "This is our app, live. Every dot on the globe is a ranked crater. "
-      "[Click #1 in the list] Number one: a bowl in the Tian Shan mountains in China. 60 percent similar, and its "
-      "closest lunar twin is Shackleton itself. Its walls are as steep as Shackleton's. "
-      "[Scroll the card to 'What it lacks'] The card also says honestly where the analogy breaks. "
-      "[Click Meteor Crater, #10] Meteor Crater, a known training site we used for tuning, ranks tenth. "
-      "[Back to the slides]")
+caption(s, f"Live: {APP_URL} · video: recorded from the live app, the fallback if the demo fails", y=6.75)
+notes(s, "Speaker B (Sofi) · LIVE DEMO · ~50 s (browser open on the app, scrolled past the Earthrise screen, "
+         "globe loaded). Fallback: click the video on this slide and say the same words.",
+      "This is our app, live. Every dot is a crater-like place, a closed depression we ranked. "
+      "[Click '54 km SW of Bardaï' in the Earth twins list] Let's fly to the Tibesti mountains in Chad. "
+      "[Wait until the 3D terrain and the teal ring appear] Here it is in 3D. The teal ring is the bowl we scored. "
+      "[Scroll down to the datasheet] Its datasheet. The radar compares every criterion with Shackleton, the outer "
+      "ring. Steep walls and the flat base spot match well. Its closest lunar twin is Shackleton, at 48 percent. "
+      "And it says honestly what it lacks: the light. "
+      "[Scroll back up, then back to the slides]")
 
 # ---------- 6. What we learned ----------
 s = new_slide()
@@ -274,19 +283,22 @@ X = 7.55
 items = [
     ("Shape twins are not light twins", "No place scores high on both", SIGNAL),
     ("Earth has no grazing Sun", "Shackleton floor: always in shadow · typical Earth floor: 16.5 %", ACCENT),
-    ("Mare: flat ground is common", "Basalt and small-crater texture are rare", WARN),
 ]
 for i, (head, sub, col) in enumerate(items):
-    y = 1.9 + i * 1.6
-    num(s, i + 1, X, y + 0.04, d=0.55, fill=col)
-    text(s, X + 0.8, y, 4.4, 1.5, [[(head, {"font": TITLE_FONT, "bold": True, "size": 25})],
-                                   [(sub, {"size": 16, "color": MUTED})]], gap=0.15)
-caption(s, "Scatter: 1,261 ranked Polar places, screenshot of our app. Mare: 392 of 500 places have no small "
-           "craters (Moon: all 20 cells have some); 0 of 500 are basalt at the site (Macrostrat).")
+    y = 1.95 + i * 1.75
+    num(s, i + 1, X, y + 0.04, d=0.6, fill=col, size=20)
+    text(s, X + 0.85, y, 4.35, 1.6, [[(head, {"font": TITLE_FONT, "bold": True, "size": 28})],
+                                     [(sub, {"size": 17, "color": MUTED})]], gap=0.15)
+box(s, X, 5.6, 5.2, 0.95, fill=PANEL, radius=0.1)
+text(s, X + 0.25, 5.6, 4.8, 0.95, [[("Mare: ", {"bold": True, "color": WARN}),
+                                    ("flat plains are common; only 1 of 500 reaches the Moon's small-crater density",
+                                     {})]], size=15, anchor=MSO_ANCHOR.MIDDLE)
+caption(s, "Scatter: 1,261 ranked Polar places, screenshot of our app. Small-crater density: 500 Earth Mare places "
+           "vs the median of 20 lunar mare cells.")
 notes(s, "Speaker B (Sofi) · ~25 s",
-      "Three lessons. Shape twins are not light twins: no place scores high on both. Earth has no grazing Sun: "
-      "Shackleton's floor is always in shadow, a typical Earth crater floor only 16.5 percent of the time. And for "
-      "mare plains, flat ground is common, but basalt and small craters are rare.")
+      "Shape twins are not light twins: no place scores high on both. And Earth has no grazing Sun: "
+      "Shackleton's floor is always in shadow, a typical Earth crater floor only 16.5 percent of the time. "
+      "For mare plains, flat ground is common, but only 1 of 500 places reaches the Moon's small-crater density.")
 
 # ---------- 7. Limits + explore it yourself ----------
 s = new_slide()
@@ -312,6 +324,8 @@ notes(s, "Speaker B (Sofi) · ~14 s",
       "We also show what we miss: Haughton is eroded, Askja's lake hides its depth, Lanzarote is mostly sea and "
       "villages. Scan the code and explore it on your own phone. Thank you!")
 
-out = HERE / "Moon_Twins_on_Earth.pptx"
+prs.core_properties.title = PRODUCT
+prs.core_properties.author = "Team EspaceOdyssey"
+out = HERE / f"{PRODUCT.replace(' ', '_')}.pptx"
 prs.save(out)
 print("saved", out)

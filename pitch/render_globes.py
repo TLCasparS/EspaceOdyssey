@@ -70,8 +70,9 @@ def globe(texture, lat0, lon0, marker, marker_rgb, glow_rgb, name):
     print("saved", name, canvas.size, "marker at", None if not pos else (round(pos[0], 3), round(pos[1], 3)))
 
 
-# Earth centred so Asia (Tian Shan, rank 1) is in view; gold marker = Tian Shan (42.572 N, 82.391 E, outputs/scores.csv)
-globe(ROOT / "app/assets/blue-marble-2004-07-4096.jpg", 25, 65, (42.572, 82.391), (240, 200, 93), (108, 180, 238),
+# Earth centred on Africa; gold marker = the live-demo place, 54 km SW of Bardaï, Tibesti, Chad
+# (low point 21.02585 N, 16.61421 E, outputs/scores.csv)
+globe(ROOT / "app/assets/blue-marble-2004-07-4096.jpg", 18, 22, (21.02585, 16.61421), (240, 200, 93), (108, 180, 238),
       "globe_earth.png")
 # Moon seen from below the south pole region; teal marker = Shackleton floor low point (89.625 S, 118.8 E, app/app.js)
 globe(ROOT / "app/assets/lroc-moon-color-4096.jpg", -55, 100, (-89.625, 118.8), (60, 200, 180), (232, 227, 211),
