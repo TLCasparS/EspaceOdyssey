@@ -22,6 +22,7 @@ const DATA = USE_SAMPLE ? {
   cells: OUT + 'cells.json',    // every searched cell, with status (ranked / no_bowl / filtered)
   info: 'sample/site_info.json',     // Sofia's research notes per site (export_app.py reads it too)
   coords: 'sample/scores.csv',       // only SITE,LAT,LON: puts sites the pipeline hasn't scored yet on the map
+  access: '../data/access/access_hours.csv', // Mateo's c26: travel time to a city + nearest airport (display only)
   isFake: false,
 };
 
@@ -124,11 +125,62 @@ const state = {
 
 /* ---------- Loading ---------- */
 
+// Access (criterion 26, display only, docs/ACCESS.md): travel time to the nearest city (Weiss et al. 2018) and
+// straight-line distance to the nearest medium/large airport (OurAirports), one value per place.
+// If the export already puts ACCESS_HOURS / AIRPORT_* into raw_values.csv, those win. Otherwise we join Mateo's
+// file on RUN/CELL (night export: RUN "night_polar" = run "polar") or, for the first-run data, on the nearest
+// Polar point within 1.5 km (same craters, low points within 0.5 km of each other).
+const ACCESS_MATCH_KM = 1.5;
+function kmBetween(lat1, lon1, lat2, lon2) {
+  const r = Math.PI / 180, x = (lon2 - lon1) * r * Math.cos((lat1 + lat2) / 2 * r), y = (lat2 - lat1) * r;
+  return 6371 * Math.hypot(x, y);
+}
+function attachAccess(rows) {
+  const byCell = new Map(rows.map(a => [`night_${a.run}|${a.cell}`, a]));
+  const polar = rows.filter(a => a.run === 'polar' && a.lat != null && a.lon != null);
+  for (const s of state.sites) {
+    if (s.raw?.ACCESS_HOURS != null || s.raw?.AIRPORT_KM != null) continue;
+    let a = s.RUN ? byCell.get(`${s.RUN}|${s.CELL}`) : null;
+    if (!a && !s.missed && !s.unscored && (s.BASE_TYPE ?? 'polar') === 'polar' && s.LAT != null) {
+      let best = Infinity;
+      for (const p of polar) {
+        if (Math.abs(p.lat - s.LAT) > 0.05) continue;
+        const d = kmBetween(s.LAT, s.LON, p.lat, p.lon);
+        if (d < best) { best = d; a = p; }
+      }
+      if (best > ACCESS_MATCH_KM) a = null;
+    }
+    if (a) s.access = { ACCESS_HOURS: a.ACCESS_HOURS, AIRPORT_KM: a.AIRPORT_KM, AIRPORT_NAME: a.AIRPORT_NAME, AIRPORT_TYPE: a.AIRPORT_TYPE };
+  }
+}
+function accessOf(s) {
+  const raw = s.raw ?? {};
+  return raw.ACCESS_HOURS != null || raw.AIRPORT_KM != null ? raw : (s.access ?? null);
+}
+function fmtTravel(h) {
+  if (h == null) return null;
+  if (h < 1) return `~${Math.max(5, Math.round(h * 60 / 5) * 5)} min`;
+  if (h < 48) return `~${Math.round(h)} h`;
+  return `~${Math.round(h / 24)} days`;
+}
+function accessHTML(s) {
+  const a = accessOf(s);
+  if (!a) return '';
+  const t = fmtTravel(a.ACCESS_HOURS), km = a.AIRPORT_KM;
+  if (t == null && km == null) return '';
+  const kind = a.AIRPORT_TYPE === 'large_airport' ? 'large airport' : 'medium airport';
+  return `<p class="impact-line access-line" title="Modelled travel time over land to the nearest city (a place with 1,500+ people per km² or 50,000+ inhabitants), roads of 2015 (Weiss et al. 2018, Malaria Atlas Project). Airport: straight-line distance, OurAirports; says nothing about flights.">
+    <span>Access</span> ${t == null ? 'no travel-time data' : `<b>${t}</b> to the nearest city`}${km == null ? '' : ` · ${Math.round(km).toLocaleString('en')} km to ${esc(a.AIRPORT_NAME ?? 'an airport')} (${kind})`}</p>`;
+}
+
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
   const head = lines.shift().split(',').map(s => s.trim());
   const rows = lines.filter(Boolean).map(line => {
-    const cells = line.split(',');
+    // Split on commas outside double quotes ("Svalbard Airport, Longyear" stays one cell).
+    const cells = line.includes('"')
+      ? (line.match(/("([^"]|"")*"|[^,]*)(,|$)/g) ?? []).map(c => c.replace(/,$/, '').replace(/^"|"$/g, '').replace(/""/g, '"'))
+      : line.split(',');
     const row = {};
     head.forEach((h, i) => {
       const raw = (cells[i] ?? '').trim();
@@ -139,14 +191,16 @@ function parseCSV(text) {
   });
   return { head, rows };
 }
-const TEXT_COLUMNS = new Set(['SITE', 'RUN', 'CELL', 'BASE_TYPE', 'IMPACT_NAME', 'IMPACT_SOURCE']);
+const TEXT_COLUMNS = new Set(['SITE', 'RUN', 'CELL', 'BASE_TYPE', 'IMPACT_NAME', 'IMPACT_SOURCE',
+  'run', 'cell', 'AIRPORT_NAME', 'AIRPORT_TYPE', 'AIRPORT_IDENT',
+  'ROLE', 'NAME', 'COUNTRY', 'MISSED_REASON']);   // night export text columns
 
 const getText = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.text(); });
 const getJSON = url => fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.json(); });
 const optional = (url, fallback) => (url ? getJSON(url).catch(() => fallback) : Promise.resolve(fallback));
 
 async function loadAll() {
-  const [csv, targets, info, rawCsv, heat, cells, coordsCsv] = await Promise.all([
+  const [csv, targets, info, rawCsv, heat, cells, coordsCsv, accessCsv] = await Promise.all([
     getText(DATA.scores),
     getJSON(DATA.targets),
     optional(DATA.info, {}),
@@ -154,6 +208,7 @@ async function loadAll() {
     optional(DATA.heatmap, null),
     optional(DATA.cells, []),
     DATA.coords ? getText(DATA.coords).catch(() => '') : Promise.resolve(''),
+    DATA.access ? getText(DATA.access).catch(() => '') : Promise.resolve(''),
   ]);
   const { head, rows } = parseCSV(csv);
   const rawRows = rawCsv ? parseCSV(rawCsv).rows : [];
@@ -175,7 +230,11 @@ async function loadAll() {
     Object.entries(info).filter(([k, v]) => v?.type === 'missed' && v.lat != null && v.lng != null && !state.sites.some(x => x.SITE === k))
       .forEach(([k, v]) => state.sites.push({ SITE: k, LAT: v.lat, LON: v.lng, lat: v.lat, lng: v.lng, raw: {}, unscored: true, missed: true }));
   }
+  if (accessCsv) attachAccess(parseCSV(accessCsv).rows);
   state.targets = Object.fromEntries(Object.entries(targets).filter(([k]) => !k.startsWith('_')));
+  // The night export names some cells differently (e.g. "Al Wahbah area r003c1511" instead of
+  // "arid_al_wahbah r001c001"); site_info.json → _aliases maps the new name to the same notes.
+  for (const [alias, key] of Object.entries(info?._aliases ?? {})) if (info[key] && !info[alias]) info[alias] = info[key];
   state.info = info;
   state.heat = Array.isArray(heat) ? heat : null;
   state.cells = Array.isArray(cells) ? cells : [];
@@ -248,7 +307,7 @@ const nameOf = site => state.info[site.SITE ?? site]?.name ?? site.SITE ?? site;
 // Tuning regions (CLAUDE.md, "do not count for validation"): used to check and set up the method, so a
 // high rank there is partly built in. Screening regions (Al Wahbah, Roter Kamm, ...) are the fair results.
 const TUNING_RUNS = new Set(['meteor_crater', 'pinacate', 'sf_volcanic']);
-const isTuning = site => TUNING_RUNS.has(site.RUN);
+const isTuning = site => TUNING_RUNS.has(site.RUN) || site.ROLE === 'tuning';   // night export: ROLE column
 const TUNING_NOTE = 'Tuning site: we used this region to check and set up our method, so its rank is partly built in and does not count as an independent result.';
 
 // Active filters: a site passes when it has data and matches at least the threshold on every selected criterion.
@@ -260,8 +319,12 @@ function passesFilters(site) {
   return true;
 }
 
+// The night export has Polar and Mare rows in one file (BASE_TYPE). Each base is ranked on its own: a Mare
+// place is scored against the lunar mare, so it must never show up in the Polar ranking. Rows without
+// BASE_TYPE (first-run data, known sites not scored yet, missed craters) show for every base.
+const ofBase = s => s.BASE_TYPE == null || s.BASE_TYPE === state.base;
 function ranked() {
-  return state.sites
+  return state.sites.filter(ofBase)
     .map(s => ({ ...s, ...scoreSite(s), type: typeOf(s) }))
     .sort((a, b) => (b.sim ?? -1) - (a.sim ?? -1))
     .map((s, i) => ({ ...s, rank: s.sim == null ? null : i + 1, passes: passesFilters(s) }));
@@ -288,7 +351,7 @@ function searchedRegions() {
   return Object.values(by).map(r => ({ ...r, lat: (r.bbox[1] + r.bbox[3]) / 2, lng: (r.bbox[0] + r.bbox[2]) / 2 }));
 }
 const pipelineAreas = () => searchedRegions().map(r => r.label).join(', ') || 'none yet';
-const scoredCount = () => state.sites.filter(s => scoreSite(s).sim != null).length;
+const scoredCount = () => state.sites.filter(s => ofBase(s) && scoreSite(s).sim != null).length;
 
 // "23.9° vs 27.2°": raw values with a short unit taken from earth_unit (e.g. "deg (inner wall slope)").
 function fmtVal(v, unit) {
@@ -339,6 +402,40 @@ const outlookHTML = info => {
   return list('opp', 'Opportunities', o.opportunities) + list('chal', 'Challenges', o.challenges);
 };
 const baseLabel = () => BASES.find(b => b.id === state.base)?.label ?? state.base;
+
+// Places nobody has researched yet (most of the night run's ~1,800 world cells): instead of "[to research]",
+// short lines built only from our own measurements, each tagged "our data". No outside facts are invented;
+// what our data cannot know (land owner, permits, natural crater or mine) is said as a challenge.
+const pctR = v => `${Math.round(v * 100)}%`;
+function travelText(h) { return h < 1 ? 'less than an hour' : h < 48 ? `about ${Math.round(h)} h` : `about ${Math.round(h / 24)} days`; }
+function autoNotes(s, strengths, gaps) {
+  const raw = s.raw ?? {}, mare = (s.BASE_TYPE ?? state.base) === 'mare';
+  const lat = s.LAT ?? s.lat, ns = lat >= 0 ? 'N' : 'S';
+  const breaks = [], opp = [], chal = [];
+  const sunMax = raw.GRAZING_SUN ?? (lat == null ? null : Math.min(90, 90 - Math.abs(lat) + 23.44));
+  if (!mare) {
+    if (sunMax != null) breaks.push(`At ${Math.abs(lat).toFixed(0)}° ${ns} the Sun climbs to about ${Math.round(sunMax)}° at its highest; at Shackleton it never gets above 1.9°.`);
+    if (raw.DARK_FLOOR != null) breaks.push(`The darkest part of its floor is in shadow ${pctR(raw.DARK_FLOOR)} of the time; Shackleton's floor never sees the Sun.`);
+    const w = raw.CRATER_DIAMETER_EQUIV_M ?? raw.DIAMETER_EQUIV_M;
+    if (w) breaks.push(`It is about ${(w / 1000).toFixed(1)} km wide; Shackleton is 20.9 km, about ${Math.round(20900 / w)} times wider.`);
+  } else {
+    breaks.push('Our Mare score compares only the shape of the ground. The Moon’s maria are dark basalt; rock type is not compared yet.');
+  }
+  // General fact, not a measurement: the card shows it without the "our data" tag.
+  const general = 'Like every place on Earth: air, weather, full gravity and protection from radiation, none of which the Moon has.';
+  const a = accessOf(s);
+  if (strengths.length) opp.push({ text: `Closest to the Moon in: ${strengths.map(d => d.label.toLowerCase()).join(', ')}.`, src: ['ours'] });
+  if (s.IMPACT_CRATER === 1) opp.push({ text: `A confirmed impact crater${raw.IMPACT_NAME ? ` (${raw.IMPACT_NAME})` : ''}, formed by an impact like Shackleton.`, src: ['ours'] });
+  const drive = mare ? raw.DRIVABLE : s.DRIVABLE;
+  if (drive != null && drive >= 0.8) opp.push({ text: `${pctR(drive)} of the ground ${mare ? 'within 5 km' : 'around the base spot'} is gentle enough to drive: room for rover tests.`, src: ['ours'] });
+  if (!mare && s.BARE != null && s.BARE >= 0.8) opp.push({ text: `Bare ground on ${pctR(s.BARE)} of the floor and rim, with no trees or fields in the way.`, src: ['ours'] });
+  if (a?.ACCESS_HOURS != null && a.ACCESS_HOURS <= 3) opp.push({ text: `${travelText(a.ACCESS_HOURS)[0].toUpperCase() + travelText(a.ACCESS_HOURS).slice(1)} from the nearest city by land (2015 roads): easy to reach for a field team.`, src: ['ours'] });
+  if (gaps.length) chal.push({ text: `Furthest from the Moon in: ${gaps.map(d => d.label.toLowerCase()).join(', ')}.`, src: ['ours'] });
+  if (!mare && s.GROUND_ICE != null && s.GROUND_ICE >= 0.2) chal.push({ text: `Snow or ice covers ${pctR(s.GROUND_ICE)} of the floor.`, src: ['ours'] });
+  if (a?.ACCESS_HOURS != null && a.ACCESS_HOURS > 12) chal.push({ text: `Remote: ${travelText(a.ACCESS_HOURS)} from the nearest city by land (2015 roads).`, src: ['ours'] });
+  chal.push({ text: `Not checked yet: who owns the land, whether visits need a permit${mare ? '' : ', and whether the bowl is natural (an open-pit mine looks the same in elevation data)'}.`, src: [] });
+  return { breaks, general, outlook: { opportunities: opp, challenges: chal } };
+}
 
 /* ---------- Filter bar ---------- */
 
@@ -392,6 +489,11 @@ function setBase(id, fly) {
     const top = visibleSites().filter(x => x.sim != null);
     if (top.length) state.selected = bestTwin(top).SITE;
     state.twinFlash = top.slice(0, 3).map(x => x.SITE);
+    if (state.globe && !DATA.isFake) {   // heatmap of the new base
+      heatPoints = baseHeat();
+      if (heatShown) state.globe.heatmapsData([{ points: heatPoints }]);
+      setHeatNote();
+    }
     clearTimeout(twinTimer);
     twinTimer = setTimeout(() => { state.twinFlash = []; renderList(); updateGlobe(false); }, 7000);
   }
@@ -436,6 +538,25 @@ function wireFilters() {
 
 /* ---------- Site list ---------- */
 
+// Long rankings (night run: 1,825 places) show the best LIST_STEP first; "Show more" adds LIST_STEP more.
+const LIST_STEP = 20;
+function siteRowHTML(s) {
+  return `
+    <li>
+      <button type="button" class="site-btn${state.twinFlash?.includes(s.SITE) ? ' is-twin' : ''}" data-site="${esc(s.SITE)}" aria-current="${s.SITE === state.selected}">
+        <span class="rank ${s.type === 'known' ? 'known' : 'new'}">${s.rank ?? '–'}</span>
+        <span>
+          <span class="site-name">${esc(nameOf(s))}</span>
+          <span class="site-meta">
+            ${s.sim == null ? '<span class="not-scored">Not scored yet</span>' : `<span class="bar"><span style="width:${Math.round(s.sim * 100)}%"></span></span>
+            <span class="pct">${pct(s.sim)}</span>`}
+            <span>${s.type === 'known' ? 'Known' : 'New'}</span>
+            ${isTuning(s) ? `<span class="tag-tuning" title="${esc(TUNING_NOTE)}">Tuning</span>` : ''}
+          </span>
+        </span>
+      </button>
+    </li>`;
+}
 function renderList() {
   const list = document.getElementById('siteList');
   const ofType = s => state.typeFilter === 'all' || s.type === state.typeFilter;
@@ -450,21 +571,26 @@ function renderList() {
   const note = document.getElementById('listNote');
   note.hidden = !pending;
   if (pending) note.innerHTML = `<b>${esc(pending.title)} twins: coming with tonight’s run.</b> We search ${PLANNED_REGIONS.length} volcanic regions for them (outlined on the Earth). The ranking below is still for the ${esc(baseLabel().toLowerCase())} base.`;
-  list.innerHTML = rows.length ? rows.map(s => `
-    <li>
-      <button type="button" class="site-btn${state.twinFlash?.includes(s.SITE) ? ' is-twin' : ''}" data-site="${esc(s.SITE)}" aria-current="${s.SITE === state.selected}">
-        <span class="rank ${s.type === 'known' ? 'known' : 'new'}">${s.rank ?? '–'}</span>
-        <span>
-          <span class="site-name">${esc(nameOf(s))}</span>
-          <span class="site-meta">
-            ${s.sim == null ? '<span class="not-scored">Not scored yet</span>' : `<span class="bar"><span style="width:${Math.round(s.sim * 100)}%"></span></span>
-            <span class="pct">${pct(s.sim)}</span>`}
-            <span>${s.type === 'known' ? 'Known' : 'New'}</span>
-            ${isTuning(s) ? `<span class="tag-tuning" title="${esc(TUNING_NOTE)}">Tuning</span>` : ''}
-          </span>
-        </span>
-      </button>
-    </li>`).join('') : '<li class="empty">No site passes these filters. Lower the minimum match or remove a filter.</li>';
+  const limit = Math.max(LIST_STEP, state.listLimit ?? LIST_STEP);
+  const head = rows.slice(0, limit);
+  // The selected site stays visible even when it ranks below the cut (e.g. picked from the guide).
+  const sel = rows.slice(limit).find(s => s.SITE === state.selected);
+  const more = rows.length - head.length;
+  list.innerHTML = rows.length ? head.map(siteRowHTML).join('')
+    + (sel ? `<li class="list-gap" aria-hidden="true">⋯</li>${siteRowHTML(sel)}` : '')
+    + (more > 0 || limit > LIST_STEP ? `<li class="list-more">
+        <span class="muted">Showing ${head.length.toLocaleString('en')} of ${rows.length.toLocaleString('en')}</span>
+        ${more > 0 ? `<button type="button" class="region-btn" data-list="more">Show ${Math.min(LIST_STEP, more)} more</button>` : ''}
+        ${more > LIST_STEP ? `<button type="button" class="region-btn" data-list="all">Show all</button>` : ''}
+        ${limit > LIST_STEP ? `<button type="button" class="region-btn" data-list="less">Show fewer</button>` : ''}
+      </li>` : '')
+    : '<li class="empty">No site passes these filters. Lower the minimum match or remove a filter.</li>';
+  list.querySelectorAll('[data-list]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.list;
+    state.listLimit = k === 'more' ? limit + LIST_STEP : k === 'all' ? rows.length : LIST_STEP;
+    renderList();
+    if (k === 'less') list.scrollIntoView({ block: 'start', behavior: reducedMotion ? 'auto' : 'smooth' });
+  }));
   // Known analog sites the pipeline hasn't scored yet: a small, folded reference box.
   if (reference.length) {
     list.insertAdjacentHTML('beforeend', `<li class="regions known-ref">
@@ -607,6 +733,8 @@ function renderCard() {
     missing.notcomputed.length && `Not computed yet: ${missing.notcomputed.join(', ')}.`,
   ].filter(Boolean);
   const raw = s.raw ?? {};
+  // Not researched yet (no notes in site_info.json) but scored by the pipeline: lines from our data instead.
+  const auto = isPipeline() && !unscored && !missed && !info.breaks && !info.outlook && !info.helps ? autoNotes(s, strengths, gaps) : null;
   const width = raw.CRATER_DIAMETER_EQUIV_M ?? raw.DIAMETER_EQUIV_M, depth = raw.CRATER_RIM_TO_FLOOR_M ?? raw.DEPTH_SPILL_M;
   const craterFacts = [
     width != null && `about ${(width / 1000).toFixed(1)} km wide`,
@@ -658,7 +786,7 @@ function renderCard() {
       ${hasLightLimit ? `<p class="nodata" title="${esc(meta('SUNNY_RIDGE')?.limitation ?? '')}"><b>Light:</b> ${esc(LIGHT_NOTE)}</p>` : ''}
     </div>`}
 
-    ${ground.length || impact ? `<div class="note-box prac-box">
+    ${ground.length || impact || accessHTML(s) ? `<div class="note-box prac-box">
       <h3>On the ground</h3>
       ${ground.length ? `<div class="prac">${ground.map(c => `
         <span title="${esc(meta(c.key).earthUnit)}">${esc(c.label)}</span>
@@ -666,7 +794,8 @@ function renderCard() {
         <span class="pct">${Math.round(s[c.key] * 100)}%</span>`).join('')}
       </div>` : ''}
       ${impact ? `<p class="impact-line"><span>Impact crater</span> ${impact}</p>` : ''}
-      <p class="nodata">About the place itself, not compared with the Moon (more is better). Not part of the score.</p>
+      ${accessHTML(s)}
+      <p class="nodata">About the place itself, not compared with the Moon${ground.length ? ' (bars: more is better)' : ''}. Not part of the score.${accessOf(s) ? ' Access is a model (roads of 2015, airport in a straight line): a rough guide to how remote the place is, not a trip plan.' : ''}</p>
     </div>` : ''}
 
     ${practical.length ? `<div class="note-box prac-box">
@@ -700,7 +829,7 @@ function renderCard() {
 
     <div class="note-box">
       <h3>${missed ? 'Why our method missed it' : 'Where the analogy breaks down'}</h3>
-      <p>${info.breaks ? research(info.breaks) : '<span class="todo">[to research]</span>'}</p>
+      ${info.breaks ? `<p>${research(info.breaks)}</p>` : auto ? `<ul class="outlook">${auto.breaks.map(t => `<li>${esc(t)} <span class="ref-ours">our data</span></li>`).join('')}<li>${esc(auto.general)}</li></ul>` : '<p><span class="todo">[to research]</span></p>'}
     </div>
 
     ${info.outlook ? `${isNew || missed ? '' : `<div class="note-box">
@@ -711,6 +840,10 @@ function renderCard() {
       <h3>Opportunities &amp; challenges</h3>
       ${outlookHTML(info)}
       ${numberedSourcesHTML(info.sources)}
+    </div>` : auto ? `<div class="note-box outlook-box">
+      <h3>Opportunities &amp; challenges</h3>
+      ${outlookHTML({ outlook: auto.outlook, sources: [] })}
+      <p class="nodata">Nobody on our team has researched this place yet: these lines come only from our pipeline’s measurements.</p>
     </div>` : `<div class="note-box">
       <h3>${missed ? 'What we change next' : isNew ? 'What we could test here' : 'How it has helped exploration'}</h3>
       <p>${info.helps ? research(info.helps) : `<span class="todo">${isNew ? '[to write once ranked: what we could test here]' : '[to research]'}</span>`}</p>
@@ -750,7 +883,7 @@ function initGlobe() {
   const el = document.getElementById('globe');
   if (!hasWebGL() || typeof Globe !== 'function') { document.getElementById('globeError').hidden = false; return; }
   // Pipeline: one point per ranked crater, weight = SCORE_TOTAL. Sample: a fake pattern, for design only.
-  const heat = DATA.isFake ? fakeHeatPoints() : (state.heat ?? []);
+  const heat = DATA.isFake ? fakeHeatPoints() : baseHeat();
   heatPoints = heat;
   setHeatNote();
   const regions = searchedRegions();
@@ -823,11 +956,16 @@ function initGlobe() {
 // (El Elegante and Pinacate NW are 25 km apart) pile up. Scale them with the camera height, and
 // where labels would still overlap show only the best-ranked one, with "+1" for the hidden ones.
 let labelScale = 1, labelHidden = new Map(), heatPoints = [], heatShown = true;
+// Heatmap points of the selected base only (night export: each point has "base").
+const baseHeat = () => (state.heat ?? []).filter(p => p.base == null || p.base === state.base);
+// With hundreds of places the globe would be covered in names: only the best LABEL_LIMIT (of the places that
+// pass the filters), known sites and the selected one get a name and dot; the heatmap shows the rest.
+const LABEL_LIMIT = 30;
 const HEAT_MIN_SCALE = 0.25;   // closer than this the blobs only cover the ground, so the heatmap hides
 function setHeatNote() {
   document.getElementById('heatNote').textContent = !heatShown ? 'Zoom out to see the heatmap'
     : DATA.isFake ? 'Fake pattern, for design only'
-    : heatPoints.length ? `${heatPoints.length} craters scored so far` : 'No heatmap data yet';
+    : heatPoints.length ? `${heatPoints.length.toLocaleString('en')} ${state.base === 'mare' ? 'places' : 'craters'} scored so far${heatPoints.length > LABEL_LIMIT ? ` · best ${LABEL_LIMIT} named` : ''}` : 'No heatmap data yet';
 }   // SITE → '' (hidden) or ' +n' (leader of a group)
 const labelTextOf = d => (d.sim == null && d.SITE !== state.selected ? '' : labelHidden.has(d.SITE) ? (labelHidden.get(d.SITE) === '' ? '' : nameOf(d) + labelHidden.get(d.SITE)) : nameOf(d));
 
@@ -904,8 +1042,11 @@ function updateGlobe(fly) {
   if (!g) return;
   const shown = visibleSites();
   const s = shown.find(x => x.SITE === state.selected);
-  declutterLabels(shown);
-  g.labelsData(shown.map(x => ({ ...x })));   // new objects so globe.gl redraws sizes and texts
+  const named = new Set(shown.filter(x => x.sim != null).slice(0, LABEL_LIMIT).map(x => x.SITE));
+  const onGlobe = shown.filter(x => x.sim == null || named.has(x.SITE) || typeOf(x) === 'known' || x.SITE === state.selected
+    || state.twinFlash?.includes(x.SITE));
+  declutterLabels(onGlobe);
+  g.labelsData(onGlobe.map(x => ({ ...x })));   // new objects so globe.gl redraws sizes and texts
   g.ringsData([...(s ? [{ lat: s.lat, lng: s.lng }] : []),
     ...shown.filter(x => state.twinFlash?.includes(x.SITE) && x.SITE !== state.selected).map(x => ({ lat: x.lat, lng: x.lng, twin: true })),
     ...(state.moonInfo && !state.targets[state.moonInfo] ? PLANNED_REGIONS.map(r => ({ lat: (r.bbox[1] + r.bbox[3]) / 2, lng: (r.bbox[0] + r.bbox[2]) / 2, planned: true })) : [])]);
@@ -1020,8 +1161,10 @@ function renderMoonInfo() {
 const TERRAIN = {
   // Elevation: Terrain Tiles on AWS Open Data (Mapzen; SRTM, GMTED, ETOPO1 and others), Terrarium encoding.
   dem: 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
-  // Imagery: Sentinel-2 cloudless 2020 by EOX (modified Copernicus Sentinel data), about 10 m per pixel.
-  img: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg',
+  // Imagery: Sentinel-2 cloudless 2016 by EOX (modified Copernicus Sentinel data), about 10 m per pixel.
+  // The 2016 layer is CC BY 4.0; the 2018–2025 layers are CC BY-NC-SA 4.0 (non-commercial), which does not fit
+  // the challenge rule that third-party materials be free without restriction or open source.
+  img: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/{z}/{y}/{x}.jpg',
   exaggeration: 1.5,   // heights x1.5 so relief reads on screen; said in the caption
   defaultZoom: 12,     // a site can set its own "zoom" in site_info.json
 };
@@ -1048,7 +1191,7 @@ function terrainStyle() {
     version: 8,
     sources: {
       img: { type: 'raster', tiles: [TERRAIN.img], tileSize: 256, maxzoom: 15,
-        attribution: 'Imagery: <a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless</a> by EOX (contains modified Copernicus Sentinel data 2020)' },
+        attribution: 'Imagery: <a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless</a> by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2016), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>' },
       dem: { ...dem, attribution: 'Elevation: <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">Terrain Tiles on AWS</a> (Mapzen)' },
       shade: dem,
       cells: { type: 'geojson', data: cellsGeoJSON() },

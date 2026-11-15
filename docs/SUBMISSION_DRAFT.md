@@ -1,9 +1,10 @@
 # Submission draft (for the project page)
 
-Draft by an AI agent (Task 1), for the team to edit. Every number comes from the repo on 14 Nov 2026 (`main`,
-df8b4e9: `outputs/`, `config/lunar_targets.json`, `docs/VALIDATION_config-v1.md`, `CLAUDE.md`). `[UPDATE]` marks
-what changes after the night run; `[TEAM]` marks what only the team knows. Checklist and sources:
-`docs/SUBMISSION_CHECKLIST.md`. All fields must be in English.
+Draft by an AI agent (Task 1), for the team to edit. **Updated 15 Nov 2026 morning with the night-run numbers**
+from `outputs/night_export/` (export of 15 Nov, 02:43), the same numbers as `docs/PITCH_OUTLINE.md` (which says
+how each was computed). Lunar values from `config/lunar_targets.json`; validation from
+`docs/VALIDATION_config-v1.md`. `[TEAM]` marks what only the team knows; `[TEAM: mine filter]` waits for the
+open-pit-mine filter. Checklist and sources: `docs/SUBMISSION_CHECKLIST.md`. All fields must be in English.
 
 ---
 
@@ -20,15 +21,15 @@ Tagline (for the cover slide): *Which places on Earth come closest to a lunar ba
 
 ---
 
-## High-Level Project Summary (~140 words)
-We built a pipeline and a web app that rank places on Earth by how closely they match planned lunar base sites,
-using open elevation and light data. For a polar base, the reference is Shackleton crater at the lunar south pole:
-from NASA's LOLA elevation map we measure its bowl shape, wall steepness, rim and floor, and from NASA's
-illumination maps its sunny rim and shadowed floor. The same code then measures crater bowls on Earth (Copernicus
-DEM) on the same 60 m grid and turns each difference into a 0–100 % similarity. A second base type, a mare plain,
-uses a target from 20 sample areas in four lunar maria. The app shows the results on two linked globes, Earth and
-Moon, with a card per site that says what matches the Moon and where the analogy breaks down. This helps pick
-Earth field sites for testing equipment and operations before a Moon mission.
+## High-Level Project Summary (~150 words)
+We built a pipeline and a web app that rank places on Earth by how closely they match a planned lunar base site.
+The reference is Shackleton crater at the lunar south pole: from NASA's LOLA elevation map we measure its bowl
+shape, wall steepness and flat ground, and from NASA's illumination map its sunny rim and shadowed floor. The same
+code then measures Earth (Copernicus DEM) on the same 60 m grid and turns each difference into a 0–100 % similarity.
+In one night it searched about 265,000 grid cells of 15 km and ranked 1,825 crater-like places; from elevation
+alone it found real impact craters such as Meteor Crater, Roter Kamm and Pingualuit. The app shows the results on
+two linked globes, Earth and Moon, with a card per site that says what matches and where the analogy breaks down,
+to help pick Earth field sites for testing equipment and operations.
 
 ---
 
@@ -37,8 +38,8 @@ Earth field sites for testing equipment and operations before a Moon mission.
 
 ## Link to Final Project
 - Code and data: https://github.com/TLCasparS/EspaceOdyssey
-- App: `[TEAM]` hosted link (e.g. GitHub Pages: `https://tlcaspars.github.io/EspaceOdyssey/app/` once enabled; not
-  set up yet)
+- App (live, no login): https://tlcaspars.github.io/EspaceOdyssey/app/ (GitHub Pages from `main`; nobody merges
+  to `main` after 23:59 CET)
 
 ---
 
@@ -81,15 +82,28 @@ same definitions on both worlds, and it says where the comparison fails.
 6. **Export and app.** `src/export_app.py` writes `outputs/` (scores, raw values, lunar targets, heatmap, searched
    cells); the app is a static web page (HTML, JavaScript, globe.gl, MapLibre GL JS), no build step.
 
-### What we found so far `[UPDATE]` after the night run
-- 9 regions searched, 228 grid cells, 5 craters scored (`outputs/`, 14 Nov).
-- Meteor Crater (46 %) and El Elegante in the Pinacate field (40 %) rank highest, but they are tuning sites: we used
-  them to set up the method, so they don't count as independent results.
-- Best independent twins of Shackleton: **Al Wahbah crater**, Saudi Arabia (**25 %**) and **Roter Kamm**, Namibia
-  (**23 %**).
-- **Where the analogy breaks down.** No place on Earth has the Moon's grazing Sun (at Shackleton the Sun climbs at
-  most 1.91° above the horizon), so craters on Earth are far less shadowed. Earth also cannot reproduce the Moon's
-  low gravity, vacuum or radiation, and the Mare's day–night temperature swing of about 290–300 K (LRO Diviner).
+### What we found (night run, 14–15 Nov)
+- **Scale.** 264,896 grid cells of 15 km searched in one night: 11,604 of the 19,433 1° land tiles, deserts first,
+  not yet the whole planet. Funnel: 11,932 out at the coarse land-cover prescreen, 202,422 with no bowl at 90 m,
+  41,699 removed by land cover / water / towns, 6,909 with no bowl at 30 m, 109 with an ice-filled floor, leaving
+  **1,825 places ranked against Shackleton** `[TEAM: mine filter: how many remain]`.
+- **It finds real craters from elevation alone.** The bowl detector knows nothing about impacts; afterwards three
+  ranked places match the list of confirmed impact structures: Meteor Crater, Roter Kamm and New Quebec /
+  Pingualuit (the list has 88 structures and is incomplete).
+- **It also finds open-pit mines**, because they are perfect closed bowls; we filter them `[TEAM: mine filter]`.
+- **Known craters for scale:** Meteor Crater 44 % (rank 45; a tuning site, so not an independent result), the best
+  Pinacate maar 40 %, Al Wahbah 27 %, Roter Kamm 24 %, Pingualuit 20 %. Top overall: `[TEAM: after mine filter]`.
+- **Terrain twins and light twins are different places.** Of the 50 best places by terrain and the 50 best by light,
+  only 5 are the same (rank correlation 0.06 over all 1,825). The best light twins lie further from the equator and
+  in deep mountain bowls.
+- **Mare:** 500 flat places were measured against the lunar mare target, and half of them score 97 % or more:
+  flat, Moon-like ground is common on Earth, so terrain alone does not separate places. Rock type (basalt) has to
+  come in before a Mare ranking means much.
+- **Where the analogy breaks down.** No place on Earth has the Moon's grazing Sun: at Shackleton the Sun climbs at
+  most 1.9° above the horizon, on Earth never less than 23.4° (lowest among our 1,825 places: 31.8°, at 81.6° N).
+  So Shackleton's floor is always in shadow, while a typical Earth crater floor is in shadow 16.5 % of the time
+  and only 2 of the 1,825 places reach 90 %. Earth also cannot reproduce the Moon's low gravity, vacuum or
+  radiation, or the Mare's day–night temperature swing of about 290–300 K (LRO Diviner).
   Light is measured as the visible part of the Sun's disc on the Moon and as the Sun's centre on Earth; both agree
   on flat ground but can differ a little on rims and floors.
 - **Honest validation** (`docs/VALIDATION_config-v1.md`, predictions written before the runs):
@@ -105,8 +119,9 @@ same definitions on both worlds, and it says where the comparison fails.
 - Everything uses open data and open code; anyone can rerun it on new regions.
 
 ### What we hope to achieve
-Run the search over much more of Earth `[UPDATE: say how far the night run got]`, add more lunar targets (other
-south-pole sites, lava-tube pits), and give analog-campaign and rover teams a short list of field sites that match
+Run the search over the rest of Earth (the night run covered 11,604 of 19,433 1° land tiles), add more lunar
+targets (10 Artemis-region polar candidates and 4 per-mare targets are computed and waiting for review; scoring
+against several targets is built), add rock type for the Mare base and lava tubes, and give analog-campaign and rover teams a short list of field sites that match
 their landing site best, with the limits stated.
 
 ### Tools
@@ -162,8 +177,12 @@ Not shown to the judges, but the same text belongs in the project (README / app 
   https://en.wikipedia.org/wiki/List_of_impact_craters_on_Earth (text CC BY-SA 4.0)
 - Terrain Tiles on AWS (Mapzen; SRTM, GMTED, ETOPO1 and others), 3D view elevation:
   https://registry.opendata.aws/terrain-tiles/ (licence/attribution: `[check]`)
-- Sentinel-2 cloudless 2020 by EOX (modified Copernicus Sentinel data), 3D view imagery: https://s2maps.eu
-  (CC BY-NC-SA 4.0, see checklist open point 2)
+- Sentinel-2 cloudless 2016 by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2016), 3D view
+  imagery: https://s2maps.eu, CC BY 4.0 (we use the 2016 layer because EOX's 2018–2025 layers are non-commercial)
+- Travel time to cities (card "Access" line, display only): Weiss, D.J. et al. (2018), Nature 553, 333–336,
+  doi:10.1038/nature25181; data from the Malaria Atlas Project (CC BY; `docs/ACCESS.md`)
+- Nearest airport (card "Access" line): OurAirports `airports.csv`, https://ourairports.com/data/ (public domain
+  according to third-party pages; `[TEAM: open ourairports.com/data once and confirm]`, see `docs/ACCESS.md`)
 - Site notes: sources linked per site in `app/sample/site_info.json`.
 
 **Software**
@@ -182,6 +201,6 @@ Not shown to the judges, but the same text belongs in the project (README / app 
 The deck skeleton already has exactly 7 slides; keep it at 7. Before submitting:
 - Team slide: full names `[TEAM]`, Mateo's role `[TEAM]`.
 - App slide: one real screenshot (globe + card, or a crater in 3D).
-- Results slide: numbers above `[UPDATE]`; keep the "Honest limits" card.
+- Results slide: night-run numbers above (same as `docs/PITCH_OUTLINE.md`); keep the "Honest limits" card.
 - Last slide: hosted app link and repo link; the AI-use line.
 - No logos, no photos of people, no AI-generated images.

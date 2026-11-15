@@ -1,3 +1,36 @@
+## Status update, 15 Nov 2026 ~08:30 (what is still missing)
+Checked by an AI agent against `main` (0be1738) and the live site. Items from the report below that are now done:
+- **Hosted app** (open point 1, 3.4): live at https://tlcaspars.github.io/EspaceOdyssey/app/ (HTTP 200, all
+  features load, no console errors). Rule: nobody merges to `main` after 23:59 CET.
+- **Imagery licence** (open point 2, 5.8): EOX states the 2018–2025 Sentinel-2 cloudless layers are CC BY-NC-SA 4.0
+  and the 2016 layer CC BY 4.0 (cloudless.eox.at pricing page and the WMTS capabilities, read 15 Nov). Branch
+  `agent/submission-final` switches the 3D view to the 2016 layer (`s2cloudless_3857`), same tiles service.
+- **Night-run numbers** (open point 7): in `docs/SUBMISSION_DRAFT.md`, same as `docs/PITCH_OUTLINE.md`.
+
+Still missing, most urgent first:
+1. **Submit early** (1.1): fill the project page by ~17:00 and save; edit until 23:59.
+2. **Public deck link** (3.3, 4.2): export the 7 slides to PDF / Google Slides, share without login, test in a
+   private window. Slides need team + member names (4.3), one real app screenshot (4.4), the live link.
+3. **Team details** (2.2, open point 5): full names; everyone on the Members tab, same Local Event, not waitlisted.
+4. **Mine filter numbers** (`[TEAM: mine filter]` in the draft and pitch outline).
+5. **App shows first-run data**: the live app reads `outputs/` (5 craters, Meteor 46 %), the deck and draft use the
+   night run (1,825 places, Meteor 44 %). Either switch the app to `outputs/night_export/` or don't quote first-run
+   numbers anywhere. Branch `agent/submission-final` keeps Sofia's site notes working after the switch
+   (`_aliases` in `site_info.json`). Note: `outputs/night_export/README.md` lists a `cells.json` that is not in
+   the folder.
+6. **LICENSE file** for our code (open point 3, 5.9): e.g. MIT or Apache 2.0; without one, NASA uses Apache 2.0.
+7. **Project page images** (3.9): 1–3 app screenshots (JPG/PNG, up to 10 MB).
+8. **References field** (2.5, 3.8, 5.7): paste the lists from the draft; licences of globe.gl, MapLibre GL and
+   Terrain Tiles still say `[check]`.
+9. **NASA Earth data is thin** (open point 4): say it honestly in the description.
+10. **Local pitch length: not published.** The Barcelona schedule (read 15 Nov) only says "17:30 Pitch
+    competition", with no length or format. Ask the Local Lead (listed on the event page) at the venue.
+11. **Demo video, if any**: the submission demo is 7 slides **or** a video of 30 s or less (4.1). A 2-minute
+    video can't be the submission demo. Script for both in `docs/DEMO_VIDEO_SCRIPT.md`.
+12. Two tick boxes at submission (2.5), China-review question (2.6), SI-idea confirmation (5.4): the team answers.
+
+---
+
 ## Agent report: Task 1 Challenge requirements and submission draft
 Status: done (drafts need the final numbers from the night run and the team's names)
 

@@ -92,6 +92,35 @@ const GUIDE_QUESTIONS = [
     html += '</p><p class="guide-note">Our data only sees slopes and bumps in elevation maps. It does not know about rocks, loose sand or permits: check “Opportunities &amp; challenges” on the card.</p>';
     return html + `<p>${showBtn(drive)}${rough && rough.SITE !== drive.SITE ? ' ' + showBtn(rough) : ''}</p>`;
   } },
+  { q: 'Which site is easiest to reach?', a: () => {
+    // Access (c26, docs/ACCESS.md): modelled travel time to the nearest city + nearest airport. Display only.
+    // Only places of the selected base (the night export mixes Polar and Mare rows).
+    const sameBase = s => s.BASE_TYPE == null || s.BASE_TYPE === state.base;
+    const scored = scoredSites().filter(sameBase);
+    const hasH = s => accessOf(s)?.ACCESS_HOURS != null;
+    const all = scored.filter(hasH);
+    if (!all.length) return '<p>No site has travel-time data yet.</p>';
+    const hrs = s => accessOf(s).ACCESS_HOURS;
+    const byHours = list => [...list].sort((a, b) => hrs(a) - hrs(b))[0];
+    const line = s => {
+      const a = accessOf(s);
+      return `<b>${esc(nameOf(s))}</b> (${pctOf(s.sim)} similar): ${fmtTravel(a.ACCESS_HOURS)} to the nearest city` +
+        (a.AIRPORT_KM != null ? `, ${Math.round(a.AIRPORT_KM).toLocaleString('en')} km to ${esc(a.AIRPORT_NAME ?? 'an airport')}` : '');
+    };
+    const TOP = 10, many = scored.length > TOP;
+    // With many places the quickest one overall is often a weak twin, so lead with the best ten.
+    const topQuick = many ? byHours(scored.slice(0, TOP).filter(hasH)) : null;
+    const quickest = byHours(all);
+    const air = all.filter(s => accessOf(s).AIRPORT_KM != null).sort((a, b) => accessOf(a).AIRPORT_KM - accessOf(b).AIRPORT_KM)[0];
+    let html = '';
+    if (topQuick) html += `<p>Among the ${TOP} closest twins, the easiest to reach is ${line(topQuick)}.</p>`;
+    if (!topQuick || topQuick.SITE !== quickest.SITE)
+      html += `<p>${many ? `Of all ${all.length.toLocaleString('en')} places, the quickest` : 'Quickest'} to reach: ${line(quickest)}.</p>`;
+    if (air && air.SITE !== quickest.SITE && air.SITE !== topQuick?.SITE) html += `<p>Closest to an airport: ${line(air)}.</p>`;
+    const btns = [topQuick, quickest, air].filter((s, i, arr) => s && arr.findIndex(x => x?.SITE === s.SITE) === i);
+    return html + `<p class="guide-note">Travel time is a model over roads of 2015 to the nearest city (Weiss et al. 2018); the airport is a straight-line distance and says nothing about flights. It also ignores permits and land owners: see “Opportunities &amp; challenges” on the card.</p>
+      <p>${btns.map(showBtn).join(' ')}</p>`;
+  } },
   { q: 'Why is no Earth place a perfect match?', a: () => {
     const all = scoredSites();
     const widest = all.filter(s => s.raw?.CRATER_DIAMETER_EQUIV_M != null).sort((a, b) => b.raw.CRATER_DIAMETER_EQUIV_M - a.raw.CRATER_DIAMETER_EQUIV_M)[0];

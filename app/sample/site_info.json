@@ -1,5 +1,12 @@
 {
   "_note": "Sofia's research file: what each site is, where the analogy breaks down, and how it helps exploration. Known sites: 'helps' = what has been tested there, with source links in 'sources'. New candidates: 'helps' = what we could test there (write it once the pipeline ranks them; only the ~5 shown in the demo). [brackets] = still to research or check. Coordinates in scores.csv are approximate. Gorafe and Kali Gandaki are parked per the criteria doc. 'zoom' = how close the 3D terrain view flies in (11 shows about 20 km, 14 about 2 km). 'outlook' = short Opportunities and Challenges lines; each line's 'src' lists 1-based numbers into that site's 'sources', or \"ours\" for our own pipeline measurement (outputs/raw_values.csv, config-v1).",
+  "_aliases": {
+    "_why": "The night export (outputs/night_export) names these cells differently; same places (within 0.5 km of the earlier low points). The app shows the same notes under both names.",
+    "Pinacate volcanic field r005c419": "pinacate r001c002",
+    "Pinacate volcanic field r006c417": "pinacate r002c001",
+    "Al Wahbah area r003c1511": "arid_al_wahbah r001c001",
+    "Roter Kamm": "arid_roter_kamm r001c001"
+  },
   "Haughton Crater": {
     "type": "known",
     "place": "Devon Island, Nunavut, Canada",
@@ -96,7 +103,7 @@
           ]
         },
         {
-          "text": "Our data: the most Moon-like bowl we found, with walls of about 24° and 99% drivable ground within 5 km.",
+          "text": "Our data: the best-scoring known analog site in our results, with walls of about 23–24° and 99% drivable ground within 5 km.",
           "src": [
             "ours"
           ]
@@ -252,7 +259,7 @@
           ]
         },
         {
-          "text": "Our data: our closest bowl after Meteor Crater, about 1.5 km wide and 215 m deep, with 98% of the rim drivable.",
+          "text": "Our data: the best-scoring Pinacate bowl in our results, about 1.5 km wide and 215 m deep, with 98% of the rim drivable.",
           "src": [
             "ours"
           ]
@@ -371,7 +378,7 @@
           ]
         },
         {
-          "text": "Our data: the widest bowl in our results (about 2.2 km, 165 m deep), with almost bare ground (99.8%) and 97% drivable within 5 km.",
+          "text": "Our data: about 2.2 km wide and 165 m deep, with almost bare ground (99.8%) and 97% drivable within 5 km.",
           "src": [
             "ours"
           ]
