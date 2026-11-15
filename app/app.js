@@ -960,6 +960,28 @@ function setHitRadii(g, items, dotDeg, maxDeg) {
   });
   return items;
 }
+// Heatmap colour, t = 0 (few, weak craters) to 1 (many strong ones): see-through violet to pale lilac.
+const HEAT_STOPS = [[70, 50, 160], [130, 80, 220], [190, 120, 255], [235, 190, 255]];
+function heatColor(t) {
+  t = Math.max(0, Math.min(1, t));
+  const x = t * (HEAT_STOPS.length - 1), i = Math.min(HEAT_STOPS.length - 2, Math.floor(x)), f = x - i;
+  const c = HEAT_STOPS[i].map((v, k) => Math.round(v + (HEAT_STOPS[i + 1][k] - v) * f));
+  return `rgba(${c},${(0.8 * Math.sqrt(t)).toFixed(3)})`;
+}
+// A small circle (radius in degrees) around a site, drawn as a polygon: the pin under the dot.
+function pinOf(site, r) {
+  const ring = [];
+  for (let i = 0; i <= 24; i++) {
+    const a = (i / 24) * 2 * Math.PI;
+    ring.push([site.lng + (r * Math.sin(a)) / Math.max(0.2, Math.cos((site.lat * Math.PI) / 180)), site.lat + r * Math.cos(a)]);
+  }
+  return { ...site, selected: site.SITE === state.selected, geometry: { type: 'Polygon', coordinates: [ring] } };
+}
+// The globe's label font has plain English letters only ("Ovacık" showed as "Ovac?k"): drop accents for the
+// globe labels. The list and the cards keep the real spelling.
+const PLAIN = { ı: 'i', İ: 'I', ł: 'l', Ł: 'L', ø: 'o', Ø: 'O', ß: 'ss', đ: 'd', Đ: 'D', æ: 'ae', Æ: 'AE', œ: 'oe', Œ: 'OE', 'ʻ': "'", 'ʼ': "'", '’': "'", '‘': "'", '–': '-', '—': '-' };
+const plainText = t => String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x00-\x7F]/g, ch => PLAIN[ch] ?? '');
+
 function initGlobe() {
   const el = document.getElementById('globe');
   if (!hasWebGL() || typeof Globe !== 'function') { document.getElementById('globeError').hidden = false; return; }
@@ -984,11 +1006,13 @@ function initGlobe() {
     .heatmapPointWeight('weight')
     .heatmapBandwidth(DATA.isFake ? 2.4 : 0.9)   // real data: one point per crater, so smaller blobs
     .heatmapColorSaturation(2.2)
+    // A soft violet haze, flat on the ground: it shows where good craters cluster without looking like buttons.
+    .heatmapColorFn(() => heatColor)
     .heatmapBaseAltitude(0.005 * labelScale)
-    .heatmapTopAltitude(0.06 * labelScale)
+    .heatmapTopAltitude(0.005 * labelScale)
     .labelLat('lat')
     .labelLng('lng')
-    .labelText(d => labelTextOf(d))
+    .labelText(d => plainText(labelTextOf(d)))
     .labelSize(d => (d.SITE === state.selected ? 1.6 : 1.0) * labelScale)
     .labelDotRadius(d => (d.SITE === state.selected ? 0.7 : d.sim == null ? 0.3 : 0.45) * labelScale)
     // Scored sites stand out; known analogs not scored yet are faint grey dots without a name.
@@ -1010,6 +1034,16 @@ function initGlobe() {
     .pointLabel(d => `${esc(nameOf(d))}${d.sim == null ? '' : ` · ${pct(d.sim)} like the Moon`}`)
     .onPointClick(d => { el.style.cursor = ''; select(d.SITE, true); })
     .onPointHover(d => { el.style.cursor = d ? 'pointer' : ''; })
+    // Pins: a dark disc with a white rim under every dot you can click, so sites stand apart from the haze.
+    .polygonGeoJsonGeometry('geometry')
+    .polygonAltitude(() => 0.068 * labelScale)
+    .polygonCapColor(d => (d.selected ? 'rgba(3,10,18,0.75)' : 'rgba(3,10,18,0.6)'))
+    .polygonSideColor(() => 'rgba(0,0,0,0)')
+    .polygonStrokeColor(d => (d.selected ? '#FFFFFF' : 'rgba(255,255,255,0.85)'))
+    .polygonsTransitionDuration(0)
+    .polygonLabel(d => `${esc(nameOf(d))}${d.sim == null ? '' : ` · ${pct(d.sim)} like the Moon`}`)
+    .onPolygonClick(d => { el.style.cursor = ''; select(d.SITE, true); })
+    .onPolygonHover(d => { el.style.cursor = d ? 'pointer' : ''; })
     // Outlines of every region the pipeline searched (from cells.json); dashed Moon-cream: searched next (Mare).
     .pathPoints('points')
     .pathPointLat(p => p[0])
@@ -1087,7 +1121,7 @@ function onGlobeZoom() {
   if (Math.abs(scale - labelScale) / labelScale < 0.15) return;   // redraw only on a real zoom change
   labelScale = scale;
   // Heatmap and labels float above the globe; zoomed in, bring them down so they sit on the ground.
-  g.heatmapBaseAltitude(0.005 * scale).heatmapTopAltitude(0.06 * scale);
+  g.heatmapBaseAltitude(0.005 * scale).heatmapTopAltitude(0.005 * scale);
   if (heatShown !== scale >= HEAT_MIN_SCALE) {
     heatShown = scale >= HEAT_MIN_SCALE;
     g.heatmapsData(heatShown ? [{ points: heatPoints }] : []);
@@ -1142,6 +1176,7 @@ function updateGlobe(fly) {
   declutterLabels(onGlobe);
   g.labelsData(onGlobe.map(x => ({ ...x })));   // new objects so globe.gl redraws sizes and texts
   g.pointsData(setHitRadii(g, onGlobe.map(x => ({ ...x })), d => (d.SITE === state.selected ? 0.7 : 0.45) * labelScale, 4));   // invisible hit areas
+  g.polygonsData(onGlobe.map(x => pinOf(x, (x.SITE === state.selected ? 0.7 : x.sim == null ? 0.3 : 0.45) * labelScale * 1.9)));
   g.ringsData([...(s ? [{ lat: s.lat, lng: s.lng }] : []),
     ...shown.filter(x => state.twinFlash?.includes(x.SITE) && x.SITE !== state.selected).map(x => ({ lat: x.lat, lng: x.lng, twin: true })),
     ...(state.moonInfo && !state.targets[state.moonInfo] ? PLANNED_REGIONS.map(r => ({ lat: (r.bbox[1] + r.bbox[3]) / 2, lng: (r.bbox[0] + r.bbox[2]) / 2, planned: true })) : [])]);
@@ -1215,7 +1250,7 @@ function initMoon() {
     .labelLng('lng')
     // Several targets of one base: only the picked one has its name written (the others on hover). The polar
     // targets lie within 3.5° of the pole, so their dots and text are smaller.
-    .labelText(b => (b.target && !b.sel ? '' : b.name))
+    .labelText(b => (b.target && !b.sel ? '' : plainText(b.name)))
     .labelSize(b => (b.crowded ? 2.2 : b.target ? 3 : b.sel ? 4.2 : 3.4))
     .labelDotRadius(b => (b.crowded ? (b.sel ? 0.9 : 0.7) : b.sel ? 1.6 : 1.2))
     .labelColor(b => (b.sel ? '#FFFFFF' : moonReady(b.id) ? COLORS.signal : 'rgba(167,186,199,0.75)'))

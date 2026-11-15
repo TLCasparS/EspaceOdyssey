@@ -102,7 +102,7 @@ a { color: var(--earth); }
 .globe { position: absolute; inset: 0; }
 .globe-legend { position: absolute; left: 12px; bottom: 12px; background: rgba(6,18,28,.85); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; max-width: 240px; }
 .legend-title { font-weight: 600; }
-.legend-bar { height: 8px; border-radius: 4px; background: linear-gradient(90deg, #1b2a6b, #2c7fb8, #7fcdbb, #ffffbf, #fdae61, #d7191c); }
+.legend-bar { height: 8px; border-radius: 4px; background: linear-gradient(90deg, rgba(70,50,160,.25), rgb(130,80,220), rgb(190,120,255), rgb(235,190,255)); }
 .legend-scale { display: flex; justify-content: space-between; color: var(--muted); }
 .legend-note { color: var(--warn); }
 /* 3D terrain view, on top of the globe */
@@ -467,3 +467,12 @@ a { color: var(--earth); }
 .access-box .access-line { margin: 0 0 6px; font-size: 17px; line-height: 1.4; }
 .access-box .access-line > span:first-child { display: block; min-width: 0; margin-bottom: 2px; font-family: var(--title); font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; color: var(--text); }
 .access-box .access-line b { color: var(--signal); font-size: 19px; }
+/* Globe legend: what you can click (pins) vs. the glow behind them (heatmap). */
+.legend-key { display: flex; align-items: center; gap: 8px; color: var(--text); line-height: 1.3; }
+.legend-pin { flex: none; width: 14px; height: 14px; border-radius: 50%; background: rgba(3,10,18,.9); border: 1.5px solid #fff; box-shadow: inset 0 0 0 3px rgba(3,10,18,.9), inset 0 0 0 7px #F2C14E; }
+.legend-glow { flex: none; width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle, rgba(235,190,255,.9), rgba(130,80,220,.5) 55%, rgba(70,50,160,0) 75%); }
+/* Phones: keep the legend small so it does not cover the globe (the two keys are what matter). */
+@media (max-width: 600px) {
+  .globe-legend { left: 8px; bottom: 8px; padding: 7px 9px; gap: 4px; font-size: 11px; max-width: 200px; }
+  .globe-legend .legend-bar, .globe-legend .legend-scale { display: none; }
+}
