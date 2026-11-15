@@ -1466,17 +1466,7 @@ const TILT = { pitch: 68, bearing: -25 }; // the tilted 3D view; the 2D/3D butto
 
 const currentSite = () => visibleSites().find(s => s.SITE === state.selected);
 
-const CELL_COLORS = { ranked: '#3CC8B4', filtered: '#F2A35C', no_bowl: '#A7BAC7', ice_floor: '#9CCFF2', excluded: '#FF8A70' };
-// Searched cells from cells.json as outlines (bbox = [W, S, E, N]); cells of the other base are hidden, Mare
-// "kept" cells draw like ranked ones, "excluded" (config-v1.1) in coral.
-function cellsGeoJSON() {
-  return { type: 'FeatureCollection', features: state.cells.filter(c => Array.isArray(c.bbox) && (c.base == null || c.base === state.base)).map(c => {
-    const [w, so, e, n] = c.bbox;
-    return { type: 'Feature', properties: { status: c.status === 'kept' ? 'ranked' : c.status, reason: c.reason ?? '' },
-      geometry: { type: 'LineString', coordinates: [[w, so], [e, so], [e, n], [w, n], [w, so]] } };
-  }) };
-}
-
+// (The searched-cell outlines in the 3D view were removed: they added noise without a clear purpose.)
 function terrainStyle() {
   const dem = { type: 'raster-dem', tiles: [TERRAIN.dem], tileSize: 256, maxzoom: 15, encoding: 'terrarium' };
   return {
@@ -1486,21 +1476,11 @@ function terrainStyle() {
         attribution: 'Imagery: <a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless</a> by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2016), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>' },
       dem: { ...dem, attribution: 'Elevation: <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">Terrain Tiles on AWS</a> (Mapzen)' },
       shade: dem,
-      cells: { type: 'geojson', data: cellsGeoJSON() },
     },
     layers: [
       { id: 'space', type: 'background', paint: { 'background-color': '#030A12' } },
       { id: 'img', type: 'raster', source: 'img', paint: moonPaint() },
       { id: 'shade', type: 'hillshade', source: 'shade', paint: { 'hillshade-exaggeration': 0.3, 'hillshade-shadow-color': '#000000' } },
-      // The grid cells the pipeline searched: teal = crater scored, orange = skipped (edge or sea), grey = no crater.
-      // (Two layers: MapLibre can't change the dash pattern per feature.)
-      { id: 'cells-other', type: 'line', source: 'cells', filter: ['!=', ['get', 'status'], 'ranked'], paint: {
-        'line-color': ['match', ['get', 'status'], 'filtered', CELL_COLORS.filtered, 'ice_floor', CELL_COLORS.ice_floor, 'excluded', CELL_COLORS.excluded, CELL_COLORS.no_bowl],
-        'line-width': 1.2, 'line-opacity': 0.65, 'line-dasharray': [2, 2],
-      } },
-      { id: 'cells-ranked', type: 'line', source: 'cells', filter: ['==', ['get', 'status'], 'ranked'], paint: {
-        'line-color': CELL_COLORS.ranked, 'line-width': 2.5, 'line-opacity': 0.95,
-      } },
     ],
     terrain: { source: 'dem', exaggeration: TERRAIN.exaggeration },
   };
@@ -1826,8 +1806,7 @@ function syncViewUI() {
   const cap = document.getElementById('terrainCaption');
   cap.hidden = !inTerrain || !s;
   if (s) cap.innerHTML = `<b>${esc(nameOf(s))}</b><span class="cap-help${state.showBase ? ' is-base' : ''}"><br>3D terrain, heights ×${TERRAIN.exaggeration}. Drag to look around, scroll to zoom.</span>`
-    + (state.showBase ? `<br>${baseCaptionHTML()}` : '')
-    + (state.cells.length && !state.showBase ? `<br><span class="cell-key"><i style="border-color:${CELL_COLORS.ranked}"></i>scored crater <i style="border-color:${CELL_COLORS.filtered}"></i>skipped (edge or sea) <i style="border-color:${CELL_COLORS.no_bowl}"></i>no crater found${state.cells.some(c => c.status === 'ice_floor') ? ` <i style="border-color:${CELL_COLORS.ice_floor}"></i>ice-filled floor` : ''}</span>` : '');
+    + (state.showBase ? `<br>${baseCaptionHTML()}` : '');
 }
 
 function wireViewTools() {

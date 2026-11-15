@@ -125,9 +125,6 @@ a { color: var(--earth); }
   .wide-only, .base-more, .cap-help.is-base { display: none; }
   .base-less { display: inline; }
 }
-.cell-key { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 4px; }
-.cell-key i { display: inline-block; width: 14px; height: 0; border-top: 2.5px solid; margin-left: 4px; }
-.cell-key i:first-child { margin-left: 0; }
 .globe-wrap .maplibregl-ctrl-attrib { font-size: 10px; }
 .globe-error { position: absolute; inset: auto 16px 50% 16px; text-align: center; color: var(--muted); }
 
