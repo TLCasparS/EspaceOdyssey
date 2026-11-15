@@ -1503,13 +1503,19 @@ function startOrbit() {
 function flyTerrainTo(s) {
   if (!terrainMap || !terrainReady || !s || state.view !== 'terrain') return;
   stopOrbit();
+  drawBowlLayer(s);
   if (state.showBase) { drawBaseLayer(s); flyToBase(s); return syncViewUI(); }
-  const zoom = state.info[s.SITE]?.zoom ?? TERRAIN.defaultZoom;
+  // Polar: the low point, zoomed so the bowl ring fills about half the view. Mare: the base spot, a ~5 km view.
+  const bowl = bowlOf(s);
+  const center = bowl?.floor ?? bowl?.base ?? [s.lng, s.lat];
+  const zoom = bowlZoom(bowl, center[1]) ?? state.info[s.SITE]?.zoom ?? TERRAIN.defaultZoom;
   flightTarget = null;   // flyTo first stops any old move, which fires a 'moveend' that must not orbit
   settling = false;
-  terrainMap.flyTo({ center: [s.lng, s.lat], zoom, ...TILT, duration: reducedMotion ? 0 : 4500, essential: true });
+  // A bowl is seen from a bit higher (less tilt), so the ridges in front hide less of its ring.
+  const pitch = bowl?.diameter ? BOWL_PITCH : TILT.pitch;
+  terrainMap.flyTo({ center, zoom, ...TILT, pitch, duration: reducedMotion ? 0 : 4500, essential: true });
   flightTarget = s.SITE;
-  flightGoal = { zoom, pitch: TILT.pitch };
+  flightGoal = { zoom, pitch };
   syncViewUI();
 }
 
@@ -1634,6 +1640,7 @@ function closeTerrain() {
   clearTimeout(flyInTimer);
   viewerTookOver();
   terrainMap?.stop();                // end any flight before the box is hidden
+  clearBowlLayer();                  // ring and markers belong to the place shown in 3D
   state.view = 'globe';
   syncViewUI();
   state.globe?.resumeAnimation();
@@ -1650,6 +1657,81 @@ function applyMoonColours() {
   if (!layer) return;
   terrainMap.removeLayer('img');
   terrainMap.addLayer({ ...layer, paint: moonPaint() }, 'shade');
+}
+
+/* ---------- The bowl we scored (3D view) ----------
+   Polar: a teal ring the size of the scored bowl (CRATER_DIAMETER_EQUIV_M, else DIAMETER_EQUIV_M, from
+   raw_values.csv) centred on its low point (LAT/LON), plus dots at the crater floor and the base spot
+   (BASE_LAT/BASE_LON). Mare: the base spot only. Pipeline places only; drawn by code from outputs/. */
+const BOWL_COLOR = '#3CC8B4';
+const BOWL_PITCH = 50;   // degrees; the usual 3D tilt (TILT) is 68
+let bowlMarkers = [], bowlShown = null;
+const numOrNull = v => (v == null || v === '' || !Number.isFinite(+v) ? null : +v);
+
+// The point `dist` metres from (lng, lat) on bearing `brg` (radians), on a sphere (great circle).
+function destPoint(lng, lat, dist, brg) {
+  const R = 6371008.8, d = dist / R, r = Math.PI / 180, p1 = lat * r, l1 = lng * r;
+  const p2 = Math.asin(Math.sin(p1) * Math.cos(d) + Math.cos(p1) * Math.sin(d) * Math.cos(brg));
+  const l2 = l1 + Math.atan2(Math.sin(brg) * Math.sin(d) * Math.cos(p1), Math.cos(d) - Math.sin(p1) * Math.sin(p2));
+  return [l2 / r, p2 / r];
+}
+
+function bowlOf(s) {
+  if (!s || !isPipeline() || s.unscored || s.missed) return null;
+  const raw = s.raw ?? {}, mare = s.BASE_TYPE === 'mare';
+  const lat = numOrNull(s.LAT), lng = numOrNull(s.LON), blat = numOrNull(raw.BASE_LAT), blng = numOrNull(raw.BASE_LON);
+  const floor = !mare && lat != null && lng != null ? [lng, lat] : null;
+  const base = blat != null && blng != null ? [blng, blat] : null;
+  const d = numOrNull(raw.CRATER_DIAMETER_EQUIV_M) ?? numOrNull(raw.DIAMETER_EQUIV_M);
+  const diameter = floor && d > 0 ? d : null;
+  return floor || base ? { mare, floor, base, diameter } : null;
+}
+
+// Zoom at which `metres` span the shorter side of the 3D view (MapLibre: the world is 512 × 2^zoom px wide).
+function bowlZoom(bowl, lat) {
+  const span = bowl?.diameter ? bowl.diameter * 2 : bowl?.mare ? 5000 : null;   // ring ≈ half the view; Mare ≈ 5 km
+  const box = document.getElementById('terrain');
+  const px = Math.min(box?.clientWidth || 800, box?.clientHeight || 600);
+  if (!span || !px) return null;
+  const z = Math.log2((40075016.686 * Math.cos(lat * Math.PI / 180) * px) / (512 * span));
+  return Number.isFinite(z) ? Math.max(9, Math.min(16.5, z)) : null;
+}
+
+function bowlMarker(lngLat, text) {
+  const el = document.createElement('div');
+  el.className = 'bowl-pin';
+  el.innerHTML = `<i></i><span>${esc(text)}</span>`;
+  // Stays visible when a ridge stands between the camera and the point (MapLibre fades covered markers).
+  return new maplibregl.Marker({ element: el, anchor: 'left', offset: [-6, 0], opacityWhenCovered: '0.9' }).setLngLat(lngLat).addTo(terrainMap);
+}
+
+function clearBowlLayer() {
+  bowlMarkers.forEach(m => m.remove());
+  bowlMarkers = [];
+  bowlShown = null;
+  if (!terrainMap) return;
+  ['bowl-halo', 'bowl-ring'].forEach(id => terrainMap.getLayer(id) && terrainMap.removeLayer(id));
+  if (terrainMap.getSource('bowl')) terrainMap.removeSource('bowl');
+}
+
+function drawBowlLayer(s) {
+  clearBowlLayer();
+  if (!terrainReady || state.view !== 'terrain') return;
+  const bowl = bowlOf(s);
+  if (!bowl) return;
+  if (bowl.diameter) {
+    // 64 points on the ground, as a polygon; its outline is draped over the terrain.
+    const ring = Array.from({ length: 65 }, (_, i) => destPoint(...bowl.floor, bowl.diameter / 2, ((i % 64) / 64) * 2 * Math.PI));
+    terrainMap.addSource('bowl', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ring] } } });
+    terrainMap.addLayer({ id: 'bowl-halo', type: 'line', source: 'bowl', paint: { 'line-color': '#030A12', 'line-width': 7, 'line-opacity': 0.6, 'line-blur': 1 } });
+    terrainMap.addLayer({ id: 'bowl-ring', type: 'line', source: 'bowl', paint: { 'line-color': BOWL_COLOR, 'line-width': 3 } });
+  }
+  // With "Moon base to scale" on, the habitat label already marks the base spot: no dots then.
+  if (!state.showBase) {
+    if (bowl.floor) bowlMarkers.push(bowlMarker(bowl.floor, 'crater floor'));
+    if (bowl.base) bowlMarkers.push(bowlMarker(bowl.base, 'base spot'));
+  }
+  bowlShown = { ring: !!bowl.diameter };
 }
 
 /* ---------- Moon base drawn to scale (3D view) ---------- */
@@ -1709,7 +1791,7 @@ function clearBaseLayer() {
   baseMarkers.forEach(m => m.remove());
   baseMarkers = [];
   if (!terrainMap) return;
-  ['base-fill', 'base-edge', 'base-line', 'base-shackleton'].forEach(id => terrainMap.getLayer(id) && terrainMap.removeLayer(id));
+  ['base-fill', 'base-edge', 'base-line', 'base-shackleton-casing', 'base-shackleton'].forEach(id => terrainMap.getLayer(id) && terrainMap.removeLayer(id));
   if (terrainMap.getSource('base')) terrainMap.removeSource('base');
 }
 
@@ -1729,8 +1811,12 @@ function drawBaseLayer(s) {
   terrainMap.addLayer({ id: 'base-line', type: 'line', source: 'base', filter: ['==', ['get', 'kind'], 'path'], paint: {
     'line-color': BASE_COLORS.path, 'line-width': 2, 'line-dasharray': [1.5, 1.5],
   } });
+  // Shackleton's rim: white dashes on a dark band, so the ring shows on pale sand as well as on dark rock.
+  terrainMap.addLayer({ id: 'base-shackleton-casing', type: 'line', source: 'base', filter: ['==', ['get', 'kind'], 'shackleton'], paint: {
+    'line-color': '#030A12', 'line-width': 7, 'line-opacity': 0.55, 'line-blur': 1,
+  } });
   terrainMap.addLayer({ id: 'base-shackleton', type: 'line', source: 'base', filter: ['==', ['get', 'kind'], 'shackleton'], paint: {
-    'line-color': BASE_COLORS.shackleton, 'line-width': 2.5, 'line-opacity': 0.85, 'line-dasharray': [3, 2],
+    'line-color': '#FFFFFF', 'line-width': 3.5, 'line-opacity': 1, 'line-dasharray': [3, 2],
   } });
   baseMarkers = [
     baseMarker(plan.hab, `Habitat ${BASE_SCALE.habitatD} m`, 'is-hab'),
@@ -1772,6 +1858,7 @@ function flyToShackleton(s) {
 function toggleBase() {
   state.showBase = !state.showBase;
   const s = currentSite();
+  drawBowlLayer(s);                  // ring stays; its dots step aside for the habitat label
   drawBaseLayer(s);
   if (state.showBase) flyToBase(s); else flyTerrainTo(s);
   syncViewUI();
@@ -1806,7 +1893,8 @@ function syncViewUI() {
   const cap = document.getElementById('terrainCaption');
   cap.hidden = !inTerrain || !s;
   if (s) cap.innerHTML = `<b>${esc(nameOf(s))}</b><span class="cap-help${state.showBase ? ' is-base' : ''}"><br>3D terrain, heights ×${TERRAIN.exaggeration}. Drag to look around, scroll to zoom.</span>`
-    + (state.showBase ? `<br>${baseCaptionHTML()}` : '');
+    + (state.showBase ? `<br>${baseCaptionHTML()}` : '')
+    + (inTerrain && !state.showBase && bowlShown ? `<br><span class="bowl-key">${bowlShown.ring ? '<i class="bowl-sw-ring"></i>ring = the bowl we scored · ' : ''}<i class="bowl-sw-dot"></i>${bowlShown.ring ? 'dots = crater floor and base spot' : 'dot = base spot'}</span>` : '');
 }
 
 function wireViewTools() {
