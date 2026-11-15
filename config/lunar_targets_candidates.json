@@ -1,5 +1,5 @@
 {
-  "_readme": "Candidate lunar targets (night Task 5, 14 Nov 2026). ALL verified: false - a person checks the preview (figures/moon/targets/) and flips verified per target and per criterion. Polar: src/compute_polar_candidates.py (one per Artemis III 2022 region, same method as Shackleton); Mare: src/compute_mare_candidates.py (per-mare split of config/lunar_targets.json mare.cells). Entries with skipped: true have no criteria (reason in skip_reason). Per-criterion shape as config/lunar_targets.json: value, source, date, verified (+ tolerance for Mare). Polar entries carry no tolerance: use config/pipeline.yaml polar tolerances. Report: docs/NEW_TARGETS_REPORT.md",
+  "_readme": "Candidate lunar targets (night Task 5, 14 Nov 2026). Reviewed 15 Nov 2026 (see 'review' per entry): verified = polar_sl2, polar_haworth and the 4 Mare targets; all others stay false. A person checks the preview (figures/moon/targets/) and flips verified per target and per criterion. Polar: src/compute_polar_candidates.py (one per Artemis III 2022 region, same method as Shackleton); Mare: src/compute_mare_candidates.py (per-mare split of config/lunar_targets.json mare.cells). Entries with skipped: true have no criteria (reason in skip_reason). Per-criterion shape as config/lunar_targets.json: value, source, date, verified (+ tolerance for Mare). Polar entries carry no tolerance: use config/pipeline.yaml polar tolerances. Report: docs/NEW_TARGETS_REPORT.md",
   "targets": [
     {
       "name": "polar_site01",
@@ -125,7 +125,14 @@
         "lpsr_share_of_floor": 0.6261
       },
       "preview": "figures/moon/targets/polar_site01.png",
-      "git_commit": "df8b4e9"
+      "git_commit": "df8b4e9",
+      "review": {
+        "decision": "not verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "2022 region only (not in NASA's 2024 list); team decision 15 Nov: keep only regions still in the 2024 list. Clean 2.2 km bowl with full light values.",
+        "artemis_2024_list": "https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/"
+      }
     },
     {
       "name": "polar_site07",
@@ -251,7 +258,14 @@
         "lpsr_share_of_floor": 0.7338
       },
       "preview": "figures/moon/targets/polar_site07.png",
-      "git_commit": "df8b4e9"
+      "git_commit": "df8b4e9",
+      "review": {
+        "decision": "not verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "2022 region only (not in NASA's 2024 list); team decision 15 Nov. Clean 3.4 km bowl, sunniest rim of the set (c1 0.98).",
+        "artemis_2024_list": "https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/"
+      }
     },
     {
       "name": "polar_site11",
@@ -378,11 +392,18 @@
         "lpsr_share_of_floor": 0.6763
       },
       "preview": "figures/moon/targets/polar_site11.png",
-      "git_commit": "df8b4e9"
+      "git_commit": "df8b4e9",
+      "review": {
+        "decision": "not verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "Duplicate of polar_sl2 (same bowl, low points 45 m apart); sl2 kept.",
+        "artemis_2024_list": "https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/"
+      }
     },
     {
       "name": "polar_sl2",
-      "label": "Polar · de Gerlache Rim 2 (Artemis III 2022 region)",
+      "label": "Polar · small crater on the de Gerlache rim (Artemis III region, 2022 and 2024 lists)",
       "base_type": "polar",
       "region": "de Gerlache Rim 2",
       "pgda_site": "SL2",
@@ -406,71 +427,71 @@
           "value": 0.7661,
           "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c2_dark_floor": {
           "value": 1.0,
           "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c3_light_dark": {
           "value": 1.8241,
           "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c4_grazing_sun": {
           "value": 3.0486,
           "source": "geometry: low-point latitude + light.MOON_EQUATOR_TILT_DEG",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c5_sky_view": {
           "value": 0.9004,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c7_bowl": {
           "value": 0.0408,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c9_relief": {
           "value": 63.8128,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c10_flat_base": {
           "value": 1.2764,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c11_walls": {
           "value": 7.7999,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c13_roughness": {
           "value": 6.4467,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c14_aspect": {
           "value": 0.0,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         }
       },
       "date": "2026-11-14",
-      "verified": false,
+      "verified": true,
       "light_note": null,
       "place": {
         "low_point_xy_m": [
@@ -505,7 +526,15 @@
         "lpsr_share_of_floor": 0.6819
       },
       "preview": "figures/moon/targets/polar_sl2.png",
-      "git_commit": "df8b4e9"
+      "git_commit": "df8b4e9",
+      "review": {
+        "decision": "verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "Kept as the one de Gerlache target: still a candidate in NASA's 2024 update (9 regions, 'de Gerlache Rim 2'). Same bowl as polar_site11 (low points 45 m apart). Weakest bowl of the set: 1.3 km wide, 53 m spill depth, just above the 50 m minimum. PGDA labels Site11 and SL2 both 'de Gerlache rim', so the Rim 1/Rim 2 mapping is UNVERIFIED: say 'de Gerlache rim' on cards. The target is the one small crater the bowl detector found inside the 15 km region, not the region's defining feature (Artemis regions were picked for sunlit ridges/peaks): c1 < 1, i.e. this crater's rim is less sunlit than flat ground. Card wording: 'small crater in Artemis III region X'.",
+        "artemis_2024_list": "https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/"
+      },
+      "label_before_review": "Polar · de Gerlache Rim 2 (Artemis III 2022 region)"
     },
     {
       "name": "polar_site23",
@@ -679,7 +708,14 @@
         "lpsr_share_of_floor": null
       },
       "preview": "figures/moon/targets/polar_dm2.png",
-      "git_commit": "df8b4e9"
+      "git_commit": "df8b4e9",
+      "review": {
+        "decision": "not verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "In NASA's 2024 list (Nobile Rim 2), but it has no light values (north of 85 S, outside the PGDA illumination maps), so it could only be scored on terrain; its bowl outline is irregular and its base pad lies outside the 15 km region. Revisit with a wider illumination product.",
+        "artemis_2024_list": "https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/"
+      }
     },
     {
       "name": "polar_sl3",
@@ -829,11 +865,18 @@
         "lpsr_share_of_floor": 0.4765
       },
       "preview": "figures/moon/targets/polar_site42.png",
-      "git_commit": "df8b4e9"
+      "git_commit": "df8b4e9",
+      "review": {
+        "decision": "not verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "2022 region only; ordinary small crater, weak sunlight (c1 0.68).",
+        "artemis_2024_list": "https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/"
+      }
     },
     {
       "name": "polar_haworth",
-      "label": "Polar · Haworth (Artemis III 2022 region)",
+      "label": "Polar · small crater in the Haworth region (Artemis III region, 2022 and 2024 lists)",
       "base_type": "polar",
       "region": "Haworth",
       "pgda_site": "Haworth",
@@ -856,71 +899,71 @@
           "value": 0.8666,
           "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c2_dark_floor": {
           "value": 1.0,
           "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c3_light_dark": {
           "value": 1.1199,
           "source": "PGDA product 69 AVGVISIB_85S_060M_201608.TIF (Mazarico et al. 2011, LOLA-modelled, 60 m, hourly over 18.6 yr; visible solar-disc fraction)",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c4_grazing_sun": {
           "value": 4.808,
           "source": "geometry: low-point latitude + light.MOON_EQUATOR_TILT_DEG",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c5_sky_view": {
           "value": 0.8756,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c7_bowl": {
           "value": 0.0613,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c9_relief": {
           "value": 281.0165,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c10_flat_base": {
           "value": 1.1417,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c11_walls": {
           "value": 10.8338,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c13_roughness": {
           "value": 9.007,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         },
         "c14_aspect": {
           "value": 0.0,
           "source": "LOLA LDEM_80S_20MPP_ADJ.TIF (Barker et al. 2023, PGDA product 90), +-35 km window around the region centre read via /vsicurl/, bilinear to 60 m",
           "date": "2026-11-14",
-          "verified": false
+          "verified": true
         }
       },
       "date": "2026-11-14",
-      "verified": false,
+      "verified": true,
       "light_note": null,
       "place": {
         "low_point_xy_m": [
@@ -955,7 +998,15 @@
         "lpsr_share_of_floor": 0.5337
       },
       "preview": "figures/moon/targets/polar_haworth.png",
-      "git_commit": "df8b4e9"
+      "git_commit": "df8b4e9",
+      "review": {
+        "decision": "verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "Still a candidate in NASA's 2024 update ('Haworth'). The bowl is a 3.1 km crater inside the region, NOT Haworth crater itself. The target is the one small crater the bowl detector found inside the 15 km region, not the region's defining feature (Artemis regions were picked for sunlit ridges/peaks): c1 < 1, i.e. this crater's rim is less sunlit than flat ground. Card wording: 'small crater in Artemis III region X'.",
+        "artemis_2024_list": "https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/"
+      },
+      "label_before_review": "Polar · Haworth (Artemis III 2022 region)"
     },
     {
       "name": "polar_site20",
@@ -1081,7 +1132,14 @@
         "lpsr_share_of_floor": 0.3739
       },
       "preview": "figures/moon/targets/polar_site20.png",
-      "git_commit": "df8b4e9"
+      "git_commit": "df8b4e9",
+      "review": {
+        "decision": "not verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "2022 region only; ordinary small crater, weakest sunlight (c1 0.55).",
+        "artemis_2024_list": "https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/"
+      }
     },
     {
       "name": "polar_dm1",
@@ -1207,7 +1265,14 @@
         "lpsr_share_of_floor": null
       },
       "preview": "figures/moon/targets/polar_dm1.png",
-      "git_commit": "df8b4e9"
+      "git_commit": "df8b4e9",
+      "review": {
+        "decision": "not verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "2022 region only; no light values (north of 85 S, outside the PGDA maps).",
+        "artemis_2024_list": "https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/"
+      }
     },
     {
       "name": "polar_lm7",
@@ -1333,7 +1398,14 @@
         "lpsr_share_of_floor": 1.0
       },
       "preview": "figures/moon/targets/polar_lm7.png",
-      "git_commit": "df8b4e9"
+      "git_commit": "df8b4e9",
+      "review": {
+        "decision": "not verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "2022 region only (not in NASA's 2024 list); team decision 15 Nov. Most crater-like candidate (2.2 km, 364 m deep, depth/width 0.16): worth adding if 2022 regions are allowed.",
+        "artemis_2024_list": "https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/"
+      }
     },
     {
       "name": "mare_tranquillitatis",
@@ -1381,7 +1453,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             411.8534,
             126.4424,
@@ -1406,7 +1478,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             0.2179,
             0.2492,
@@ -1431,7 +1503,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             0.9532,
             0.9996,
@@ -1456,7 +1528,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             2.0095,
             1.9379,
@@ -1468,9 +1540,16 @@
       },
       "date": "2026-11-14",
       "git_commit": "df8b4e9",
-      "verified": false,
+      "verified": true,
       "note": "only 5 cells: the IQR of so few values is a rough spread estimate",
-      "preview": "figures/moon/targets/mare_per_mare.png"
+      "preview": "figures/moon/targets/mare_per_mare.png",
+      "review": {
+        "decision": "verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "Same 20 SLDEM2015 cells as config/lunar_targets.json mare (checked 14 Nov), split by mare; only 5 cells each, so the IQR is a rough spread estimate (tolerance = max(IQR, frozen floor)).",
+        "artemis_2024_list": null
+      }
     },
     {
       "name": "mare_serenitatis",
@@ -1518,7 +1597,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             118.0635,
             65.3367,
@@ -1543,7 +1622,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             0.2293,
             0.2329,
@@ -1568,7 +1647,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             0.9937,
             0.9997,
@@ -1593,7 +1672,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             1.4148,
             1.2873,
@@ -1605,9 +1684,16 @@
       },
       "date": "2026-11-14",
       "git_commit": "df8b4e9",
-      "verified": false,
+      "verified": true,
       "note": "only 5 cells: the IQR of so few values is a rough spread estimate",
-      "preview": "figures/moon/targets/mare_per_mare.png"
+      "preview": "figures/moon/targets/mare_per_mare.png",
+      "review": {
+        "decision": "verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "Same 20 SLDEM2015 cells as config/lunar_targets.json mare (checked 14 Nov), split by mare; only 5 cells each, so the IQR is a rough spread estimate (tolerance = max(IQR, frozen floor)).",
+        "artemis_2024_list": null
+      }
     },
     {
       "name": "mare_imbrium",
@@ -1655,7 +1741,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             91.8859,
             98.3252,
@@ -1680,7 +1766,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             0.19,
             0.2107,
@@ -1705,7 +1791,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             0.9993,
             0.9995,
@@ -1730,7 +1816,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             1.5441,
             1.6924,
@@ -1742,9 +1828,16 @@
       },
       "date": "2026-11-14",
       "git_commit": "df8b4e9",
-      "verified": false,
+      "verified": true,
       "note": "only 5 cells: the IQR of so few values is a rough spread estimate",
-      "preview": "figures/moon/targets/mare_per_mare.png"
+      "preview": "figures/moon/targets/mare_per_mare.png",
+      "review": {
+        "decision": "verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "Same 20 SLDEM2015 cells as config/lunar_targets.json mare (checked 14 Nov), split by mare; only 5 cells each, so the IQR is a rough spread estimate (tolerance = max(IQR, frozen floor)).",
+        "artemis_2024_list": null
+      }
     },
     {
       "name": "mare_crisium",
@@ -1792,7 +1885,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             294.6208,
             285.5308,
@@ -1817,7 +1910,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             0.1736,
             0.2829,
@@ -1842,7 +1935,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             0.9899,
             0.9845,
@@ -1867,7 +1960,7 @@
           ],
           "source": "SLDEM2015 (LOLA + SELENE Kaguya TC merge, 512 ppd = 59 m; Barker et al. 2016) windows from src/fetch_sldem_window.py, resampled to the 60 m grid; cells: config/mare_cells.json; per-mare split of config/lunar_targets.json mare.cells",
           "date": "2026-11-14",
-          "verified": false,
+          "verified": true,
           "cell_values": [
             2.0333,
             2.0204,
@@ -1879,9 +1972,16 @@
       },
       "date": "2026-11-14",
       "git_commit": "df8b4e9",
-      "verified": false,
+      "verified": true,
       "note": "only 5 cells: the IQR of so few values is a rough spread estimate",
-      "preview": "figures/moon/targets/mare_per_mare.png"
+      "preview": "figures/moon/targets/mare_per_mare.png",
+      "review": {
+        "decision": "verified",
+        "by": "Mateo (preview review with Claude, 15 Nov 2026)",
+        "date": "2026-11-15",
+        "why": "Same 20 SLDEM2015 cells as config/lunar_targets.json mare (checked 14 Nov), split by mare; only 5 cells each, so the IQR is a rough spread estimate (tolerance = max(IQR, frozen floor)).",
+        "artemis_2024_list": null
+      }
     }
   ]
 }
