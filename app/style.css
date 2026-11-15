@@ -300,11 +300,11 @@ a { color: var(--earth); }
 .base-label { font: 600 12px 'Fira Sans', sans-serif; color: var(--text); background: rgba(6,18,28,.88); border: 1px solid var(--border); border-radius: 999px; padding: 3px 9px; white-space: nowrap; pointer-events: none; }
 .base-label.is-hab { border-color: #E8E3D3; }
 .base-label.is-pad { border-color: var(--accent); }
-.base-label.is-shack { border-style: dashed; border-color: var(--moon); }
+.base-label.is-shack { border-style: dashed; border-color: #fff; }
 .base-key { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 4px; color: var(--text); }
 .base-sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
 .base-sw.is-round { border-radius: 50%; }
-.base-sw.is-ring { border: 2px dashed var(--moon); border-radius: 50%; background: none; width: 12px; height: 12px; }
+.base-sw.is-ring { border: 2px dashed #fff; border-radius: 50%; background: none; width: 12px; height: 12px; box-shadow: 0 0 0 1.5px rgba(3,10,18,.6), inset 0 0 0 1.5px rgba(3,10,18,.6); }
 .terrain-caption a { color: var(--earth); }
 .base-jump { margin: 6px 6px 0 0; font: inherit; font-weight: 600; color: var(--text); background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
 .base-jump:hover, .base-jump:focus-visible { border-color: var(--signal); }

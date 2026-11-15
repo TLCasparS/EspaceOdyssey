@@ -1791,7 +1791,7 @@ function clearBaseLayer() {
   baseMarkers.forEach(m => m.remove());
   baseMarkers = [];
   if (!terrainMap) return;
-  ['base-fill', 'base-edge', 'base-line', 'base-shackleton'].forEach(id => terrainMap.getLayer(id) && terrainMap.removeLayer(id));
+  ['base-fill', 'base-edge', 'base-line', 'base-shackleton-casing', 'base-shackleton'].forEach(id => terrainMap.getLayer(id) && terrainMap.removeLayer(id));
   if (terrainMap.getSource('base')) terrainMap.removeSource('base');
 }
 
@@ -1811,8 +1811,12 @@ function drawBaseLayer(s) {
   terrainMap.addLayer({ id: 'base-line', type: 'line', source: 'base', filter: ['==', ['get', 'kind'], 'path'], paint: {
     'line-color': BASE_COLORS.path, 'line-width': 2, 'line-dasharray': [1.5, 1.5],
   } });
+  // Shackleton's rim: white dashes on a dark band, so the ring shows on pale sand as well as on dark rock.
+  terrainMap.addLayer({ id: 'base-shackleton-casing', type: 'line', source: 'base', filter: ['==', ['get', 'kind'], 'shackleton'], paint: {
+    'line-color': '#030A12', 'line-width': 7, 'line-opacity': 0.55, 'line-blur': 1,
+  } });
   terrainMap.addLayer({ id: 'base-shackleton', type: 'line', source: 'base', filter: ['==', ['get', 'kind'], 'shackleton'], paint: {
-    'line-color': BASE_COLORS.shackleton, 'line-width': 2.5, 'line-opacity': 0.85, 'line-dasharray': [3, 2],
+    'line-color': '#FFFFFF', 'line-width': 3.5, 'line-opacity': 1, 'line-dasharray': [3, 2],
   } });
   baseMarkers = [
     baseMarker(plan.hab, `Habitat ${BASE_SCALE.habitatD} m`, 'is-hab'),
