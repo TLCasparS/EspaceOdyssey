@@ -71,6 +71,16 @@ Configs: Polar `config-v1` (frozen), Mare `mare-v1` (frozen, Mateo's lunar targe
 .venv\Scripts\python.exe src\night_run.py --score
 .venv\Scripts\python.exe src\export_app.py out\night_polar out\night_mare out\meteor_crater out\pinacate
 ```
+**15 Nov 2026, export actually used for the app (config-v1.1 post-run filters, offline names):**
+```powershell
+.venv\Scripts\python.exe src\night_run.py --score --tracks A,B2
+.venv\Scripts\python.exe src\export_app.py out\night_polar out\night_mare out\meteor_crater out\pinacate `
+  --post-filters config\post_filters.yaml --place-names $env:LOCALAPPDATA\espaceodyssey_data `
+  --anchors config\site_anchors.csv --dedupe-km 1 --cells-near-km 16
+```
+Needs in `%LOCALAPPDATA%\espaceodyssey_data`: `maus_v2\global_mining_polygons_v2.gpkg`, `naturalearth\extracted\`
+(admin 0 countries + geography regions), `geonames\extracted\cities1000.txt`; links in `config/post_filters.yaml`
+and `src/place_names.py`. Details: `docs/MORNING_REPORT.md`.
 Failed tiles are listed by `--status` and retried by running the night command again.
 
 ## Laptop checklist (before command 3)

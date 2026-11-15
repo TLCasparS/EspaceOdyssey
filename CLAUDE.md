@@ -78,6 +78,7 @@ Tag `mare-v1` (14 Nov 2026): the `mare:` config section and the Mare lunar targe
 | 14 Nov 2026 | Mare lunar target (Mateo, `src/compute_mare_target.py`): median over 20 cells across 4 maria (seed 20261114), SLDEM2015; tolerance = max(IQR, floor). **No bowl exclusion** (team decision: Earth Mare cells keep their craters; with exclusion 34 of 60 lunar cells were rejected and the target described unusually smooth mare); `has_bowl` recorded per cell for information | mirror the Earth side |
 | 14 Nov 2026 | **Freeze: git tag `mare-v1`** for the Mare config and lunar targets, guarded by `tests/test_mare_freeze.py` | night run and Lanzarote validation run on an untuned Mare config |
 | 14 Nov 2026 | c5 sky-view factor display only (weight 0) | duplicates c7 for simple bowls and overlaps c2 (r −0.91 each over 6 bowl cells); c2 has the lunar comparison |
+| 15 Nov 2026 | **config-v1.1 = post-run filters** for Polar (`config/post_filters.yaml`, `src/post_filters.py`, `export_app.py --post-filters`): excluded "mine" = low point inside a Maus et al. 2022 v2 mining polygon; excluded "not a dry bowl" = BARE_SHARE < 0.3 or ICE_FLOOR_SHARE > 0.2 or ICE_RIM_SHARE > 0.2. Excluded places keep score and raw values, lose their rank. config-v1 scoring stays frozen | night run top 25 held 10 open-pit mines and 9 icy / vegetated bowls |
 
 ## Who does what
 - Caspar: data pipeline (DEM, filters, terrain scoring)
