@@ -520,3 +520,11 @@ a { color: var(--earth); }
 /* Legend scale: "few, weak [colour bar] many, strong" on one line */
 .legend-scale { align-items: center; gap: 8px; }
 .legend-scale .legend-bar { flex: 1; min-width: 60px; }
+
+/* 3D view: the bowl we scored (teal ring) and small dots for the crater floor and the base spot */
+.bowl-pin { display: flex; align-items: center; gap: 6px; pointer-events: none; }
+.bowl-pin i { width: 12px; height: 12px; border-radius: 50%; background: #3CC8B4; border: 2px solid #fff; box-shadow: 0 0 0 2px rgba(3,10,18,.6); flex: none; }
+.bowl-pin span { font: 600 12px 'Fira Sans', sans-serif; color: var(--text); background: rgba(6,18,28,.85); border: 1px solid rgba(60,200,180,.6); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+.bowl-key { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.bowl-sw-ring { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 3px solid #3CC8B4; box-shadow: 0 0 0 1.5px rgba(3,10,18,.6); }
+.bowl-sw-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #3CC8B4; border: 2px solid #fff; }
