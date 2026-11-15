@@ -1,207 +1,231 @@
 # Submission draft (for the project page)
 
-Draft by an AI agent (Task 1), for the team to edit. **Updated 15 Nov 2026 morning with the night-run numbers**
-from `outputs/night_export/` (export of 15 Nov, 02:43), the same numbers as `docs/PITCH_OUTLINE.md` (which says
-how each was computed). Lunar values from `config/lunar_targets.json`; validation from
-`docs/VALIDATION_config-v1.md`. `[TEAM]` marks what only the team knows; `[TEAM: mine filter]` waits for the
-open-pit-mine filter. Checklist and sources: `docs/SUBMISSION_CHECKLIST.md`. All fields must be in English.
+Task 1, **updated 15 Nov 2026 evening** (summary and detailed description: the team's final wording) with everything merged into `main` up to PR #41: new name, the filtered
+ranking (mines and wet bowls removed), several lunar targets, access and research stations, rock at the site, the 3D
+bowl ring, the Moon base to scale and the new app layout. Numbers are the same as the pitch (`pitch/SCRIPT.md`, which
+lists the source of each number) and `outputs/` on `main`. All fields must be in English. Each section below is one
+field of the project page, ready to paste. `[TEAM]` marks the few things only the team can fill in.
 
 ---
 
-## Project Name (options)
-No NASA / Space Apps names or mission identifiers in the title (SI branding rule).
+## Project Name
+**Moon Twins on Earth**
 
-1. **Moon Twins on Earth** (chosen 15 Nov 2026: name of the app and the pitch deck)
-2. Earth Twins of the Moon (earlier working name)
-3. Lunar Analog Finder: measuring how Moon-like a place on Earth is
-4. Shackleton's Twins: Earth craters ranked against the lunar south pole
-5. One Ruler, Two Worlds: Earth analogs for lunar bases
-
-Tagline (for the cover slide): *Which places on Earth come closest to a lunar base site, and how close?*
+Tagline: *Find the places on Earth that come closest to a lunar base site, and learn why.*
 
 ---
 
-## High-Level Project Summary (~150 words)
-We built an open, reusable pipeline that ranks places on Earth by how closely they match a lunar base site, and a
-web app on top of it. From NASA's LOLA elevation and PGDA illumination maps it measures Shackleton crater at the
-lunar south pole (bowl shape, steep walls, flat landing pad, sunlit rim, dark floor); the same code then measures
-Earth (Copernicus DEM) on the same 60 m grid and turns each difference into a 0–100 % similarity. In one night it
-searched about 265,000 cells of 15 km and scored 1,825 crater-like places; from elevation alone it found real
-impact craters such as Meteor Crater, Roter Kamm and Pingualuit. After filtering out open-pit mines and icy bowls,
-1,261 places are ranked. New regions, lunar sites and criteria plug in through config files, so others can build
-on it. The app shows the results on two linked globes, Earth and Moon, with a card per site that says what matches
-and where the analogy breaks down.
+## High-Level Project Summary
+Moon Twins on Earth is an open method and web app that finds the places on Earth closest to a planned lunar base
+site, and shows why. Earth analog sites are usually picked by eye; we measure them. The same code reads NASA lunar
+elevation and illumination data (Shackleton crater, two craters in Artemis III candidate regions, and the lunar maria)
+and Earth elevation data on one 60 m grid, turning every difference into a 0–100 % similarity. In one night it
+searched about 265,000 cells and ranked 1,261 dry, crater-like places, finding real impact craters from elevation
+alone. In the app, anyone can explore the ranking on two linked globes, open a card for each site (what matches,
+where the analogy breaks down, how to get there) and fly into the 3D terrain. It is made for people to learn what
+makes a good base site and to discover new places beyond the famous analog sites. Our main contribution is the
+method: repeatable, open, and built to scale to the whole planet and new lunar targets.
 
 ---
 
 ## Link to Project Demo
-`[TEAM]` public link to the 7-slide deck (PDF or Google Slides, no login). Test it in a private window.
+`[TEAM]` public link to the 7-slide deck (`pitch/Moon_Twins_on_Earth.pptx` exported to PDF or Google Slides, shared
+without login). Test it in a private window.
 
 ## Link to Final Project
-- Code and data: https://github.com/TLCasparS/EspaceOdyssey
-- App (live, no login): https://tlcaspars.github.io/EspaceOdyssey/app/ (GitHub Pages from `main`; nobody merges
-  to `main` after 23:59 CET)
+- App (live, no login): https://tlcaspars.github.io/EspaceOdyssey/app/
+- Code, outputs and documentation: https://github.com/TLCasparS/EspaceOdyssey
 
 ---
 
 ## Detailed Project Description
+Moon Twins on Earth is an open, reusable pipeline that measures how Moon-like a place on Earth is and ranks the best
+Earth stand-ins ("twins") for candidate lunar base sites. Analog sites have mostly been chosen by eye. Our method can
+be rerun and extended: for any lunar site, it finds the places on Earth that come closest, shows how close they are,
+and says where the comparison breaks down. Our ranking and our web app are the first results built on it; we want the
+pipeline itself to be the base that others build on.
 
-### What it does
-Moon Twins on Earth answers one question: which places on Earth best stand in for a lunar base site, and by
-how much? Instead of choosing analog sites by eye, it measures each candidate against a real lunar target with the
-same definitions on both worlds, and it says where the comparison fails.
+### What it does and how it works
 
-- **Two base types.** *Polar*: Shackleton crater, near the lunar south pole (sunny rim, permanently shadowed floor).
-  *Mare*: a typical mare plain, summarised from 20 sample areas across four maria, shown at the Apollo 11 site.
-- **A ranked list of Earth twins** with one similarity score each.
-- **Two linked 3D globes.** Pick a base on the Moon globe and the Earth globe turns to its closest independent twin;
-  a heatmap shows where the scored craters are, outlines show every region we searched, including the ones where
-  nothing was found.
-- **A card per site**: a radar chart (the Moon is the full outer ring), the closest criteria and what the site
-  lacks, raw values side by side ("Steep walls 23.9° vs 27.2°"), ground values (drivable, bare ground, snow and ice,
-  confirmed impact structure) and the facts no place on Earth can match.
-- **A 3D close-up** of each site in real terrain and satellite imagery, with its values next to it.
+**The pipeline: one ruler for two worlds**
+1. **Moon target.** The lunar site is measured from NASA data with the same code used for Earth. For Shackleton
+   crater, the pipeline finds the bowl in NASA's 20 m LOLA south-pole elevation map: 20.9 km wide, about 4.1 km deep,
+   inner walls 27.2°. NASA PGDA illumination maps give the sunlit rim and the permanently dark floor. SLDEM2015
+   (LOLA + JAXA Kaguya) gives the mare plains.
+2. **Earth search.** Any region, or the whole land surface, is split into cells of about 15 km, the size of an
+   Artemis III landing region. ESA WorldCover removes forest, cropland, water, wetlands and towns (with a 2 km
+   buffer). The Copernicus 30 m elevation model is reprojected to the same 60 m metric grid as the Moon. All data
+   streams directly from AWS Open Data, with no manual downloads.
+3. **Measure.** Each criterion is one function, applied the same way to Earth and Moon: bowl shape, steep walls, a
+   flat landing pad, roughness, drivable ground, and light (sunny ridge, dark floor, light next to dark). On Earth,
+   light comes from simulating a full year of Sun over the terrain. Raw values are stored.
+4. **Score.** Each criterion becomes a similarity, `exp(−((Earth − Moon) / tolerance)²)`, where 1 means identical to
+   the Moon; the total is a weighted mean. Because scoring is a separate step, a new lunar target is scored against
+   every Earth place already measured, without recomputing the terrain.
+5. **Filter.** Post-filters remove known false matches: open-pit mines (global mining polygons) and icy, wet or
+   vegetated bowls. A filter never changes a score.
+6. **Export.** Plain CSV and JSON files in a documented format, read by our app and by any other tool.
 
-### How it works
-1. **Lunar target.** `src/compute_lunar_target.py` reads NASA's LOLA south-pole elevation map
-   (LDEM_80S_20MPP_ADJ, 20 m) in a ±35 km window, resamples it to a 60 m grid and finds Shackleton's bowl from the
-   data. Measured: rim-crest diameter 20.9 km, rim-to-floor depth about 4.1 km, inner walls 27.2°, depth/width
-   0.197, base-pad slope 0.66°. Light values come from NASA PGDA's modelled illumination map (AVGVISIB, 60 m).
-   The Mare target is the median of 20 lunar mare cells from SLDEM2015 (relief 154 m within 5 km, flattest pad
-   0.24°, drivable ground 99.3 %, roughness 1.7 m), with tolerance = max(IQR, floor).
-2. **Earth search.** Regions are split into ~15 km grid cells. ESA WorldCover removes trees, cropland, built-up
-   areas (with a 2 km buffer), water and wetlands; the Copernicus DEM (GLO-30) is reprojected to the same 60 m metric grid. A cell needs a closed bowl
-   at least 50 m deep, 1 km wide and not too elongated.
-3. **Same ruler on both worlds.** The same functions compute every criterion on Earth and on the Moon: bowl shape,
-   inner-wall slope, base-pad slope, roughness, and light (sunny ridge, dark floor, light next to dark) from a
-   year-long Sun simulation over the Earth DEM vs the lunar illumination map.
-4. **Score.** Each criterion becomes a similarity `exp(−((Earth − Moon) / tolerance)²)`; the total is their
-   weighted mean. Criteria that can't be compared fairly are shown but not counted (e.g. sky-view, relief, the
-   Sun's height).
-5. **Frozen and tested.** The scoring settings were frozen (git tags `config-v1`, `mare-v1`, guarded by tests)
-   before validation, so the validation regions could not be tuned.
-6. **Export and app.** `src/export_app.py` writes `outputs/` (scores, raw values, lunar targets, heatmap, searched
-   cells); the app is a static web page (HTML, JavaScript, globe.gl, MapLibre GL JS), no build step.
+**Built to be reused**
+- **New region:** one command with a bounding box (`run_pipeline.py --bbox W S E N`). The world search runs overnight
+  on one laptop and picks up where it stopped.
+- **New lunar site:** add its measured values to a config file; the next export scores every Earth place against it.
+  That is how we added two smaller craters in Artemis III regions (de Gerlache rim, Haworth) and four individual maria
+  next to Shackleton and the mare median.
+- **New criterion:** add one function and a weight. Our criteria document lists 29 criteria; the app shows a
+  criterion as soon as the export has data for it.
+- **Settings** (thresholds, weights, tolerances) live in config files, not in the code. They are frozen with git tags
+  and guarded by automated tests, so a change shows up as a new version instead of silently changing results.
+- **Mars** is the natural next step: the Earth side stays as it is; a Mars target needs a reader for Mars elevation
+  data and Mars-specific criteria.
 
-### What we found (night run, 14–15 Nov)
-- **Scale.** 264,896 grid cells of 15 km searched in one night: 11,604 of the 19,433 1° land tiles, deserts first,
-  not yet the whole planet. Funnel: 11,932 out at the coarse land-cover prescreen, 202,422 with no bowl at 90 m,
-  41,699 removed by land cover / water / towns, 6,909 with no bowl at 30 m, 109 with an ice-filled floor, leaving
-  **1,825 places ranked against Shackleton** `[TEAM: mine filter: how many remain]`.
-- **It finds real craters from elevation alone.** The bowl detector knows nothing about impacts; afterwards three
-  ranked places match the list of confirmed impact structures: Meteor Crater, Roter Kamm and New Quebec /
-  Pingualuit (the list has 88 structures and is incomplete).
-- **It also finds open-pit mines**, because they are perfect closed bowls; we filter them `[TEAM: mine filter]`.
-- **Known craters for scale:** Meteor Crater 44 % (rank 45; a tuning site, so not an independent result), the best
-  Pinacate maar 40 %, Al Wahbah 27 %, Roter Kamm 24 %, Pingualuit 20 %. Top overall: `[TEAM: after mine filter]`.
-- **Terrain twins and light twins are different places.** Of the 50 best places by terrain and the 50 best by light,
-  only 5 are the same (rank correlation 0.06 over all 1,825). The best light twins lie further from the equator and
-  in deep mountain bowls.
-- **Mare:** 500 flat places were measured against the lunar mare target, and half of them score 97 % or more:
-  flat, Moon-like ground is common on Earth, so terrain alone does not separate places. Rock type (basalt) has to
-  come in before a Mare ranking means much.
-- **Where the analogy breaks down.** No place on Earth has the Moon's grazing Sun: at Shackleton the Sun climbs at
-  most 1.9° above the horizon, on Earth never less than 23.4° (lowest among our 1,825 places: 31.8°, at 81.6° N).
-  So Shackleton's floor is always in shadow, while a typical Earth crater floor is in shadow 16.5 % of the time
-  and only 2 of the 1,825 places reach 90 %. Earth also cannot reproduce the Moon's low gravity, vacuum or
-  radiation, or the Mare's day–night temperature swing of about 290–300 K (LRO Diviner).
-  Light is measured as the visible part of the Sun's disc on the Moon and as the Sun's centre on Earth; both agree
-  on flat ground but can differ a little on rims and floors.
-- **Honest validation** (`docs/VALIDATION_config-v1.md`, predictions written before the runs):
-  Haughton crater (Devon Island) was not found: it is too eroded to form a closed bowl in the DEM. In Iceland,
-  976 cells gave one weak match (22.5 %); Askja's caldera lake was missed because its depth is measured from the
-  water surface (48 m, below our 50 m minimum). Tenoumer crater (Mauritania) was missed for the same reason (44 m).
-  The app shows these misses on purpose.
+**What we built on it in 48 hours**
+- **The search:** about 265,000 cells (11,604 of 19,433 one-degree land tiles, deserts first); 1,825 crater-like
+  places scored.
+- **Real craters from elevation alone:** Meteor Crater, Roter Kamm and Pingualuit, which it was never told about.
+- **Mines and ice:** it also found 111 open-pit mines, such as Chuquicamata and Escondida. After the mine and
+  dry-bowl filters, 1,261 places are ranked.
+- **Top results:** #1 is a bowl in the Tian Shan, China, 60 % similar to Shackleton, with walls as steep (27.3° vs
+  27.2°). Meteor Crater, a known training site, ranks 10th (46 %).
+- **Shape twins are not light twins:** no place ranks high on both.
+- **Earth has no grazing Sun:** at Shackleton the Sun never rises above 1.9°; on Earth it reaches at least 23.4°.
+- **Mare:** flat ground like the Moon's is common on Earth, but small craters and basalt are rare.
+- **A live web app with two linked 3D globes.** Pick a base on the Moon and the Earth turns to its best twins. Each
+  site has a card with a radar chart, Earth and Moon values side by side, what matches and what is missing, ground
+  conditions, access (nearest city, airport and research station) and a 3D close-up with the crater outlined and a
+  lunar base drawn to scale.
 
 ### Benefits
-- A repeatable, open way to compare Earth sites with a lunar target, criterion by criterion, instead of by eye.
-- It shows both sides: what matches and what doesn't, so a team can choose a site for the property they want to
-  test (bowl shape, steep walls, flat landing pad, rough ground).
-- Everything uses open data and open code; anyone can rerun it on new regions.
+- Choosing an analog site becomes a measured comparison, criterion by criterion, that anyone can check and rerun.
+  Every score traces back to a raw value next to the Moon value.
+- Teams can pick a field site for what they want to test (steep-wall traverses, landing pads, rough terrain, shadowed
+  floors), see how to reach it, and see clearly what Earth cannot rehearse.
+- It looks beyond the well-known sites: apart from Meteor Crater, our top 10 are remote bowls in Central Asia,
+  Turkey, the Sahara, the Danakil and the Andes.
 
-### What we hope to achieve
-Run the search over the rest of Earth (the night run covered 11,604 of 19,433 1° land tiles), add more lunar
-targets (10 Artemis-region polar candidates and 4 per-mare targets are computed and waiting for review; scoring
-against several targets is built), add rock type for the Mare base and lava tubes, and give analog-campaign and rover teams a short list of field sites that match
-their landing site best, with the limits stated.
+### Intended impact
+- Give analog-campaign, rover and instrument teams a ranked shortlist of field sites for each lunar site, with the
+  limits stated.
+- Help people learn what makes a good lunar base site and discover new places on Earth themselves: the app explains
+  every step in plain words and runs in any browser, for students, teachers and the public.
+- Be a shared, open base: others can plug in new Artemis candidate sites as they are announced, new criteria, or new
+  planets.
 
-### Tools
-Python (NumPy, SciPy, rasterio, pyproj, GeoPandas, pandas, PyYAML, pystac-client, Planetary Computer client,
-Matplotlib, Plotly, pytest); JavaScript, HTML and CSS with globe.gl 2.32.0 and MapLibre GL JS 4.7.1; data read
-directly from AWS Open Data and NASA PGDA; Git and GitHub. `[TEAM]` hardware: personal laptops.
+### How it is creative
+- The lunar target is measured, not looked up: from NASA data, with the same code and on the same grid as every Earth
+  cell, so the comparison is fair by construction.
+- Every Earth place gets a "closest lunar twin" among several real lunar sites.
+- Sunlight is a measured criterion: simulated over Earth craters and compared with the lunar pole's illumination.
+- We show failures on purpose: known sites the method missed are listed, with the reason.
+
+### Factors we considered
+- **Scale:** Shackleton is 21 km wide and most Earth bowls are far smaller, so we compare shape, not size.
+- **Resolution:** slope and roughness depend on grid size, so both worlds use one 60 m metric grid.
+- **Honest validation:** we froze the settings before testing on held-out sites. We missed Haughton (too eroded),
+  Askja (its lake leaves the caldera only 48 m deep, under our 50 m minimum), Tenoumer (44 m) and Lanzarote (sea and
+  villages fail the filter). The app shows these misses.
+- **Missing data** shows as "no data", never as zero; in our export every ranked place has a value for every counted
+  criterion.
+- **Known limits:** lunar light maps measure the Sun's disc, our Earth simulation its centre. Earth cannot reproduce
+  low gravity, vacuum, radiation or the mare's day–night temperature swing.
+- **No machine learning:** no labelled list of good analogs exists, and physical measurements keep every score
+  traceable.
+- **Open licences only,** so anyone can reuse the whole stack.
+
+### Tools, languages, hardware and software
+- **Python:** NumPy, SciPy, rasterio, pyproj, GeoPandas, pandas, PyYAML, pystac-client, Matplotlib, Plotly, pytest.
+- **Web:** JavaScript, HTML and CSS with globe.gl and MapLibre GL JS; hosted on GitHub Pages.
+- **Data access:** read directly from AWS Open Data, NASA PGDA, PANGAEA and the Macrostrat API. Git and GitHub.
+- **Hardware:** our own laptops.
+- **Claude Code** as a coding assistant (details in the SI field).
 
 ---
 
 ## Use of Super Intelligence (SI)
-Not shown to the judges, but the same text belongs in the project (README / app footer).
-
 > Yes. We used an SI assistant, Claude (Anthropic), mainly through Claude Code, as a coding and writing helper.
-> **Code:** it helped write parts of the pipeline (for example the light simulation, DEM fetching and terrain
-> modules, the lunar target and Mare scripts, the export) and the web app (`index.html`, `style.css`, `app.js`).
-> Team members reviewed and tested this code; commits it helped with carry a `Co-Authored-By: Claude` line, and
-> `AI_USAGE.md` lists each use with how it was checked. **Text:** it drafted documentation, the site notes in the
-> app (checked against the linked sources) and a first draft of this submission text. **Data:** all scores come
-> from our pipeline run on the open datasets listed below; the optional `?sample` view of the app uses fake values
-> made by a script and is labelled "Fake data". **Images, video, audio:** none are SI-generated; the globes, terrain
-> and imagery are real NASA, ESA/EOX and AWS data. The idea, the criteria and the decisions are the team's
-> `[TEAM: confirm, and add any other SI tools you used]`. The app states this in its footer and in an
-> `ai-assistance` meta tag.
+> **Code:** it helped write parts of the pipeline (for example the light simulation, terrain and DEM modules, the
+> lunar target and Mare scripts, the filters and the export) and the web app. Team members reviewed and tested this
+> code; commits it helped with carry a `Co-Authored-By: Claude` line, and `AI_USAGE.md` lists each use with how it
+> was checked. **Text:** it drafted documentation, the site notes in the app (checked against the linked sources)
+> and first drafts of the pitch and of this submission. **Data:** all scores come from our pipeline run on the open
+> datasets listed below. **Images, video, audio:** none are SI-generated; the globes, terrain and imagery are real
+> NASA, ESA/EOX and AWS data, and the opening photo is NASA's Earthrise. The idea, the criteria and the decisions are
+> the team's. The app states this in its footer.
+> `[TEAM: confirm, and add any other SI tools you used]`
 
 ---
 
 ## NASA Data
 - **LOLA south-pole elevation, LDEM_80S_20MPP_ADJ** (Barker et al. 2023), NASA PGDA product 90:
-  https://pgda.gsfc.nasa.gov/products/90. Defines the Polar target (Shackleton's shape, walls, base pad).
+  https://pgda.gsfc.nasa.gov/products/90. Defines the Polar targets (shape, walls, base pad).
 - **Lunar south-pole illumination, AVGVISIB_85S_060M_201608** (Mazarico et al. 2011), NASA PGDA product 69:
   https://pgda.gsfc.nasa.gov/products/69. Lunar side of the light criteria.
+- **High-resolution LOLA topography for lunar south pole sites** (M. K. Barker), NASA PGDA product 78:
+  https://pgda.gsfc.nasa.gov/products/78. Centres of the Artemis III candidate regions.
+- **Artemis III candidate landing regions**, NASA release 22-089, 19 Aug 2022:
+  https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/
 - **SLDEM2015** (LOLA + JAXA SELENE/Kaguya Terrain Camera; Barker et al. 2016), NASA PGDA product 54:
-  https://pgda.gsfc.nasa.gov/products/54. Mare target from 20 sample areas.
+  https://pgda.gsfc.nasa.gov/products/54. Mare targets.
 - **LRO Diviner** surface temperatures (Williams et al. 2017, Icarus, doi:10.1016/j.icarus.2016.08.012): the Mare
-  day–night swing fact.
+  day–night swing.
 - **Apollo landing-site coordinates** (Wagner et al. 2017, Icarus 283, 92–103): position of the Mare marker.
-- **NASA Moon Fact Sheet** (NSSDC): lunar equator tilt for the Sun's maximum height. `[check link]`
+- **Lunar surface habitat size** (Burke, Howard & Kessler 2022, "Internal layout of a lunar surface habitat", NASA):
+  https://ntrs.nasa.gov/citations/20220013669. Habitat in the "Moon base to scale" view.
 - **Blue Marble Next Generation**, July 2004 (NASA Earth Observatory): Earth globe image,
   https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/
 - **CGI Moon Kit** (NASA Scientific Visualization Studio, from LRO LROC WAC data): Moon globe image,
   https://svs.gsfc.nasa.gov/4720
+- **Earthrise, Apollo 8** (NASA, AS08-14-2383): opening photo of the app,
+  https://images.nasa.gov/details/as08-14-2383
 
 ## Space Agency Partner Data and Other References
 **Space agency partner data**
-- **Copernicus DEM GLO-30 / GLO-90** (ESA, Copernicus programme), read from AWS Open Data:
+- **Copernicus DEM GLO-30 / GLO-90** (ESA, Copernicus programme), via AWS Open Data:
   https://registry.opendata.aws/copernicus-dem/
 - **ESA WorldCover 2021 v200** (10 m land cover, CC BY 4.0): https://worldcover2021.esa.int and
   https://registry.opendata.aws/esa-worldcover-vito/
 - **JAXA SELENE (Kaguya) Terrain Camera**, inside SLDEM2015 (above).
 
 **Other data**
-- Wikipedia, "List of impact craters on Earth" (confirmed impact structures, display only):
-  https://en.wikipedia.org/wiki/List_of_impact_craters_on_Earth (text CC BY-SA 4.0)
-- Terrain Tiles on AWS (Mapzen; SRTM, GMTED, ETOPO1 and others), 3D view elevation:
-  https://registry.opendata.aws/terrain-tiles/ (licence/attribution: `[check]`)
-- Sentinel-2 cloudless 2016 by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2016), 3D view
-  imagery: https://s2maps.eu, CC BY 4.0 (we use the 2016 layer because EOX's 2018–2025 layers are non-commercial)
-- Travel time to cities (card "Access" line, display only): Weiss, D.J. et al. (2018), Nature 553, 333–336,
-  doi:10.1038/nature25181; data from the Malaria Atlas Project (CC BY; `docs/ACCESS.md`)
-- Nearest airport (card "Access" line): OurAirports `airports.csv`, https://ourairports.com/data/ (public domain
-  according to third-party pages; `[TEAM: open ourairports.com/data once and confirm]`, see `docs/ACCESS.md`)
+- **Global-scale mining polygons v2** (Maus et al. 2022, PANGAEA, CC BY-SA 4.0), mine filter:
+  https://doi.org/10.1594/PANGAEA.942325; paper: Scientific Data 9, 433 (2022).
+- **Macrostrat** geological map units (rock at the site, CC BY 4.0): https://macrostrat.org
+- **GLiM, Global Lithological Map** (Hartmann & Moosdorf 2012, 0.5° grid, CC BY 3.0), regional rock class:
+  https://doi.org/10.1594/PANGAEA.788537; paper: doi:10.1029/2012GC004370.
+- **Travel time to cities** (Weiss et al. 2018, Nature 553, 333–336, doi:10.1038/nature25181; Malaria Atlas
+  Project, CC BY): https://malariaatlas.org
+- **OurAirports** airport list: https://ourairports.com/data/
+- **INTERACT GIS station list**, interact-gis.org, accessed 15 Nov 2026: research stations.
+- **Planetary analog stations** (Haughton-Mars Project, FMARS, MDRS, HI-SEAS, Biosphere 2, LunAres): positions from
+  marsinstitute.no and Wikipedia.
+- **GeoNames** `cities1000` (CC BY 4.0), place names: https://www.geonames.org
+- **Natural Earth** 1:10m Admin 0 (public domain), countries: https://www.naturalearthdata.com
+- **OpenStreetMap** (Overpass API, ODbL), to check the names of filtered mines: https://www.openstreetmap.org
+- Wikipedia, "List of impact craters on Earth" (confirmed impact structures, CC BY-SA 4.0):
+  https://en.wikipedia.org/wiki/List_of_impact_craters_on_Earth
+- **Landing pad size** (Metzger & Autry 2022, "The cost of lunar landing pads"): https://arxiv.org/abs/2205.00378
+- **Terrain Tiles on AWS** (Mapzen; SRTM, GMTED, ETOPO1 and others), 3D view elevation:
+  https://registry.opendata.aws/terrain-tiles/
+- **Sentinel-2 cloudless 2016** by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2016, CC BY 4.0),
+  3D view imagery: https://s2maps.eu
 - Site notes: sources linked per site in `app/sample/site_info.json`.
 
 **Software**
-- globe.gl 2.32.0 (`[check licence]`), MapLibre GL JS 4.7.1 (`[check licence]`), loaded from unpkg.
-- Python: NumPy, SciPy, rasterio, pyproj, GeoPandas, pandas, PyYAML, pystac-client, planetary-computer,
-  Matplotlib, Plotly, pytest.
-- Our code: https://github.com/TLCasparS/EspaceOdyssey (licence: `[TEAM]`, see checklist open point 3).
+- globe.gl 2.32.0 and MapLibre GL JS 4.7.1, loaded from unpkg.
+- Python: NumPy, SciPy, rasterio, pyproj, GeoPandas, pandas, PyYAML, pystac-client, planetary-computer, Matplotlib,
+  Plotly, pytest.
+- Our code: https://github.com/TLCasparS/EspaceOdyssey (Apache License 2.0; data licences listed in the README)
 
 **Methods and references**
 - Team criteria document: `docs/Moon Analog Criteria and Datasets.md` (29 criteria, data sources and caveats).
-- Validation report: `docs/VALIDATION_config-v1.md`.
+- Validation: `docs/VALIDATION_config-v1.md`; filters: `config/post_filters.yaml`; several lunar targets:
+  `docs/MULTI_TARGET.md`; access and stations: `docs/ACCESS.md`.
 
 ---
 
-## Slide notes (7-slide limit)
-The deck skeleton already has exactly 7 slides; keep it at 7. Before submitting:
-- Team slide: full names `[TEAM]`, Mateo's role `[TEAM]`.
-- App slide: one real screenshot (globe + card, or a crater in 3D).
-- Results slide: night-run numbers above (same as `docs/PITCH_OUTLINE.md`); keep the "Honest limits" card.
-- Last slide: hosted app link and repo link; the AI-use line.
-- No logos, no photos of people, no AI-generated images.
+## Before pasting (team)
+- **Demo link:** public deck link, tested in a private window.
+- **Images:** 1–3 app screenshots for the page (for example `pitch/img/app_map_tianshan.png`, `pitch/img/app_card.png`).
+- **OurAirports licence:** `docs/ACCESS.md` could not open ourairports.com/data first-hand; open it once and confirm.
+- **At submission:** the two tick boxes (Terms; original work with all resources listed in References), the
+  China-review question and the SI confirmation are answered by the team.
